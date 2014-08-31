@@ -19,3 +19,11 @@
 *.exe
 *.out
 *.app
+
+*.pyc
+TAGS
+\#*
+.\#*
+*.fasta
+external/*
+
