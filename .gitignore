@@ -26,4 +26,6 @@ TAGS
 .\#*
 *.fasta
 external/*
+bin/*
+build/*
 
