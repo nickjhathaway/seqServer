@@ -7,7 +7,7 @@ CXXFLAGS=-std=c++11
 CXXOPT=-O2 -funroll-loops -DNDEBUG -Wall
 CXXDEBUG=-g -gstabs+
 BOOST=-isystem$(LOCAL_PATH)/boost/include -L$(LOCAL_PATH)/boost/lib
-CPPCMS=-isystem/Users/nickhathaway/source_codes/external/local/include
+CPPCMS=-isystem$(LOCAL_PATH)/cppcms/include
 ZI=-I$(LOCAL_PATH)/zi_lib
 LOCALTOOLS=-I$(LOCAL_PATH)
 EXTTOOLS=-I$(EXT_PATH)
@@ -15,7 +15,7 @@ SRC=-I. -I../ -I../../
 LDFLAGS=-Wl,-rpath,$(LOCAL_PATH)/boost/lib -L$(LOCAL_PATH)/boost/lib  \
 	-lpthread -lboost_program_options -lboost_system -lboost_thread \
 	-lboost_filesystem -lboost_iostreams -lboost_regex
-LDFLAGS+=-Wl,-rpath,/Users/nickhathaway/source_codes/external/local/lib -L/Users/nickhathaway/source_codes/external/local/lib  \
+LDFLAGS+=-Wl,-rpath,$(LOCAL_PATH)/cppcms/lib -L$(LOCAL_PATH)/cppcms/lib  \
 	-lcppcms -lbooster
 LDFLAGS+=-lcurl
 

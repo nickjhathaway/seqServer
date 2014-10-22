@@ -46,8 +46,8 @@ private:
 public:
     evt(cppcms::service& srv, std::string name)
         : cppcms::application(srv)
-        , html_(make_path("index.html"))
-        , js_(make_path("main.js"))
+        , html_(make_path("../resources/index.html"))
+        , js_(make_path("../resources/main.js"))
     {
         dispMap(&evt::mainData, "mainData");
         dispMap(&evt::js, "js");
