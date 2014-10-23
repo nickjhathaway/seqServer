@@ -4,8 +4,7 @@
 #include <cppcms/url_dispatcher.h>
 #include <cppcms/url_mapper.h>
 #include <cppcms/applications_pool.h>
-#include <seqTools.h>
-#include <cppitertools/range.hpp>
+
 #include "file_cache.hpp"
 #include "ip.hpp"
 
@@ -15,8 +14,6 @@ class evt: public cppcms::application {
 private:
     utils::FileCache html_;
     utils::FileCache js_;
-    std::string fastqFilename_;
-    std::vector<bibseq::readObject> reads_;
 
     static bfs::path make_path(const bfs::path fn){
         return fn; // TODO: make absolute path, or from config file?
@@ -47,75 +44,66 @@ private:
     }
 
 public:
-    evt(cppcms::service& srv, std::string name,
-    		std::string fastqFile)
+    evt(cppcms::service& srv, std::string name)
         : cppcms::application(srv)
         , html_(make_path("../resources/index.html"))
         , js_(make_path("../resources/main.js"))
-    		, fastqFilename_(fastqFile)
     {
-      dispMap(&evt::mainData, "mainData");
-      dispMap(&evt::mainSeqData, "mainSeqData");
-      dispMap(&evt::js, "js");
-      dispMapRoot(&evt::html);
-      mapper().root(name);
+        dispMap(&evt::mainData, "mainData");
+        dispMap(&evt::js, "js");
+        dispMapRoot(&evt::html);
+        mapper().root(name);
     }
 
     void mainData(){
-      ret_json();
-      cppcms::json::value r;
-      response().out() << r;
-    }
+        ret_json();
+        cppcms::json::value r;
+        auto& c = r["circles"];
 
-    void mainSeqData(){
-    	if(reads_.empty()){
-      	bibseq::readObjectIO reader;
-      	reader.read("fastq", fastqFilename_, false);
-      	reads_ = reader.reads;
-    	}
+        c[0]["radius"] = 50;
+        c[0]["x"] = 50;
+        c[0]["y"] = 50;
+        c[0]["color"] = "red";
+        c[0]["borderColor"] = "green";
 
-      ret_json();
-      cppcms::json::value r;
-      auto& c = r["seqs"];
-      for(const auto & pos : iter::range(reads_.size())){
-        c[pos]["seq"] = reads_[pos].seqBase_.seq_;
-      }
-      response().out() << r;
+        c[1]["radius"] = 50;
+        c[1]["x"] = 250;
+        c[1]["y"] = 250;
+        c[1]["color"] = "purple";
+        c[1]["borderColor"] = "orange";
+
+        response().out() << r;
     }
 
     void html(){
-      response().out() << html_.get();
+        response().out() << html_.get();
     }
 
     void js(){
-      ret_js();
-      response().out() << js_.get();
+        ret_js();
+        response().out() << js_.get();
     }
 };
 
 cppcms::json::object server_config(std::string name){
-  cppcms::json::object args;
-  args["service"]["api"] = "http";
-  args["service"]["port"] = 8080;
-  args["service"]["ip"] = "0.0.0.0";
-  args["http"]["script"] = name;
-  return args;
+    cppcms::json::object args;
+    args["service"]["api"] = "http";
+    args["service"]["port"] = 8080;
+    args["service"]["ip"] = "0.0.0.0";
+    args["http"]["script"] = name;
+
+    return args;
 }
 
 int main(int argc, char** argv){
-	bibseq::seqSetUp setUp(argc, argv);
-	std::string fastqFile = "";
-	setUp.setOption(fastqFile, "-fastq", "Name of fastq file", true);
-	setUp.finishSetUp(std::cout);
+    const std::string name = "/evt";
+    auto config = server_config(name);
 
-  const std::string name = "/evt";
-  auto config = server_config(name);
-
-  try {
-      cppcms::service app(config);
-      app.applications_pool().mount(cppcms::applications_factory<evt>(name, fastqFile));
-      app.run();
-  } catch(const std::exception& e) {
-      std::cerr << e.what() << std::endl;
-  }
+    try {
+        cppcms::service app(config);
+        app.applications_pool().mount(cppcms::applications_factory<evt>(name));
+        app.run();
+    } catch(const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+    }
 }

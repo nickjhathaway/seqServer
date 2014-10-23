@@ -1,16 +1,17 @@
 // based on example from http://thecodeplayer.com/walkthrough/html5-game-tutorial-make-a-snake-game-using-html5-canvas-jquery
 
 $(document).ready(function(){
-	
-	var canvas = document.getElementById('canvas');
+    var canvas = document.getElementById('myCanvas');
     var context = canvas.getContext('2d');
-    
-	function setUpCanvas(){
-		var canvas = document.getElementById('canvas');
-	    canvas.width = window.innerWidth * 0.98;
-	    canvas.height = window.innerHeight * 0.98;
-	};
-	function drawCircle(x, y, radius, color, borderColor){
+
+    canvas.width = window.innerWidth * 0.98;
+    canvas.height = window.innerHeight * 0.98; // accomodate titlebar
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var radius = 10;
+
+    function drawCircle(x, y, radius, color, borderColor){
         context.beginPath();
         context.arc(x, y, radius, 0, 2 * Math.PI, false);
         context.fillStyle = color;
@@ -43,60 +44,13 @@ $(document).ready(function(){
                  success: function(ct){ func(ct); } });
     }
 
-    var baseColors = {};
-    baseColors['A'] = "#ff8787";
-    baseColors['G'] = "#ffffaf";
-    baseColors['C'] = "#afffaf";
-    baseColors['T'] = "#87afff";
-   	var width = canvas.width;
-    var height = canvas.height;
-    var cellWidth = 20;
-    var cellHeight = 30;
-    
-    function drawSeq(index, seq){
-    	context.textAlign = "center";
-    	context.textBaseline = "middle";
-    	context.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
-    	for(var wi = 0; wi < seq.length; wi++){
-            //var randIdx = Math.floor(Math.random() * colors.length);
-            //context.fillStyle = colors[randIdx];
-            //context.fillStyle ="#203049";
-            context.fillStyle =baseColors[seq[wi]];
-            context.fillRect(wi * cellWidth, index*cellHeight, cellWidth, cellHeight);
-            context.fillStyle = "#000000";
-	        context.fillText(seq[wi], wi*cellWidth + cellWidth/2.0, index*cellHeight + cellHeight/2.0);
-        }
-    };
-    
-    function paint(){
-    	ajax('/evt/mainSeqData', function(md){
-	        $.each(md["seqs"], function(i, s) {
-	            //console.log(s);
-	            drawSeq(i, s["seq"]);
-	        });
-	    });
-    }
-	
-	function init(){
-		$(window).bind("resize", function(){
-			setUpCanvas();
-			paint();
-		});
-		setUpCanvas();
-		paint();
-	}
-	init();
-	
-	
-
-
-
-    //setUpCanvas();
-    var centerX = canvas.width / 2;
-    var centerY = canvas.height / 2;
-    var radius = 10;
-	//paint();
-
+    ajax('/evt/mainData', function(md){
+        $.each(md["circles"], function(i, c) {
+            console.log(c);
+            drawCircle(c["x"], c["y"], c["radius"], c["color"],
+                       c["borderColor"]);
+        });
+    });
 
     function addClickListener(canvas, regions){
         this.getCursorPosition = function(event) {
