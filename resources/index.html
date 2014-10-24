@@ -7,29 +7,53 @@
 
 	
 	#canvas {
-	position: fixed;
-	top: 61px;
-	left: 10px;
-	/*box-shadow: 10px 10px 5px #888;*/
-	border-bottom-left-radius: 10px;
-	border-bottom-right-radius: 10px;
+		position: fixed;
+		top: 50px;
+		left: 10px;
+		/*box-shadow: 10px 10px 5px #888;*/
+		border-bottom-left-radius: 10px;
+		border-bottom-right-radius: 10px;
 	}
 	
 	#titleCanvas {
-	position: fixed;
-	border-top-left-radius: 10px;
-	border-top-right-radius: 10px;
-	top: 10px;
-	left: 10px;
+		position: fixed;
+		border-top-left-radius: 10px;
+		border-top-right-radius: 10px;
+		top: 10px;
+		left: 10px;
 	}
+	#bottomSlider {
+   		position:absolute;
+   		bottom:10px;
+   		left:2.5%;
+   		width:95%;
+   		height:60px;   /* Height of the footer */
+   		background:#000000;
+	}
+	#rightSlider {
+   		position:absolute;
+   		right:10px;
+   		top:2.5%;
+   		width:10;
+   		height:95%;   /* Height of the footer */
+   		background:#000000;
+	}
+
 	</style>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	 <script>
+
+    </script>
   </head>
   <body>
 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+
     <script src="/evt/js"></script>
-    <canvas id = "titleCanvas"></canvas>
+    <canvas id ="titleCanvas"></canvas>
     <canvas id="canvas"> </canvas>
+    <div id="bottomSlider" style="height:10px; width: 95%"></div>
+    <div id="rightSlider" style="height:95%; width: 10px"></div>
   </body>
 </html>

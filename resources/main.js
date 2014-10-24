@@ -4,11 +4,42 @@ $(document).ready(function(){
 	
 	var canvas = document.getElementById('canvas');
     var context = canvas.getContext('2d');
-    
+    var mainSeqData, mainData;
+    var needToPaint = true;
+    var baseColors = {};
+    baseColors['A'] = "#ff8787";
+    baseColors['G'] = "#ffffaf";
+    baseColors['C'] = "#afffaf";
+    baseColors['T'] = "#87afff";
+   	var width = canvas.width;
+    var height = canvas.height;
+    var cellWidth = 20;
+    var cellHeight = 30;
+    var numOfBases = Math.floor((canvas.width - cellWidth)/cellWidth);
+	var numOfSeqs = Math.floor((canvas.height - cellHeight)/cellHeight);
+	var baseStart = 0;
+	var seqStart = 0;
 	function setUpCanvas(){
 		var canvas = document.getElementById('canvas');
-	    canvas.width = window.innerWidth * 0.98;
-	    canvas.height = window.innerHeight * 0.98;
+		canvas.width = (window.innerWidth - 10) * 0.98;
+		canvas.height = (window.innerHeight - 60) * 0.98;
+		numOfBases = Math.floor((canvas.width - cellWidth)/cellWidth);
+	 	numOfSeqs = Math.floor((canvas.height - cellHeight)/cellHeight);
+	};
+	function updateCanvas(){
+		var canvas = document.getElementById('canvas');
+		var changingHeight = (window.innerHeight - 60) * 0.98;
+		var changingWidth = (window.innerWidth - 10) * 0.98;
+		canvas.height = changingHeight;
+		canvas.width = changingWidth;
+		if(changingHeight > canvas.height){
+			needToPaint = true;
+		}
+		if(changingWidth > canvas.width){
+			needToPaint = true;
+		}
+		numOfBases = Math.floor((canvas.width - cellWidth)/cellWidth);
+	 	numOfSeqs = Math.floor((canvas.height - cellHeight)/cellHeight);
 	};
 	function drawCircle(x, y, radius, color, borderColor){
         context.beginPath();
@@ -20,18 +51,12 @@ $(document).ready(function(){
         context.stroke();
     }
 
-    //drawCircle(canvas.width /2, canvas.height /2, 50, "red", "green");
-    //drawCircle(100, 200, 50, "blue", "red");
-    /*drawCircle(800, 400, 10, "yellow", "purple");*/
-
     function drawLine(sx, sy, ex, ey, width){
         context.beginPath();
         context.moveTo(sx, sy);
         context.lineTo(ex, ey, width);
         context.stroke();
     }
-
-    //drawLine(100, 200, 800, 400, 50);
 
     function ajax(url, func){
         $.ajax({ url: url, dataType: 'json', async: false,
@@ -43,60 +68,100 @@ $(document).ready(function(){
                  success: function(ct){ func(ct); } });
     }
 
-    var baseColors = {};
-    baseColors['A'] = "#ff8787";
-    baseColors['G'] = "#ffffaf";
-    baseColors['C'] = "#afffaf";
-    baseColors['T'] = "#87afff";
-   	var width = canvas.width;
-    var height = canvas.height;
-    var cellWidth = 20;
-    var cellHeight = 30;
+
     
-    function drawSeq(index, seq){
+    function drawSeq(index, seq, start){
     	context.textAlign = "center";
     	context.textBaseline = "middle";
     	context.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
-    	for(var wi = 0; wi < seq.length; wi++){
+    	//wi * cellWidth < canvas.width &&
+    	for(var wi = start; wi - start < numOfBases; wi++){
+    		//console.log(wi);
             //var randIdx = Math.floor(Math.random() * colors.length);
             //context.fillStyle = colors[randIdx];
             //context.fillStyle ="#203049";
-            context.fillStyle =baseColors[seq[wi]];
-            context.fillRect(wi * cellWidth, index*cellHeight, cellWidth, cellHeight);
-            context.fillStyle = "#000000";
-	        context.fillText(seq[wi], wi*cellWidth + cellWidth/2.0, index*cellHeight + cellHeight/2.0);
+            if(wi < seq.length){
+            	context.fillStyle = baseColors[seq[wi]];
+            	context.fillRect((wi -start) * cellWidth, index*cellHeight, cellWidth, cellHeight);
+            	context.fillStyle = "#000000";
+	        	context.fillText(seq[wi], (wi -start)*cellWidth + cellWidth/2.0, index*cellHeight + cellHeight/2.0);
+            }else{
+            	context.strokeStyle = "#000000";
+    			context.lineWidth   = 1;
+            	context.fillStyle = "#EEEEEE";
+            	context.fillRect((wi -start) * cellWidth, index*cellHeight, cellWidth, cellHeight);
+            	context.strokeRect((wi -start) * cellWidth, index*cellHeight, cellWidth, cellHeight);
+            }
+
         }
     };
-    
-    function paint(){
-    	ajax('/evt/mainSeqData', function(md){
-	        $.each(md["seqs"], function(i, s) {
-	            //console.log(s);
-	            drawSeq(i, s["seq"]);
-	        });
+    //
+    function paint(seqData){
+    	if(needToPaint){
+    		//console.log("painting");
+	    	for(var hi = seqStart; hi -seqStart < numOfSeqs ; hi++){
+	    		//console.log(hi);
+	    		drawSeq(hi - seqStart, seqData[hi]["seq"], baseStart);
+	    	}
+	    	needToPaint = false;
+	    	/*
+			$.each(mainSeqData["seqs"], function(i, s) {
+		            //console.log(s);
+		            
+		    });*/
+    	}
+    }
+    function addjustBaseStart(){
+    	
+    }
+    function setUpSliders(maxSeqs, maxBases){
+	    $( "#bottomSlider" ).slider({
+	      range: "min",
+	      min: 0,
+	      max: Math.max(maxBases- numOfBases, 0),
+	      value: 0,
+	      slide :function(event, ui){
+	      	baseStart = ui.value;
+	      	paint(mainSeqData["seqs"]);
+	      	needToPaint = true;
+	      	//console.log(ui.value);
+	      	//console.log(baseStart);
+	      }
+	      });
+	    $( "#rightSlider" ).slider({
+	      range: "max",
+	      min: 0,
+	      max: Math.max(maxSeqs- numOfSeqs, 0),
+	      value: maxSeqs,
+	      orientation: "vertical", slide :function(event, ui){
+	      	needToPaint = true;
+	      	seqStart = maxSeqs- numOfSeqs - ui.value;
+	      	paint(mainSeqData["seqs"]);
+	      	//console.log(ui.value);
+	      	//console.log(seqStart);
+	      }
 	    });
     }
-	
+
 	function init(){
+		ajax('/evt/mainSeqData', function(msd){ mainSeqData = msd; });
+		ajax('/evt/mainData', function(md){ mainData = md; });
 		$(window).bind("resize", function(){
-			setUpCanvas();
-			paint();
+			updateCanvas();
+			paint(mainSeqData["seqs"]);
 		});
 		setUpCanvas();
-		paint();
+		setUpSliders(mainData["numReads"],mainData["maxLen"] );
+		paint(mainSeqData["seqs"]);
+		console.log(numOfBases);
+		console.log(mainData["maxLen"]);
+		console.log(mainData["maxLen"] - numOfBases);
+		console.log(numOfSeqs);
+		console.log(mainData["numReads"]);
+		console.log(mainData["numReads"] - numOfSeqs);
+
 	}
 	init();
-	
-	
-
-
-
-    //setUpCanvas();
-    var centerX = canvas.width / 2;
-    var centerY = canvas.height / 2;
-    var radius = 10;
-	//paint();
-
 
     function addClickListener(canvas, regions){
         this.getCursorPosition = function(event) {

@@ -64,10 +64,17 @@ public:
     void mainData(){
       ret_json();
       cppcms::json::value r;
+      r["numReads"] = reads_.size();
+      uint32_t maxLen = 0;
+      bibseq::readVec::getMaxLength(reads_, maxLen);
+      r["maxLen"] = maxLen;
       response().out() << r;
     }
 
     void mainSeqData(){
+    	std::stringstream ss;
+
+    	std::cout << "reading data" << std::endl;
     	if(reads_.empty()){
       	bibseq::readObjectIO reader;
       	reader.read("fastq", fastqFilename_, false);
