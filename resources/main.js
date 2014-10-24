@@ -111,8 +111,44 @@ $(document).ready(function(){
 		    });*/
     	}
     }
-    function addjustBaseStart(){
-    	
+   function addMouseScrollListener(obj, up, down){
+        // from http://www.sitepoint.com/html5-javascript-mouse-wheel/
+        this.handler = function(e){
+	    var e = window.event || e; // old IE support
+	    var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+            if( delta > 0){
+                up(delta);
+            } else {
+                down(delta);
+            }
+        };
+        if (obj.addEventListener) {
+	    // IE9, Chrome, Safari, Opera
+	    obj.addEventListener("mousewheel", handler, false);
+	    // Firefox
+	    obj.addEventListener("DOMMouseScroll", handler, false);
+        } else {
+            // IE 6/7/8
+            obj.attachEvent("onmousewheel", handler);
+        }
+    }
+
+    function mouseWheelUp(steps){
+        if(seqStart > 0){
+        	--seqStart;
+        	$("#rightSlider").slider('value', mainData["numReads"] - seqStart - numOfSeqs);
+        	needToPaint = true;
+        	paint(mainSeqData["seqs"]);
+        }
+    }
+
+    function mouseWheelDown(steps){
+        if(seqStart < Math.max(mainData["numReads"]- numOfSeqs, 0)){
+        	++seqStart;
+        	$("#rightSlider").slider('value', mainData["numReads"] - seqStart - numOfSeqs);
+        	needToPaint = true;
+        	paint(mainSeqData["seqs"]);
+        }
     }
     function setUpSliders(maxSeqs, maxBases){
 	    $( "#bottomSlider" ).slider({
@@ -135,7 +171,7 @@ $(document).ready(function(){
 	      value: maxSeqs,
 	      orientation: "vertical", slide :function(event, ui){
 	      	needToPaint = true;
-	      	seqStart = maxSeqs- numOfSeqs - ui.value;
+	      	seqStart = maxSeqs - numOfSeqs - ui.value;
 	      	paint(mainSeqData["seqs"]);
 	      	//console.log(ui.value);
 	      	//console.log(seqStart);
@@ -146,6 +182,7 @@ $(document).ready(function(){
 	function init(){
 		ajax('/evt/mainSeqData', function(msd){ mainSeqData = msd; });
 		ajax('/evt/mainData', function(md){ mainData = md; });
+		
 		$(window).bind("resize", function(){
 			updateCanvas();
 			paint(mainSeqData["seqs"]);
@@ -159,7 +196,7 @@ $(document).ready(function(){
 		console.log(numOfSeqs);
 		console.log(mainData["numReads"]);
 		console.log(mainData["numReads"] - numOfSeqs);
-
+		addMouseScrollListener(canvas, mouseWheelUp,mouseWheelDown);
 	}
 	init();
 
