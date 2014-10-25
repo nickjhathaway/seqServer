@@ -11,7 +11,7 @@
 
 namespace bfs = boost::filesystem;
 
-class evt: public cppcms::application {
+class ssv: public cppcms::application {
 private:
     utils::FileCache html_;
     utils::FileCache js_;
@@ -47,17 +47,17 @@ private:
     }
 
 public:
-    evt(cppcms::service& srv, std::string name,
+    ssv(cppcms::service& srv, std::string name,
     		std::string fastqFile)
         : cppcms::application(srv)
         , html_(make_path("../resources/index.html"))
         , js_(make_path("../resources/main.js"))
     		, fastqFilename_(fastqFile)
     {
-      dispMap(&evt::mainData, "mainData");
-      dispMap(&evt::mainSeqData, "mainSeqData");
-      dispMap(&evt::js, "js");
-      dispMapRoot(&evt::html);
+      dispMap(&ssv::mainData, "mainData");
+      dispMap(&ssv::mainSeqData, "mainSeqData");
+      dispMap(&ssv::js, "js");
+      dispMapRoot(&ssv::html);
       mapper().root(name);
     }
 
@@ -86,6 +86,8 @@ public:
       auto& c = r["seqs"];
       for(const auto & pos : iter::range(reads_.size())){
         c[pos]["seq"] = reads_[pos].seqBase_.seq_;
+        c[pos]["name"] = reads_[pos].seqBase_.name_;
+        c[pos]["qual"] = reads_[pos].seqBase_.qual_;
       }
       response().out() << r;
     }
@@ -115,12 +117,12 @@ int main(int argc, char** argv){
 	setUp.setOption(fastqFile, "-fastq", "Name of fastq file", true);
 	setUp.finishSetUp(std::cout);
 
-  const std::string name = "/evt";
+  const std::string name = "/ssv";
   auto config = server_config(name);
 
   try {
       cppcms::service app(config);
-      app.applications_pool().mount(cppcms::applications_factory<evt>(name, fastqFile));
+      app.applications_pool().mount(cppcms::applications_factory<ssv>(name, fastqFile));
       app.run();
   } catch(const std::exception& e) {
       std::cerr << e.what() << std::endl;

@@ -27,7 +27,7 @@
    		bottom:10px;
    		left:2.5%;
    		width:95%;
-   		height:60px;   /* Height of the footer */
+   		height:60px;  
    		background:#000000;
 	}
 	#rightSlider {
@@ -35,25 +35,39 @@
    		right:10px;
    		top:2.5%;
    		width:10;
-   		height:95%;   /* Height of the footer */
+   		height:95%;   
    		background:#000000;
 	}
 
+	#pop-up {
+	    display: none;
+	    position: absolute;
+	    width: 300px;
+	    padding-left: 2px;
+	    background: #eeeeee;
+	    color: #000000;
+	    border: 1px solid #1a1a1a;
+	    font-size: 90%;
+	 }
 	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-	 <script>
+        <script type="text/javascript">
 
     </script>
   </head>
   <body>
 
 
-    <script src="/evt/js"></script>
+    <script src="/ssv/js"></script>
     <canvas id ="titleCanvas"></canvas>
     <canvas id="canvas"> </canvas>
     <div id="bottomSlider" style="height:10px; width: 95%"></div>
     <div id="rightSlider" style="height:95%; width: 10px"></div>
+          <!-- HIDDEN / POP-UP DIV -->
+      <div id="pop-up">
+        <p id="info"></p>
+      </div>
   </body>
 </html>
