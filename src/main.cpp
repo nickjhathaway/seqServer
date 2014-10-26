@@ -56,9 +56,14 @@ public:
     {
       dispMap(&ssv::mainData, "mainData");
       dispMap(&ssv::mainSeqData, "mainSeqData");
+      dispMap_1arg(&ssv::printHello, "hello", "(\\w+)");
       dispMap(&ssv::js, "js");
       dispMapRoot(&ssv::html);
       mapper().root(name);
+  		std::cout << "reading data" << std::endl;
+    	bibseq::readObjectIO reader;
+    	reader.read("fastq", fastqFilename_, false);
+    	reads_ = reader.reads;
     }
 
     void mainData(){
@@ -73,14 +78,6 @@ public:
 
     void mainSeqData(){
     	std::stringstream ss;
-
-    	std::cout << "reading data" << std::endl;
-    	if(reads_.empty()){
-      	bibseq::readObjectIO reader;
-      	reader.read("fastq", fastqFilename_, false);
-      	reads_ = reader.reads;
-    	}
-
       ret_json();
       cppcms::json::value r;
       auto& c = r["seqs"];
@@ -90,6 +87,10 @@ public:
         c[pos]["qual"] = reads_[pos].seqBase_.qual_;
       }
       response().out() << r;
+    }
+
+    void printHello(std::string name){
+    	std::cout << "Hello " << name << std::endl;
     }
 
     void html(){

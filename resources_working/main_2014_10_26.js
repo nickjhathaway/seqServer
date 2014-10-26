@@ -102,38 +102,16 @@ $(document).ready(function(){
     	}
 	};
 	//paint seq position
-	SeqPainter.prototype.placeBasePos = function(seqContext, sStart, bStart){
+	SeqPainter.prototype.placeBasePos = function(seqContext, bStart){
     	seqContext.textAlign = "center";
     	seqContext.textBaseline = "middle";
     	seqContext.fillStyle = "#EEEEEE";
 	    seqContext.fillRect(this.nameOffSet - this.cw, (this.nSeqs)*this.ch + 2 , this.cw * 2, this.ch);
 	    seqContext.fillRect(this.nameOffSet - this.cw + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch + 2 , this.cw * 2, this.ch);
-	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, 0 , this.cw * 2, this.ch);
-	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, (this.nSeqs)*this.ch - this.ch , this.cw * 2, this.ch);
 	    seqContext.fillStyle = "#000000";
     	seqContext.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
       	seqContext.fillText(bStart, this.nameOffSet, (this.nSeqs)*this.ch +2 + this.ch/2.0);
-      	seqContext.fillText(bStart + this.nBases -1, this.nameOffSet + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch +2 + this.ch/2.0);
-   		seqContext.fillText(sStart, this.nameOffSet + this.nBases * this.cw + this.cw + 2, this.ch/2.0  );
-   		seqContext.fillText(sStart + this.nSeqs - 1, this.nameOffSet + this.nBases * this.cw + this.cw + 2, (this.nSeqs)*this.ch - this.ch+ this.ch/2.0  );
-   };
-   
-   SeqPainter.prototype.paintSelectedSeq = function(seqContext,seq, currentBase){
-   		seqContext.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
-   		seqContext.textAlign = "left";
-    	seqContext.textBaseline = "middle";
-   		var logInfo = "name: " + 
-        	seq["name"]
-        	+ " base: "  + seq["seq"][currentBase] 
-        	+ " qual: " +  seq["qual"][currentBase]
-        	+ " pos: " + currentBase;
-        var tWidth = seqContext.measureText(logInfo).width;
-        seqContext.fillStyle = "#EEEEEE";
-	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , tWidth, this.ch);
-	    seqContext.fillStyle = "#000000";
-	    console.log(tWidth);
-	    seqContext.fillText(logInfo,this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2  + this.ch/2 );
-	    
+      	seqContext.fillText(bStart + this.nBases -1, nameOffSet + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch +2 + this.ch/2.0);
    };
 	
 	function SeqView(viewName, seqs, seqData, cellWidth, cellHeight, baseColors){
@@ -145,7 +123,6 @@ $(document).ready(function(){
 		this.rSlider = $("#rightSlider", this.masterDiv)[0];
 		this.bSlider = $("#bottomSlider", this.masterDiv)[0];
 		this.popUp = $("#pop-up", this.masterDiv)[0];
-		this.sel = $("#select", this.masterDiv)[0];
 		// set up of sizes
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
 		$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
@@ -168,7 +145,6 @@ $(document).ready(function(){
 		this.setUpCanvas();
 		this.setUpSliders();
 		this.setUpListeners();
-		this.setSelector();
 	};
 	
 	SeqView.prototype.setUpCanvas = function(){
@@ -199,29 +175,6 @@ $(document).ready(function(){
 	
 	SeqView.prototype.paint = function(){
 		this.painter.paintSeqs(this.context, this.seqs, this.seqStart, this.baseStart);
-		this.painter.placeBasePos(this.context, this.seqStart, this.baseStart);
-		this.paintSelectedSeq();
-		this.setSelector();
-	};
-	
-	SeqView.prototype.paintSelectedSeq = function(){
-		this.painter.paintSelectedSeq(this.context, this.seqs[this.currentSeq], this.currentBase );
-	};
-	
-	SeqView.prototype.setSelector = function(){
-		if(this.currentBase >= this.baseStart && this.currentSeq >=this.seqStart){
-			$(this.sel).css('top', (this.currentSeq -this.seqStart) *this.painter.ch -1);
-			$(this.sel).css('left', (this.currentBase - this.baseStart) *this.painter.cw + this.painter.nameOffSet -1);
-			$(this.sel).show();
-		}else{
-			$(this.sel).hide();
-		}
-		/*console.log("setSelector");
-		console.log(this.sel);
-		console.log(this.currentBase);
-		console.log(this.currentSeq );
-		console.log(this.currentSeq *this.painter.ch);
-		console.log(this.currentBase *this.painter.cw + this.painter.nameOffSet );*/
 	};
 	
     SeqView.prototype.mouseWheelUp = function(steps){
@@ -255,6 +208,7 @@ $(document).ready(function(){
 	      	this.baseStart = ui.value;
 	      	this.painter.needToPaint = true;
 	      	this.paint();
+			this.painter.placeBasePos(context, baseStart);
 	      }.bind(this)
 	      }).bind(this);
 	    $( this.rSlider ).slider({
@@ -273,14 +227,12 @@ $(document).ready(function(){
         var pt = getRelCursorPosition(e, this.canvas);
         this.currentBase = Math.ceil(pt[0]/this.painter.cw) - this.painter.nameOffSet/this.painter.cw + this.baseStart -1;
         this.currentSeq = Math.ceil(pt[1]/this.painter.ch) + this.seqStart - 1;
-        this.paintSelectedSeq();
         console.log(pt);
         console.log(this.currentSeq);
         console.log(this.currentBase);
         console.log(this.seqs[this.currentSeq]["name"]);
         console.log(this.seqs[this.currentSeq]["seq"][this.currentBase]);
         console.log(this.seqs[this.currentSeq]["qual"][this.currentBase]);
-        this.setSelector();
     };
    SeqView.prototype.setUpListeners = function(){
    	// add scrolling listener
@@ -334,21 +286,66 @@ $(document).ready(function(){
         }
 
 		if(currentPoint[1] < (this.painter.nSeqs * this.painter.ch) & 
-			currentPoint[0] < ((this.painter.nBases * this.painter.cw) + this.painter.nameOffSet)){
+			currentPoint[0] < (this.painter.nBases * this.painter.cw)){
 			$(popUpWindow).fadeIn(500);
 		}else{
 			$(popUpWindow).hide();
 		}
     }.bind(this)).bind(this);
    };
-
+	var currentSeqPos = 0;
+	var canvas = document.getElementById('canvas');
+	var canvasDiv = document.getElementById('canvasDiv1');
+	var canvasDiv2 = document.getElementById('canvasDiv2');
+    var context = canvas.getContext('2d');
+    var popUp = document.getElementById('pop-up');
+    var mainSeqData, mainData;
+    var needToPaint = true;
     var baseColors = {};
     baseColors['A'] = "#ff8787";
     baseColors['G'] = "#ffffaf";
     baseColors['C'] = "#afffaf";
     baseColors['T'] = "#87afff";
     var cellWidth = 20;
-    var cellHeight = 25;
+    var cellHeight = 30;
+    var numOfBases = Math.floor((canvas.width - cellWidth)/cellWidth);
+	var numOfSeqs = Math.floor((canvas.height - cellHeight)/cellHeight);
+	var baseStart = 0;
+	var seqStart = 0;
+	var nameOffSet = 10 * cellWidth;
+	function setUpCanvas(){
+		var canvas = document.getElementById('canvas');
+		$(canvasDiv).width((window.innerWidth - 10) * 0.98);
+		$(canvasDiv).height((window.innerHeight - 60) * 0.98);
+		canvas.width = $(canvasDiv).width() * 0.98;
+		canvas.height = $(canvasDiv).height() * 0.95;
+		$(canvasDiv2).width((window.innerWidth - 10) * 0.98);
+		$(canvasDiv2).height((window.innerHeight - 60) * 0.98);
+		numOfBases = Math.floor((canvas.width - cellWidth - nameOffSet)/cellWidth);
+	 	numOfSeqs = Math.floor((canvas.height - cellHeight)/cellHeight);
+	};
+	function updateCanvas(){
+		var canvas = document.getElementById('canvas');
+		var canvasDiv = document.getElementById('canvasDiv');
+		var canvasDiv2 = document.getElementById('canvasDiv2');
+		var changingHeight = (window.innerHeight - 60) * 0.98;
+		var changingWidth = (window.innerWidth - 10) * 0.98;
+		$(canvasDiv).width((window.innerWidth - 10) * 0.98);
+		$(canvasDiv).height((window.innerHeight - 60) * 0.98);
+		$(canvasDiv2).width((window.innerWidth - 10) * 0.98);
+		$(canvasDiv2).height((window.innerHeight - 60) * 0.98);
+		//$(canvasDiv2).top($(canvasDiv).height() + 10);
+		canvas.width = $(canvasDiv).width() * 0.98;
+		canvas.height = $(canvasDiv).height() * 0.95;
+		if(changingHeight > canvas.height){
+			needToPaint = true;
+		}
+		if(changingWidth > canvas.width){
+			needToPaint = true;
+		}
+		numOfBases = Math.floor((canvas.width - cellWidth - nameOffSet)/cellWidth);
+	 	numOfSeqs = Math.floor((canvas.height - cellHeight)/cellHeight);
+	};
 	function drawCircle(x, y, radius, color, borderColor){
         context.beginPath();
         context.arc(x, y, radius, 0, 2 * Math.PI, false);
@@ -375,6 +372,159 @@ $(document).ready(function(){
         $.ajax({ url: url, dataType: 'json', async: true,
                  success: function(ct){ func(ct); } });
     }
+
+
+    
+    function drawSeq(index, seq, start){
+    	context.textAlign = "center";
+    	context.textBaseline = "middle";
+    	context.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+    	for(var wi = start; wi - start < numOfBases; wi++){
+            if(wi < seq.length){
+            	context.fillStyle = baseColors[seq[wi]];
+            	context.fillRect((wi - start) * cellWidth + nameOffSet, index*cellHeight, cellWidth, cellHeight);
+            	context.fillStyle = "#000000";
+	        	context.fillText(seq[wi], (wi -start)*cellWidth + cellWidth/2.0 + nameOffSet, index*cellHeight + cellHeight/2.0);
+            }else{
+            	context.strokeStyle = "#000000";
+    			context.lineWidth   = 1;
+            	context.fillStyle = "#EEEEEE";
+            	context.fillRect((wi -start) * cellWidth + nameOffSet, index*cellHeight, cellWidth, cellHeight);
+            	context.strokeRect((wi -start) * cellWidth + nameOffSet, index*cellHeight, cellWidth, cellHeight);
+            }
+        }
+    };
+    //
+    function paint(seqData){
+    	if(needToPaint){
+    		//console.log("painting");
+    		//box around seqs
+    		context.strokeStyle = "#000000";
+			context.lineWidth   = 1;
+	    	context.strokeRect(nameOffSet, 0, cellWidth * numOfBases, cellHeight * numOfSeqs);
+	    	//write names
+	    	context.textAlign = "left";
+	    	context.textBaseline = "middle";
+	    	context.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+	        context.strokeStyle = "#000000";
+			context.lineWidth   = 1;
+	    	
+	    	for(var hi = seqStart; hi -seqStart < numOfSeqs ; hi++){
+	    		context.fillStyle = "#EEEEEE";
+		    	context.fillRect(0, (hi - seqStart)*cellHeight, nameOffSet, cellHeight);
+		    	context.strokeRect(0, (hi - seqStart)*cellHeight, nameOffSet, cellHeight);
+		    	context.fillStyle = "#000000";
+				context.fillText(seqData[hi]["name"], 2, (hi - seqStart)*cellHeight + cellHeight/2.0);
+	    	}	    	
+
+	    	for(var hi = seqStart; hi -seqStart < numOfSeqs ; hi++){
+	    		drawSeq(hi - seqStart,
+	    		 seqData[hi]["seq"], baseStart);
+	    	}
+	    	needToPaint = false;
+    	}
+    }
+
+    function mouseWheelUp(steps){
+    	
+        if(seqStart > 0){
+        	--seqStart;
+        	$("#rightSlider").slider('value', mainData["numReads"] - seqStart - numOfSeqs);
+        	needToPaint = true;
+        	paint(mainSeqData["seqs"]);
+        }
+    }
+
+    function mouseWheelDown(steps){
+        if(seqStart < Math.max(mainData["numReads"]- numOfSeqs, 0)){
+        	++seqStart;
+        	$("#rightSlider").slider('value', mainData["numReads"] - seqStart - numOfSeqs);
+        	needToPaint = true;
+        	paint(mainSeqData["seqs"]);
+        }
+    }
+    
+    function placeBasePos(){
+    	context.textAlign = "center";
+    	context.textBaseline = "middle";
+    	context.fillStyle = "#EEEEEE";
+	    context.fillRect(nameOffSet - cellWidth, (numOfSeqs)*cellHeight + 2 , cellWidth * 2, cellHeight);
+	    context.fillRect(nameOffSet - cellWidth + numOfBases * cellWidth -cellWidth, (numOfSeqs)*cellHeight + 2 , cellWidth * 2, cellHeight);
+	    context.fillStyle = "#000000";
+    	context.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+      	context.fillText(baseStart, nameOffSet, (numOfSeqs)*cellHeight +2 + cellHeight/2.0);
+      	context.fillText(baseStart + numOfBases -1, nameOffSet + numOfBases * cellWidth -cellWidth, (numOfSeqs)*cellHeight +2 + cellHeight/2.0);
+    }
+    function addHoverBoxListener(object, fadeInBox) {
+	    var moveLeft = 20;
+	    var moveDown = 10;
+	    //object.hover(function(e) {
+	    $(object).hover(function(e) {
+	      //fadeInBox.fadeIn(500);
+	      $(fadeInBox).fadeIn(500);
+	      //.css('top', e.pageY + moveDown)
+	      //.css('left', e.pageX + moveLeft)
+	      //.appendTo('body');
+	    }, function() {
+	      //fadeInBox.hide();
+	      $(fadeInBox).hide();
+	    });
+	    
+	    $(object).mousemove(function(e) {
+		    $(fadeInBox).hide();
+			var currentPoint = [e.pageX - $(object).offset().left, e.pageY - $(object).offset().top];
+	    	$(fadeInBox).css('top', e.pageY + moveDown).css('left', e.pageX + moveLeft);
+	    	
+	      	var currentBaseHover = Math.ceil(currentPoint[0]/cellWidth) - nameOffSet/cellWidth + baseStart -1;
+	        var currentSeqHover = Math.ceil(currentPoint[1]/cellHeight) + seqStart - 1;
+	        if(currentPoint[0] > nameOffSet){
+	        	document.getElementById("info").innerHTML = "name: " + 
+	        	mainSeqData["seqs"][currentSeqHover]["name"]
+	        	+ "<br>base: "  + mainSeqData["seqs"][currentSeqHover]["seq"][currentBaseHover] 
+	        	+ "<br>qual:" +  mainSeqData["seqs"][currentSeqHover]["qual"][currentBaseHover]
+	        	+ "<br>pos: " + currentBaseHover;
+	        }else{
+	        	document.getElementById("info").innerHTML = document.getElementById("info").innerHTML = "name: " + 
+	        	mainSeqData["seqs"][currentSeqHover]["name"];
+	        }
+
+			if(currentPoint[1] < (numOfSeqs * cellHeight) & 
+				currentPoint[0] < (numOfBases * cellWidth)){
+				$(fadeInBox).fadeIn(500);
+			}else{
+				$(fadeInBox).hide();
+			}
+	    });
+	  };
+	//var painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, baseColors);
+    function setUpSliders(maxSeqs, maxBases){
+    	$( "#bottomSlider", canvasDiv ).css("left", nameOffSet);
+    	$( "#bottomSlider", canvasDiv ).css("width", numOfBases * cellWidth);
+    	$( "#rightSlider" ).css("height", numOfSeqs * cellHeight);
+	    $( "#bottomSlider" ).slider({
+	      range: "min",
+	      min: 0,
+	      max: Math.max(maxBases- numOfBases, 0),
+	      value: 0,
+	      slide :function(event, ui){
+	      	baseStart = ui.value;
+	      	needToPaint = true;
+	      	paint(mainSeqData["seqs"]);
+			placeBasePos();
+	      }
+	      });
+	    $( "#rightSlider" ).slider({
+	      range: "max",
+	      min: 0,
+	      max: Math.max(maxSeqs- numOfSeqs, 0),
+	      value: maxSeqs,
+	      orientation: "vertical", slide :function(event, ui){
+	      	needToPaint = true;
+	      	seqStart = maxSeqs - numOfSeqs - ui.value;
+	      	paint(mainSeqData["seqs"]);
+	      }
+	    });
+    }
     var mainSeqData2, mainData2;
     
     ajax('/ssv/mainSeqData', function(msd){ mainSeqData = msd; });
@@ -388,16 +538,59 @@ $(document).ready(function(){
 			SeqViewer.updateCanvas();
 			SeqViewer.setUpSliders();
 			SeqViewer.paint();
+			SeqViewer.painter.placeBasePos(SeqViewer.context, SeqViewer.baseStart);
 			
 			SeqViewer2.updateCanvas();
 			SeqViewer2.setUpSliders();
 			SeqViewer2.paint();
+			SeqViewer2.painter.placeBasePos(SeqViewer.context, SeqViewer.baseStart);
+			//updateCanvas();
+			//setUpSliders(mainData["numReads"], mainData["maxLen"] );
+			//painter.nSeqs = numOfSeqs;
+			//painter.nBases = numOfBases;
+			//SeqViewer.painter.paintSeqs(context, mainSeqData["seqs"], seqStart, baseStart);
+			//paint(mainSeqData["seqs"]);
+			//placeBasePos();
 		});
 		SeqViewer.setUp();
 		SeqViewer.paint();
 		SeqViewer2.setUp();
 		SeqViewer2.paint();
+		//setUpCanvas();
+		
+		//setUpSliders(mainData["numReads"],mainData["maxLen"] );
+		//painter.nSeqs = numOfSeqs;
+		//painter.nBases = numOfBases;
+		//painter.paintSeqs(context, mainSeqData["seqs"], seqStart, baseStart);
+		//paint(mainSeqData["seqs"]);
+		console.log(numOfBases);
+		console.log(mainData["maxLen"]);
+		console.log(mainData["maxLen"] - numOfBases);
+		console.log(numOfSeqs);
+		console.log(mainData["numReads"]);
+		console.log(mainData["numReads"] - numOfSeqs);
+		//addMouseScrollListener(canvas, mouseWheelUp,mouseWheelDown);
+		//addClickListener(canvas);
+		//placeBasePos();
+		//addHoverBoxListener(canvas, popUp);
+		
 	}
 	init();
+
+
+    function addClickListener(canvas){
+        var clicked = function(e){
+            var pt = getCursorPosition(e);
+            currentBase = Math.ceil(pt[0]/cellWidth) - nameOffSet/cellWidth + baseStart -1;
+            currentSeq = Math.ceil(pt[1]/cellHeight) + seqStart - 1;
+            console.log(pt);
+            console.log(currentSeq);
+            console.log(currentBase);
+            console.log(mainSeqData["seqs"][currentSeq]["name"]);
+            console.log(mainSeqData["seqs"][currentSeq]["seq"][currentBase]);
+            console.log(mainSeqData["seqs"][currentSeq]["qual"][currentBase]);
+        };
+        canvas.addEventListener("mousedown", clicked, false);
+    }
 
 });
