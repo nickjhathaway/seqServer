@@ -15,6 +15,9 @@ class ssv: public cppcms::application {
 private:
     utils::FileCache html_;
     utils::FileCache js_;
+    utils::FileCache d3_;
+    utils::FileCache c3_;
+    utils::FileCache c3css_;
     std::string fastqFilename_;
     std::vector<bibseq::readObject> reads_;
 
@@ -46,18 +49,28 @@ private:
         response().content_type("text/javascript");
     }
 
+    void ret_css(){
+        response().content_type("text/css");
+    }
+
 public:
     ssv(cppcms::service& srv, std::string name,
     		std::string fastqFile)
         : cppcms::application(srv)
         , html_(make_path("../resources/index.html"))
         , js_(make_path("../resources/main.js"))
+    		, d3_(make_path("../resources/jsLibs/d3/d3.v3.min.js"))
+    		, c3_(make_path("../resources/jsLibs/c3/c3.min.js"))
+    		, c3css_(make_path("../resources/css/c3.css"))
     		, fastqFilename_(fastqFile)
     {
       dispMap(&ssv::mainData, "mainData");
       dispMap(&ssv::mainSeqData, "mainSeqData");
       dispMap_1arg(&ssv::printHello, "hello", "(\\w+)");
       dispMap(&ssv::js, "js");
+      dispMap(&ssv::d3js, "d3");
+      dispMap(&ssv::c3js, "c3");
+      dispMap(&ssv::c3css, "c3css");
       dispMapRoot(&ssv::html);
       mapper().root(name);
   		std::cout << "reading data" << std::endl;
@@ -101,6 +114,21 @@ public:
       ret_js();
       response().out() << js_.get();
     }
+    void d3js(){
+      ret_js();
+      response().out() << d3_.get();
+    }
+
+    void c3js(){
+      ret_js();
+      response().out() << c3_.get();
+    }
+
+    void c3css(){
+    	ret_css();
+      response().out() << c3css_.get();
+    }
+
 };
 
 cppcms::json::object server_config(std::string name){

@@ -4,6 +4,11 @@
   <head>
 	<title>SeaSlug Proto</title>
 	<style>	
+	#qualChart {
+		position: relative;
+		clear: both;
+		top: 80px;
+	}
 	.SeqView {
 		position: relative;
 		clear: both;
@@ -64,10 +69,15 @@
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-	<script src="http://d3js.org/d3.v3.js"></script>
+
   </head>
   <body>
+	<script src="/ssv/d3"></script>
+	<script src="/ssv/c3"></script>
+	<link rel="stylesheet" href="/ssv/c3css"></script>
+	
     <script src="/ssv/js"></script>
+
     <div id="canvasDiv1" class = "SeqView">
     	<div id="rightSlider"></div>
 	    <canvas id="canvas"></canvas>
@@ -77,14 +87,8 @@
       	</div>
       	<div id="select"></div>
     </div>
-    <div id="canvasDiv2" class = "SeqView">
-    	<div id="rightSlider"></div>
-	    <canvas id="canvas"></canvas>
-	    <div id="bottomSlider"></div>
-	    <div id="pop-up" class = "2">
-        	<p id="info"></p>
-      	</div>
-      	<div id="select"></div>
+    <div id = "qualChart">
+    	
     </div>
   </body>
 </html>

@@ -161,6 +161,14 @@ $(document).ready(function(){
 		this.baseStart = 0;
 		this.currentSeq = 0;
 		this.currentBase = 0;
+		this.chart = c3.generate({
+			bindto: '#qualChart',
+		    data: {
+		        json: {
+		            qual: this.seqs[this.currentSeq]["qual"]
+		        }
+		    }
+		});
 		//
 	};
 	
@@ -281,6 +289,13 @@ $(document).ready(function(){
         console.log(this.seqs[this.currentSeq]["seq"][this.currentBase]);
         console.log(this.seqs[this.currentSeq]["qual"][this.currentBase]);
         this.setSelector();
+        var currentQual = this.seqs[this.currentSeq]["qual"];
+		this.chart.load({
+	        json: {
+	            qual: this.seqs[this.currentSeq]["qual"]
+	        }
+	    });
+
     };
    SeqView.prototype.setUpListeners = function(){
    	// add scrolling listener
@@ -379,25 +394,21 @@ $(document).ready(function(){
     
     ajax('/ssv/mainSeqData', function(msd){ mainSeqData = msd; });
 	ajax('/ssv/mainData', function(md){ mainData = md; });
-	
+
 	var SeqViewer = new SeqView("canvasDiv1", mainSeqData["seqs"], mainData, cellWidth, cellHeight, baseColors);
-	var SeqViewer2 = new SeqView("canvasDiv2", mainSeqData["seqs"], mainData, cellWidth, cellHeight, baseColors);
 	
 	function init(){
 		$(window).bind("resize", function(){
 			SeqViewer.updateCanvas();
 			SeqViewer.setUpSliders();
 			SeqViewer.paint();
-			
-			SeqViewer2.updateCanvas();
-			SeqViewer2.setUpSliders();
-			SeqViewer2.paint();
 		});
 		SeqViewer.setUp();
 		SeqViewer.paint();
-		SeqViewer2.setUp();
-		SeqViewer2.paint();
 	}
 	init();
+
+
+
 
 });
