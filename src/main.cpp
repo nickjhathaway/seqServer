@@ -5,6 +5,7 @@
 #include <cppcms/url_mapper.h>
 #include <cppcms/applications_pool.h>
 #include <seqTools.h>
+#include <bibcpp.h>
 #include <cppitertools/range.hpp>
 #include "file_cache.hpp"
 #include "ip.hpp"
@@ -19,7 +20,9 @@ private:
     utils::FileCache c3_;
     utils::FileCache c3css_;
     std::string fastqFilename_;
-    std::vector<bibseq::readObject> reads_;
+    std::unordered_map<std::string,std::vector<bibseq::readObject>>reads_;
+    std::unordered_map<std::string, std::string> seqLocations_;
+    std::string clusteringDir_;
 
     static bfs::path make_path(const bfs::path fn){
         return fn; // TODO: make absolute path, or from config file?
@@ -55,17 +58,17 @@ private:
 
 public:
     ssv(cppcms::service& srv, std::string name,
-    		std::string fastqFile)
+    		std::string clusDir)
         : cppcms::application(srv)
         , html_(make_path("../resources/index.html"))
         , js_(make_path("../resources/main.js"))
     		, d3_(make_path("../resources/jsLibs/d3/d3.v3.min.js"))
     		, c3_(make_path("../resources/jsLibs/c3/c3.min.js"))
     		, c3css_(make_path("../resources/css/c3.css"))
-    		, fastqFilename_(fastqFile)
+    		, clusteringDir_(clusDir)
     {
-      dispMap(&ssv::mainData, "mainData");
-      dispMap(&ssv::mainSeqData, "mainSeqData");
+    	dispMap_1arg(&ssv::mainData, "mainData", "(\\w+)");
+    	dispMap_1arg(&ssv::mainSeqData, "mainSeqData", "(\\w+)");
       dispMap(&ssv::colorsData, "baseColors");
       dispMap_1arg(&ssv::printHello, "hello", "(\\w+)");
       dispMap(&ssv::js, "js");
@@ -74,18 +77,19 @@ public:
       dispMap(&ssv::c3css, "c3css");
       dispMapRoot(&ssv::html);
       mapper().root(name);
-  		std::cout << "reading data" << std::endl;
-    	bibseq::readObjectIO reader;
-    	reader.read("fastq", fastqFilename_, false);
-    	reads_ = reader.reads;
     }
 
-    void mainData(){
+    void mainData(std::string seqName){
       ret_json();
+      auto search = reads_.find(seqName);
+      if(search == reads_.end()){
+      	bibseq::readObjectIO reader;
+      	//reader.read()
+      }
       cppcms::json::value r;
       r["numReads"] = reads_.size();
       uint32_t maxLen = 0;
-      bibseq::readVec::getMaxLength(reads_, maxLen);
+      //bibseq::readVec::getMaxLength(reads_, maxLen);
       r["maxLen"] = maxLen;
       response().out() << r;
     }
@@ -111,16 +115,17 @@ public:
       response().out() << r;
     }
 
-    void mainSeqData(){
+    void mainSeqData(std::string seqName){
     	std::stringstream ss;
       ret_json();
       cppcms::json::value r;
       auto& c = r["seqs"];
+      /*
       for(const auto & pos : iter::range(reads_.size())){
         c[pos]["seq"] = reads_[pos].seqBase_.seq_;
         c[pos]["name"] = reads_[pos].seqBase_.name_;
         c[pos]["qual"] = reads_[pos].seqBase_.qual_;
-      }
+      }*/
       response().out() << r;
     }
 
@@ -153,6 +158,57 @@ public:
 
 };
 
+bool checkForSubStrs(const std::string & str,
+		const std::vector<std::string> & contains){
+	for(const auto & s : contains){
+		if(str.find(s) != std::string::npos){
+			return 0;
+		}
+	}
+	return false;
+}
+
+void listAllFilesHelper(const boost::filesystem::path & dirName, bool recursive,
+		std::map<boost::filesystem::path, bool> & files,
+		uint32_t currentLevel,
+		uint32_t levels){
+	boost::filesystem::path dir(dirName);
+	boost::filesystem::directory_iterator end_iter;
+	if(boost::filesystem::exists(dir) && boost::filesystem::is_directory(dir)){
+	  for(boost::filesystem::directory_iterator dir_iter(dir); dir_iter != end_iter ; ++dir_iter){
+	  	boost::filesystem::path current = dir_iter->path();
+	  	if(boost::filesystem::is_directory(dir_iter->path())){
+	  		files[current] = true;
+	  		if(recursive && currentLevel <levels){
+	  			listAllFilesHelper(current, recursive, files,
+	  					currentLevel + 1, levels);
+	  		}
+	  	}else{
+	  		files[current] = false;
+	  	}
+	  }
+	}
+}
+
+
+std::map<boost::filesystem::path, bool> listAllFiles(const std::string & dirName,
+		bool recursive,const std::vector<std::string>& contains,
+		uint32_t levels = std::numeric_limits<uint32_t>::max()){
+	std::map<boost::filesystem::path, bool> files;
+	listAllFilesHelper(dirName, recursive, files, 1, levels);
+	if(!contains.empty()){
+		std::map<boost::filesystem::path, bool> specificFiles;
+		for(const auto & f : files){
+			if(checkForSubStrs(f.first.string(), contains)){
+				specificFiles.emplace(f);
+			}
+		}
+		return specificFiles;
+	}
+	return files;
+}
+
+
 cppcms::json::object server_config(std::string name){
   cppcms::json::object args;
   args["service"]["api"] = "http";
@@ -164,16 +220,21 @@ cppcms::json::object server_config(std::string name){
 
 int main(int argc, char** argv){
 	bibseq::seqSetUp setUp(argc, argv);
-	std::string fastqFile = "";
-	setUp.setOption(fastqFile, "-fastq", "Name of fastq file", true);
+	std::string clusDir = "";
+	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
 	setUp.finishSetUp(std::cout);
-
+	//bibseq::table infoTab(clusDir, "\t", true);
+	auto files = listAllFiles(clusDir, true, std::vector<std::string> {});
+	for(const auto & f : files){
+		std::cout << f.first << "\n";
+	}
+	return 0;
   const std::string name = "/ssv";
   auto config = server_config(name);
 
   try {
       cppcms::service app(config);
-      app.applications_pool().mount(cppcms::applications_factory<ssv>(name, fastqFile));
+      app.applications_pool().mount(cppcms::applications_factory<ssv>(name, clusDir));
       app.run();
   } catch(const std::exception& e) {
       std::cerr << e.what() << std::endl;
