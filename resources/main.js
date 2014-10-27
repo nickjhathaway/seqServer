@@ -167,6 +167,11 @@ $(document).ready(function(){
 		        json: {
 		            qual: this.seqs[this.currentSeq]["qual"]
 		        }
+		    }, 
+			grid: {
+		        y: {
+		            lines: [{value: 20}]
+		        }
 		    }
 		});
 		//
@@ -181,7 +186,7 @@ $(document).ready(function(){
 	
 	SeqView.prototype.setUpCanvas = function(){
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
-		$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
+		$(this.masterDiv).height((window.innerHeight - 60) * 0.80);
 		this.canvas.width = $(this.masterDiv).width() * 0.98;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		this.painter.nBases = Math.floor((this.canvas.width - this.painter.cw - this.painter.nameOffSet)/this.painter.cw);
@@ -189,10 +194,10 @@ $(document).ready(function(){
 	};
 	
 	SeqView.prototype.updateCanvas = function(){
-		var changingHeight = (window.innerHeight - 60) * 0.98;
+		var changingHeight = (window.innerHeight - 60) * 0.80;
 		var changingWidth = (window.innerWidth - 10) * 0.98;
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
-		$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
+		$(this.masterDiv).height((window.innerHeight - 60) * 0.80);
 		this.canvas.width = $(this.masterDiv).width() * 0.98;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		if(changingHeight > this.canvas.height){
@@ -357,11 +362,7 @@ $(document).ready(function(){
     }.bind(this)).bind(this);
    };
 
-    var baseColors = {};
-    baseColors['A'] = "#ff8787";
-    baseColors['G'] = "#ffffaf";
-    baseColors['C'] = "#afffaf";
-    baseColors['T'] = "#87afff";
+
     var cellWidth = 20;
     var cellHeight = 25;
 	function drawCircle(x, y, radius, color, borderColor){
@@ -390,10 +391,16 @@ $(document).ready(function(){
         $.ajax({ url: url, dataType: 'json', async: true,
                  success: function(ct){ func(ct); } });
     }
-    var mainSeqData2, mainData2;
     
+    var mainSeqData2, mainData2;
+        var baseColors = {};
+    /*baseColors['A'] = "#ff8787";
+    baseColors['G'] = "#ffffaf";
+    baseColors['C'] = "#afffaf";
+    baseColors['T'] = "#87afff";*/
     ajax('/ssv/mainSeqData', function(msd){ mainSeqData = msd; });
 	ajax('/ssv/mainData', function(md){ mainData = md; });
+	ajax('/ssv/baseColors', function(bc){ baseColors = bc; });
 
 	var SeqViewer = new SeqView("canvasDiv1", mainSeqData["seqs"], mainData, cellWidth, cellHeight, baseColors);
 	

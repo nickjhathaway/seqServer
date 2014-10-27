@@ -66,6 +66,7 @@ public:
     {
       dispMap(&ssv::mainData, "mainData");
       dispMap(&ssv::mainSeqData, "mainSeqData");
+      dispMap(&ssv::colorsData, "baseColors");
       dispMap_1arg(&ssv::printHello, "hello", "(\\w+)");
       dispMap(&ssv::js, "js");
       dispMap(&ssv::d3js, "d3");
@@ -86,6 +87,27 @@ public:
       uint32_t maxLen = 0;
       bibseq::readVec::getMaxLength(reads_, maxLen);
       r["maxLen"] = maxLen;
+      response().out() << r;
+    }
+
+    void colorsData(){
+      ret_json();
+      cppcms::json::value r;
+      r["A"] = "#ff8787";
+      r["a"] = "#ff8787";
+
+      r["C"] = "#afffaf";
+      r["c"] = "#afffaf";
+
+      r["G"] = "#ffffaf";
+      r["g"] = "#ffffaf";
+
+      r["T"] = "#87afff";
+      r["t"] = "#87afff";
+
+      r["-"] = "e6e6e6";
+
+
       response().out() << r;
     }
 
