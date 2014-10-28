@@ -118,6 +118,12 @@
 			updateTable(tab,popInfoTab, ['popUID','popReadCntTot','popInputClusterCnt',
 			'hapPopFrac','hapSumSampPopFrac','hapMeanSampFrac','hapReadFrac','hapSampCNT',
 			'hapSampFrac','hapReadCNT','hapClusterCNT','clusterNames','hapConsesus','protein'] );
+			var xLabs = [];
+			for(obj in popInfoTab){
+				//console.log(popInfoTab[obj]["popUID"]);
+				xLabs.push(popInfoTab[obj]["popUID"]);
+			}
+			//console.log(xLabs);
 			 chart = c3.generate({
 		        data: {
 		            json: popInfoTab,
@@ -127,14 +133,18 @@
 		            }, 
 		            axes: {
 		            	hapSampCNT :'y',
-		            	hapReadCNT : 'y2'
+		            	hapReadCNT :'y2'
 		            }, 
 		            type: 'bar'
 		        },
 		        axis: {
 		            x: {
-		//                type: 'category'
-							//categories: 
+		                type: 'category',
+						categories: xLabs ,
+			            tick: {
+			                rotate: 75
+			            },
+			            height: 130
 		            },
 		            y2: {
 		            	show:true
