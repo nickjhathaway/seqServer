@@ -131,7 +131,8 @@
 			var popInfoTab = mainPopInfoTab["tab"];
 			var numericCols = mainPopInfoTab["numericColNames"];
 			updateTable(tab,popInfoTab,  columnNames);
-			console.log(popInfoTab[0]);
+			//updateTable(tab,popInfoTab,  [columns[0]]);
+			//console.log(popInfoTab[0]);
 			function updateTableOnClick() {         
 			     var allVals = [];
 			     $('#popTableMenu :checked').each(function() {
@@ -150,7 +151,6 @@
 				.append("input")
 					.attr("type","checkbox")
 					.attr("name", "check")
-					.attr("checked", true)
 					.attr("value",function(d){return d;})
 					.attr("id", function(d){return d;})
 					
