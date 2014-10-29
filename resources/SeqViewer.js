@@ -379,7 +379,7 @@ var range = function(start, end, step) {
 	    
    };
 	
-	function SeqView(viewName, seqs, seqData, cellWidth, cellHeight, baseColors){
+	function SeqView(viewName, seqs, seqData, cellWidth, cellHeight, baseColors, qualChartName){
 		//need to add style and html, currently just there
 		//retrieve html elements 
 		this.masterDiv = document.getElementById(viewName);
@@ -408,7 +408,7 @@ var range = function(start, end, step) {
 		this.currentSeq = 0;
 		this.currentBase = 0;
 		this.chart = c3.generate({
-			bindto: '#qualChart',
+			bindto: 'qualChartName',
 		    data: {
 		        json: {
 		            qual: this.seqs[this.currentSeq]["qual"]

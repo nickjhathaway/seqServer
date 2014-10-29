@@ -109,8 +109,21 @@
 			ajax('/ssv/mainFinalSampleData/' +currentPopName + "/" + currentSampName, function(md){ mainFinalData = md; });
 			ajax('/ssv/baseColors', function(bc){ baseColors = bc; });
 			
-			var SeqViewer = new SeqView("canvasDiv1", mainSeqData["seqs"], mainData, cellWidth, cellHeight, baseColors);
-			var SeqViewer2 = new SeqView("canvasDiv2", mainFinalSeqData["seqs"], mainFinalData, cellWidth, cellHeight, baseColors);
+			var SeqViewer = new SeqView("canvasDiv1", mainSeqData["seqs"], mainData, cellWidth, cellHeight, baseColors, "#qualChart");
+			SeqViewer.chart = c3.generate({
+			bindto: '#qualChart',
+		    data: {
+		        json: {
+		            qual: SeqViewer.seqs[SeqViewer.currentSeq]["qual"]
+		        }
+		    }, 
+			grid: {
+		        y: {
+		            lines: [{value: 20}]
+		        }
+		    }
+		});
+			var SeqViewer2 = new SeqView("canvasDiv2", mainFinalSeqData["seqs"], mainFinalData, cellWidth, cellHeight, baseColors, "#qualChartFinal");
 			SeqViewer2.chart = c3.generate({
 			bindto: '#qualChartFinal',
 		    data: {
