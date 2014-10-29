@@ -57,6 +57,7 @@ bool checkForSubStrs(const std::string & str,
 	return false;
 }
 
+
 void listAllFilesHelper(const boost::filesystem::path & dirName, bool recursive,
 		std::map<boost::filesystem::path, bool> & files,
 		uint32_t currentLevel,
@@ -173,7 +174,10 @@ private:
 
     utils::FileCache infoHtml_;
     utils::FileCache sampHtml_;
+    utils::FileCache oneSampleHtml_;
+    utils::FileCache dotHtml_;
     utils::FileCache popHtml_;
+
 
     utils::FilesCache jsLibs_;
     utils::FileCache js_;
@@ -183,8 +187,18 @@ private:
 
     std::string fastqFilename_;
     std::string currentPopName_;
-    std::unordered_map<std::string,std::vector<bibseq::readObject>>reads_;
+    std::string currentSampName_;
+    std::unordered_map<std::string,std::vector<bibseq::readObject>> reads_;
     std::unordered_map<std::string, std::string> readsLocations_;
+
+    std::unordered_map<std::string,std::unordered_map<std::string,std::vector<bibseq::readObject>>> initialReads_;
+    std::unordered_map<std::string,std::unordered_map<std::string, std::string>> initialReadsLocations_;
+
+    std::unordered_map<std::string,std::unordered_map<std::string,std::vector<bibseq::readObject>>> finalReads_;
+    std::unordered_map<std::string,std::unordered_map<std::string, std::string>> finalReadsLocations_;
+
+    std::unordered_map<std::string,std::unordered_map<std::string, std::string>> dotFilesLocations_;
+
     std::unordered_map<std::string, std::string> popInfoLocations_;
     std::unordered_map<std::string, std::string> allInfoLocations_;
     std::string clusteringDir_;
@@ -229,6 +243,8 @@ public:
         , html_(make_path("../resources/index.html"))
 				, infoHtml_(make_path("../resources/indexInfoPage.html"))
 				, sampHtml_(make_path("../resources/sampInfoPage.html"))
+				, oneSampleHtml_(make_path("../resources/oneSampleView.html"))
+    		, dotHtml_(make_path("../resources/minTreeView.html"))
     		, popHtml_(make_path("../resources/indexSeqViewerTemplate.html"))
     		, jsLibs_(std::vector<bfs::path>{make_path("../resources/jsLibs/d3/d3.v3.min.js"),
     																		 make_path("../resources/jsLibs/c3/c3.min.js"),
@@ -247,23 +263,46 @@ public:
       dispMap(&ssv::colorsData, "baseColors");
       dispMap_1arg(&ssv::showInfo, "info", "(\\w+)");
       dispMap_1arg(&ssv::showSampInfo, "samp", "(\\w+)");
+
+      dispMap_1arg(&ssv::showOneSampleInfo, "showOneSampleInfo", "(\\w+)");
+
       dispMap_1arg(&ssv::showSampInfoData, "sampInfo", "(\\w+)");
       dispMap_1arg(&ssv::showPopData, "pop", "(\\w+)");
       dispMap_1arg(&ssv::showPopInfoData, "popInfo", "(\\w+)");
+
+      dispMap_2arg(&ssv::showMinTree, "showMinTree", "(\\w+)/(\\w+)");
+
+      dispMap_2arg(&ssv::mainSampleData, "mainSampleData", "(\\w+)/(\\w+)");
+      dispMap_2arg(&ssv::mainSampleSeqData, "mainSampleSeqData", "(\\w+)/(\\w+)");
+
+      dispMap_2arg(&ssv::mainFinalSampleData, "mainFinalSampleData", "(\\w+)/(\\w+)");
+      dispMap_2arg(&ssv::mainFinalSampleSeqData, "mainFinalSampleSeqData", "(\\w+)/(\\w+)");
+
+
+      dispMap_2arg(&ssv::mainSampleTableData, "mainSampleTableData", "(\\w+)/(\\w+)");
+      dispMap_2arg(&ssv::mainSampleDotData, "mainSampleDotData", "(\\w+)/(\\w+)");
+
+      dispMap_1arg(&ssv::mainSampleNames, "mainSampleNames", "(\\w+)");
+
+
+
       dispMap(&ssv::js, "js");
       dispMap(&ssv::jsLibs, "jsLibs");
       dispMap(&ssv::c3css, "c3css");
       dispMap(&ssv::SeqViwer, "SeqViewer");
       dispMap(&ssv::mipNames, "mipNames");
+      dispMap(&ssv::currentSampName, "currentSampName");
       dispMap(&ssv::currentPopName, "currentPopName");
       dispMapRoot(&ssv::html);
       mapper().root(name);
+
     	auto files = listAllFiles(clusDir, true, bibseq::VecStr {"analysis"});
     	for(const auto & f : files){
     		auto toks = bibseq::tokenizeString(f.first.string(), "/");
     		auto aPos = bibseq::find(toks,"analysis" );
     		--aPos;
     		files_[*aPos].emplace_back(f.first);
+    		//std::cout << (*aPos) + "_clustered.fastq" << std::endl;
     		if(f.first.string().find((*aPos) + ".fastq" ) != std::string::npos &&
     				f.first.string().find("population")!= std::string::npos){
     			readsLocations_[*aPos] = f.first.string();
@@ -271,12 +310,18 @@ public:
     			allInfoLocations_[*aPos] = f.first.string();
     		}else if (f.first.string().find("populationCluster.tab.txt")!= std::string::npos){
     			popInfoLocations_[*aPos] = f.first.string();
-    		}
-    	}
-    	for(const auto & mip : files_){
-    		//std::cout << mip.first << std::endl;
-    		for(const auto & p : mip.second){
-    			//std::cout << "\t" << p << std::endl;
+    		}else if (f.first.string().find("originals") != std::string::npos){
+    			std::string samp = bibseq::removeExtention(toks.back());
+      		initialReadsLocations_[*aPos][samp] = f.first.string();
+      		//std::cout << f.first.string() << std::endl;
+    		}else if (f.first.string().find("final") != std::string::npos){
+    			std::string samp = bibseq::removeExtention(toks.back());
+      		finalReadsLocations_[*aPos][samp] = f.first.string();
+      		//std::cout << f.first.string() << std::endl;
+    		}else if (f.first.string().find(".dot") != std::string::npos &&
+    				f.first.string().find(".pdf") == std::string::npos){
+      		std::string samp = bibseq::removeExtention(toks.back());
+      		dotFilesLocations_[*aPos][samp] = f.first.string();
     		}
     	}
     }
@@ -287,20 +332,12 @@ public:
     	r = currentPopName_;
     	response().out() << r;
     }
-    void mainData(){
-      ret_json();
-      //if reads haven't been read yet, read them in
-      if(reads_.find(currentPopName_) == reads_.end()){
-      	bibseq::readObjectIO reader;
-      	reader.read("fastq", readsLocations_[currentPopName_],false);
-      	reads_[currentPopName_] = reader.reads;
-      }
-      cppcms::json::value r;
-      r["numReads"] = reads_[currentPopName_].size();
-      uint32_t maxLen = 0;
-      bibseq::readVec::getMaxLength(reads_[currentPopName_], maxLen);
-      r["maxLen"] = maxLen;
-      response().out() << r;
+
+    void currentSampName(){
+    	ret_json();
+    	cppcms::json::value r;
+    	r = currentSampName_;
+    	response().out() << r;
     }
 
     void mipNames(){
@@ -323,10 +360,25 @@ public:
     	response().out() << infoHtml_.get();
     }
 
+    void showOneSampleInfo(std::string sampName){
+    	std::cout << "here" << std::endl;
+    	//currentPopName_ = mipName;
+    	currentSampName_ = sampName;
+    	std::cout << currentPopName_ << " " << currentSampName_ << std::endl;
+    	response().out() << oneSampleHtml_.get();
+    }
+
     void showSampInfo(std::string mipName){
     	currentPopName_ = mipName;
     	response().out() << sampHtml_.get();
     }
+
+    void showMinTree(std::string mipName, std::string sampname){
+    	currentPopName_ = mipName;
+    	currentSampName_ = sampname;
+    	response().out() << dotHtml_.get();
+    }
+
     void showPopInfoData(std::string mipName){
     	ret_json();
     	//std::cout << "mipName" << std::endl;
@@ -341,6 +393,22 @@ public:
     	auto ret = tableToJsonRowWise(bibseq::table(allInfoLocations_[mipName], "\t", true));
       response().out() << ret;
     }
+    void mainSampleNames(std::string mipName){
+    	/*std::cout << "msn" << std::endl;
+    	for(const auto & d : dotFilesLocations_){
+    		std::cout << d.first << std::endl;
+    		for(const auto & s : d.second){
+    			std::cout << s.first << std::endl;
+    		}
+    	}*/
+    	ret_json();
+    	cppcms::json::value ret;
+    	auto sampNames =  bibseq::getVectorOfMapKeys(dotFilesLocations_[mipName]);
+    	bibseq::sort(sampNames);
+    	ret = sampNames;
+      response().out() << ret;
+    }
+
 
     void colorsData(){
       ret_json();
@@ -383,6 +451,121 @@ public:
       }
       response().out() << r;
     }
+
+    void mainData(){
+      ret_json();
+      //if reads haven't been read yet, read them in
+      if(reads_.find(currentPopName_) == reads_.end()){
+      	bibseq::readObjectIO reader;
+      	reader.read("fastq", readsLocations_[currentPopName_],false);
+      	reads_[currentPopName_] = reader.reads;
+      }
+      cppcms::json::value r;
+      r["numReads"] = reads_[currentPopName_].size();
+      uint32_t maxLen = 0;
+      bibseq::readVec::getMaxLength(reads_[currentPopName_], maxLen);
+      r["maxLen"] = maxLen;
+      response().out() << r;
+    }
+
+    void mainSampleDotData(std::string mipname, std::string sampname){
+    	currentSampName_ = sampname;
+
+    	auto ret = bibseq::dotToJson(dotFilesLocations_[mipname][sampname]);
+    	ret_json();
+    	response().out() << ret;
+    }
+
+    void mainSampleTableData(std::string mipName, std::string sampname){
+    	currentSampName_ = sampname;
+    	ret_json();
+    	//std::cout << "mipName" << std::endl;
+    	//std::cout << popInfoLocations_[mipName] << std::endl;
+    	auto tab = bibseq::table(allInfoLocations_[mipName], "\t", true);
+    	auto outTab = tab.getRows("sName", sampname);
+    	auto ret = tableToJsonRowWise(outTab);
+      response().out() << ret;
+    }
+
+    void mainSampleSeqData(std::string mipname, std::string sampname){
+    	currentSampName_ = sampname;
+      ret_json();
+      cppcms::json::value r;
+      auto& c = r["seqs"];
+      //if reads haven't been read yet, read them in
+      if(initialReads_[mipname][sampname].empty()){
+      	bibseq::readObjectIO reader;
+      	reader.read("fastq", initialReadsLocations_[mipname][sampname],false);
+      	initialReads_[mipname][sampname] = reader.reads;
+      }
+      //std::cout << currentPopName_ << std::endl;
+      //std::cout << readsLocations_[currentPopName_] << std::endl;
+      for(const auto & pos : iter::range(initialReads_[mipname][sampname].size())){
+      	//std::cout << "pos" << std::endl;
+        c[pos]["seq"] = initialReads_[mipname][sampname][pos].seqBase_.seq_;
+        c[pos]["name"] = initialReads_[mipname][sampname][pos].seqBase_.name_;
+        c[pos]["qual"] = initialReads_[mipname][sampname][pos].seqBase_.qual_;
+      }
+      response().out() << r;
+    }
+
+    void mainSampleData(std::string mipname, std::string sampname){
+    	currentSampName_ = sampname;
+      ret_json();
+      //if reads haven't been read yet, read them in
+      if(initialReads_[mipname][sampname].empty()){
+      	bibseq::readObjectIO reader;
+      	reader.read("fastq", initialReadsLocations_[mipname][sampname],false);
+      	initialReads_[mipname][sampname] = reader.reads;
+      }
+      cppcms::json::value r;
+      r["numReads"] = initialReads_[mipname][sampname].size();
+      uint32_t maxLen = 0;
+      bibseq::readVec::getMaxLength(initialReads_[mipname][sampname], maxLen);
+      r["maxLen"] = maxLen;
+      response().out() << r;
+    }
+
+    void mainFinalSampleSeqData(std::string mipname, std::string sampname){
+    	currentSampName_ = sampname;
+      ret_json();
+      cppcms::json::value r;
+      auto& c = r["seqs"];
+      //if reads haven't been read yet, read them in
+      if(finalReads_[mipname][sampname].empty()){
+      	bibseq::readObjectIO reader;
+      	reader.read("fastq", finalReadsLocations_[mipname][sampname],false);
+      	finalReads_[mipname][sampname] = reader.reads;
+      }
+      //std::cout << currentPopName_ << std::endl;
+      //std::cout << readsLocations_[currentPopName_] << std::endl;
+      for(const auto & pos : iter::range(finalReads_[mipname][sampname].size())){
+      	//std::cout << "pos" << std::endl;
+        c[pos]["seq"] = finalReads_[mipname][sampname][pos].seqBase_.seq_;
+        c[pos]["name"] = finalReads_[mipname][sampname][pos].seqBase_.name_;
+        c[pos]["qual"] = finalReads_[mipname][sampname][pos].seqBase_.qual_;
+      }
+      response().out() << r;
+    }
+
+    void mainFinalSampleData(std::string mipname, std::string sampname){
+    	currentSampName_ = sampname;
+      ret_json();
+      //if reads haven't been read yet, read them in
+      if(finalReads_[mipname][sampname].empty()){
+      	bibseq::readObjectIO reader;
+      	reader.read("fastq", finalReadsLocations_[mipname][sampname],false);
+      	finalReads_[mipname][sampname] = reader.reads;
+      }
+      cppcms::json::value r;
+      r["numReads"] = finalReads_[mipname][sampname].size();
+      uint32_t maxLen = 0;
+      bibseq::readVec::getMaxLength(finalReads_[mipname][sampname], maxLen);
+      r["maxLen"] = maxLen;
+      response().out() << r;
+    }
+
+
 
 
 

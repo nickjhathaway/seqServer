@@ -99,16 +99,26 @@
 		    }
 			var currentPopName;
 			ajax('/ssv/currentPopName', function(name){ currentPopName = name; });
+			var mNames;
+			ajax("/ssv/mainSampleNames/" + currentPopName, function(mn){ mNames = mn; });
 			$("title", "head").html(currentPopName);
 			$("body").append("<h1>" + currentPopName +"</h3>");
 			console.log(currentPopName);
 			$('<a>',{
-			    text: 'See Per Sample Data',
+			    text: 'See All Sample Data',
 			    title: 'Sample Data',
 			    href: "/ssv/samp/" + currentPopName,
 			    id: "samp"
 			}).appendTo('body');
-			$("body").append("<p></p>");
+			$("body").append("<h3>Each Sample</h3>");
+			console.log(mNames);
+			d3.select("body").selectAll("p")
+		    .data(mNames)
+		  	.enter()
+		  		.append("p")
+	  			.append("a")
+	  				.attr("href", function(d){console.log(d);return "/ssv/showOneSampleInfo/" + d;})
+	  				.html(function(d){return d;});
 			$('<a>',{
 			    text: 'See Population Data',
 			    title: 'Pop Data',
