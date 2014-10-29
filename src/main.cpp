@@ -14,19 +14,24 @@ namespace bfs = boost::filesystem;
 
 cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 	cppcms::json::value ret;
+	auto & outTab = ret["tab"];
 	std::unordered_map<uint32_t, bool> numCheck;
+	bibseq::VecStr numericCols;
 	for(const auto & colPos : iter::range(tab.columnNames_.size())){
 		numCheck[colPos] = bibseq::vectorOfNumberStringsDouble(tab.getColumn(colPos));
 	}
 	for(const auto & rowPos : iter::range(tab.content_.size())){
 		for(const auto & colPos : iter::range(tab.columnNames_.size())){
 			if(numCheck[colPos]){
-				ret[rowPos][tab.columnNames_[colPos]] = bibseq::lexical_cast<double>(tab.content_[rowPos][colPos]);
+				numericCols.emplace_back(tab.columnNames_[colPos]);
+				outTab[rowPos][tab.columnNames_[colPos]] = bibseq::lexical_cast<double>(tab.content_[rowPos][colPos]);
 			}else{
-				ret[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];
+				outTab[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];
 			}
 		}
 	}
+	ret["columnNames"] = tab.columnNames_;
+	ret["numericColNames"] = numericCols;
 	return ret;
 }
 cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab){
@@ -165,12 +170,17 @@ cppcms::json::value dotToJson(const std::string& dotFilename){
 class ssv: public cppcms::application {
 private:
     utils::FileCache html_;
-    utils::FileCache seqViewerHtml_;
+
+    utils::FileCache infoHtml_;
+    utils::FileCache sampHtml_;
+    utils::FileCache popHtml_;
+
+    utils::FilesCache jsLibs_;
     utils::FileCache js_;
-    utils::FileCache d3_;
-    utils::FileCache c3_;
+
     utils::FileCache SeqViwer_;
     utils::FileCache c3css_;
+
     std::string fastqFilename_;
     std::string currentPopName_;
     std::unordered_map<std::string,std::vector<bibseq::readObject>>reads_;
@@ -217,10 +227,17 @@ public:
     		std::string clusDir)
         : cppcms::application(srv)
         , html_(make_path("../resources/index.html"))
-    		, seqViewerHtml_(make_path("../resources/indexSeqViewerTemplate.html"))
+				, infoHtml_(make_path("../resources/indexInfoPage.html"))
+				, sampHtml_(make_path("../resources/sampInfoPage.html"))
+    		, popHtml_(make_path("../resources/indexSeqViewerTemplate.html"))
+    		, jsLibs_(std::vector<bfs::path>{make_path("../resources/jsLibs/d3/d3.v3.min.js"),
+    																		 make_path("../resources/jsLibs/c3/c3.min.js"),
+    																		 make_path("../resources/jsLibs/canvas2svg.js"),
+    																		 make_path("../resources/jsLibs/rgbcolor.js"),
+    																		 make_path("../resources/jsLibs/jspdf.min.js"),
+    																		 make_path("../resources/jsLibs/svgToPdf.js"),
+    																		 make_path("../resources/jsLibs/underscore-min.js")})
         , js_(make_path("../resources/main.js"))
-    		, d3_(make_path("../resources/jsLibs/d3/d3.v3.min.js"))
-    		, c3_(make_path("../resources/jsLibs/c3/c3.min.js"))
     		, SeqViwer_(make_path("../resources/SeqViewer.js"))
     		, c3css_(make_path("../resources/css/c3.css"))
     		, clusteringDir_(clusDir)
@@ -228,11 +245,13 @@ public:
     	dispMap(&ssv::mainData, "mainData");
     	dispMap(&ssv::mainSeqData, "mainSeqData");
       dispMap(&ssv::colorsData, "baseColors");
+      dispMap_1arg(&ssv::showInfo, "info", "(\\w+)");
+      dispMap_1arg(&ssv::showSampInfo, "samp", "(\\w+)");
+      dispMap_1arg(&ssv::showSampInfoData, "sampInfo", "(\\w+)");
       dispMap_1arg(&ssv::showPopData, "pop", "(\\w+)");
       dispMap_1arg(&ssv::showPopInfoData, "popInfo", "(\\w+)");
       dispMap(&ssv::js, "js");
-      dispMap(&ssv::d3js, "d3");
-      dispMap(&ssv::c3js, "c3");
+      dispMap(&ssv::jsLibs, "jsLibs");
       dispMap(&ssv::c3css, "c3css");
       dispMap(&ssv::SeqViwer, "SeqViewer");
       dispMap(&ssv::mipNames, "mipNames");
@@ -294,14 +313,32 @@ public:
     	}
     	response().out() << ret;
     }
-
     void showPopData(std::string mipName){
     	currentPopName_ = mipName;
-    	response().out() << seqViewerHtml_.get();
+    	response().out() << popHtml_.get();
+    }
+
+    void showInfo(std::string mipName){
+    	currentPopName_ = mipName;
+    	response().out() << infoHtml_.get();
+    }
+
+    void showSampInfo(std::string mipName){
+    	currentPopName_ = mipName;
+    	response().out() << sampHtml_.get();
     }
     void showPopInfoData(std::string mipName){
     	ret_json();
+    	//std::cout << "mipName" << std::endl;
+    	//std::cout << popInfoLocations_[mipName] << std::endl;
     	auto ret = tableToJsonRowWise(bibseq::table(popInfoLocations_[mipName], "\t", true));
+      response().out() << ret;
+    }
+    void showSampInfoData(std::string mipName){
+    	ret_json();
+    	//std::cout << "mipName" << std::endl;
+    	//std::cout << popInfoLocations_[mipName] << std::endl;
+    	auto ret = tableToJsonRowWise(bibseq::table(allInfoLocations_[mipName], "\t", true));
       response().out() << ret;
     }
 
@@ -357,15 +394,11 @@ public:
       ret_js();
       response().out() << js_.get();
     }
-    void d3js(){
+    void jsLibs(){
       ret_js();
-      response().out() << d3_.get();
+      response().out() << jsLibs_.get();
     }
 
-    void c3js(){
-      ret_js();
-      response().out() << c3_.get();
-    }
     void SeqViwer(){
       ret_js();
       response().out() << SeqViwer_.get();

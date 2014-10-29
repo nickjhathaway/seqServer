@@ -2,14 +2,19 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-	<title>SeaSlug Proto</title>
+	<title>Info Page</title>
 	<style>	
 	#qualChart {
 		position: relative;
 		clear: both;
 		top: 80px;
 	}
-	#popInfo {
+	#popTable {
+		position: relative;
+		clear: both;
+		top: 80px;
+	}
+	#chart {
 		position: relative;
 		clear: both;
 		top: 80px;
@@ -72,18 +77,48 @@
 
 	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/SeqViewer"></script>
   </head>
   <body>
-	<script src="/ssv/jsLibs"></script>
-	<script src="/ssv/js"></script>
+
 	<link rel="stylesheet" href="/ssv/c3css"></script>
 	
-    
-	
+    <script>
+    	$(document).ready(function(){
+		    function ajax(url, func){
+		        $.ajax({ url: url, dataType: 'json', async: false,
+		            success: function(ct){ func(ct); } });
+		    }
+		
+		    function ajaxAsync(url, func){
+		        $.ajax({ url: url, dataType: 'json', async: true,
+		                 success: function(ct){ func(ct); } });
+		    }
+			var currentPopName;
+			ajax('/ssv/currentPopName', function(name){ currentPopName = name; });
+			$("title", "head").html(currentPopName);
+			$("body").append("<h1>" + currentPopName +"</h3>");
+			console.log(currentPopName);
+			$('<a>',{
+			    text: 'See Per Sample Data',
+			    title: 'Sample Data',
+			    href: "/ssv/samp/" + currentPopName,
+			    id: "samp"
+			}).appendTo('body');
+			$("body").append("<p></p>");
+			$('<a>',{
+			    text: 'See Population Data',
+			    title: 'Pop Data',
+			    href: "/ssv/pop/" + currentPopName,
+			    id: "pop"
+			}).appendTo('body');
+		});
+		
+    </script>
 
-    
+
   </body>
 </html>

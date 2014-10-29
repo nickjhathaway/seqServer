@@ -51,49 +51,70 @@ var range = function(start, end, step) {
 	function createTable(divId) {
 		//create the table and return it to be manipulate
 		var table = d3.select(divId).append("table");
-		table.append("thead");
+		table.append("thead").append("tr");
 		table.append("tbody");
 		return table;
 	}
 	function updateTable(tab, data, columns){
+		
 		//ensure header row
 		var headerRow = tab.select("thead")
 			.selectAll("tr")
 			.data([1])
-			.enter()
-			.append("tr");
+			.enter();
 		//attach column name data to header
 		var header = tab.select("thead").select("tr")
 	        .selectAll("th")
-	        .data(columns);
-	   //create headers as needed and add bolding 
-	  header.enter()
-	        .append("th")
-	            .attr("style", "font-weight: bold; padding: 2px 4px;")
+	        .data(columns).text(function(column) { return column; });
+	    header
+	        .enter()
+			.append("th")
+				.attr("style", "font-weight: bold; padding: 2px 4px;")
 	            .text(function(column) { return column; });
+	   //create headers as needed and add bolding 
+	  /*header.enter()
+	        .append("th")*/
+	            
 	  //remove any headers that don't have data attached to them
+	  console.log(columns);
 	  header.exit()
         	.remove();
-	
+		var currentColor = "#e9e9e9";
 	    // create a row for each object in the data
 	    var newRows = tab.select("tbody").selectAll("tr")
 	        .data(data)
 	        .enter()
 	        .append("tr")
-	        	.style("background-color", "#e9e9e9");
+	        	.style("background-color",function(d,i){
+	        		if(i == 0){
+	        			return currentColor;
+	        		}else {
+	        			if (d[columns[0]] != data[i-1][columns[0]]){
+	        				if(currentColor == "#e9e9e9"){
+	        					currentColor = "#c9c9c9";
+	        				}else{
+	        					currentColor = "#e9e9e9";
+	        				}
+	        			}
+	        		}
+	        		return currentColor;
+	        		});
 		var rows = tab.select("tbody").selectAll("tr");
 	    //create a cell in each row for each column
 	    //console.log(rows);
 	    var cells = rows.selectAll("td")
 	        .data(function(row) {
-	            return columns.map(function(column) {
+	        	var ret = columns.map(function(column) {
 	                return {column: column, value: row[column]};
-	            });
+	            });         
+	            return ret;
+	            
 	        });
 	   	cells.enter()
 	        .append("td")
 	            .attr("style", "padding: 2px 4px;")
 	            .text(function(d) { return d.value; });
+	    cells.text(function(d) { return d.value; });
 	    //remove cells as needed
 	    cells.exit()
         	.remove();
@@ -272,7 +293,7 @@ var range = function(start, end, step) {
 	SeqPainter.prototype.paintSeq = function(seqContext, index, seq, start){
     	seqContext.textAlign = "center";
     	seqContext.textBaseline = "middle";
-    	seqContext.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+    	seqContext.font = "bold 15px Arial, sans-serif";
     	for(var wi = start; wi - start < this.nBases; wi++){
             if(wi < seq.length){
             	seqContext.fillStyle = this.bColors[seq[wi]];
@@ -296,14 +317,15 @@ var range = function(start, end, step) {
     		//box around seqs
     		seqContext.strokeStyle = "#000000";
 			seqContext.lineWidth   = 1;
-	    	seqContext.strokeRect(this.nameOffSet, 0, this.cw * this.nBases, this.ch * this.nSeqs);
+	    	seqContext.strokeRect(this.nameOffSet, 0,this.cw * this.nBases,
+	    		 Math.min(this.ch * this.nSeqs,this.ch * seqData.length ));
 	    	//write names
 	    	seqContext.textAlign = "left";
 	    	seqContext.textBaseline = "middle";
-	    	seqContext.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+	    	seqContext.font = "bold 15px Arial, sans-serif";
 	        seqContext.strokeStyle = "#000000";
 			seqContext.lineWidth   = 1;
-	    	for(var hi = sStart; hi -sStart < this.nSeqs ; hi++){
+	    	for(var hi = sStart;( hi -sStart < this.nSeqs ) && (hi < seqData.length); hi++){
 	    		console.log(hi);
 	    		console.log(this.nSeqs);
 	    		seqContext.fillStyle = "#EEEEEE";
@@ -312,7 +334,7 @@ var range = function(start, end, step) {
 		    	seqContext.fillStyle = "#000000";
 				seqContext.fillText(seqData[hi]["name"], 2, (hi - sStart)*this.ch + this.ch/2.0);
 	    	}	    	
-	    	for(var hi = sStart; hi - sStart < this.nSeqs ; hi++){
+	    	for(var hi = sStart;( hi -sStart < this.nSeqs ) && (hi < seqData.length) ; hi++){
 	    		this.paintSeq(seqContext, hi - sStart,
 	    		 seqData[hi]["seq"], bStart);
 	    	}
@@ -330,7 +352,7 @@ var range = function(start, end, step) {
 	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, 0 , this.cw * 2, this.ch);
 	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, (this.nSeqs)*this.ch - this.ch , this.cw * 2, this.ch);
 	    seqContext.fillStyle = "#000000";
-    	seqContext.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+    	seqContext.font = "bold 15px Arial, sans-serif";
       	seqContext.fillText(bStart, this.nameOffSet, (this.nSeqs)*this.ch +2 + this.ch/2.0);
       	seqContext.fillText(bStart + this.nBases -1, this.nameOffSet + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch +2 + this.ch/2.0);
    		seqContext.fillText(sStart, this.nameOffSet + this.nBases * this.cw + this.cw + 2, this.ch/2.0  );
@@ -338,7 +360,7 @@ var range = function(start, end, step) {
    };
    
    SeqPainter.prototype.paintSelectedSeq = function(seqContext,seq, currentBase){
-   		seqContext.font = "bold 15px 'Helvetica Neue',Helvetica, Arial, sans-serif";
+   		seqContext.font = "bold 15px Arial, sans-serif";
    		seqContext.textAlign = "left";
     	seqContext.textBaseline = "middle";
    		var logInfo = "name: " + 
@@ -435,7 +457,7 @@ var range = function(start, end, step) {
 		this.painter.nBases = Math.floor((this.canvas.width - this.painter.cw - this.painter.nameOffSet)/this.painter.cw);
 	 	this.painter.nSeqs = Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch);
 	};
-	
+
 	SeqView.prototype.paint = function(){
 		this.painter.paintSeqs(this.context, this.seqs, this.seqStart, this.baseStart);
 		this.painter.placeBasePos(this.context, this.seqStart, this.baseStart);

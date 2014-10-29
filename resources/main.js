@@ -75,7 +75,7 @@ $(document).ready(function(){
 	  	.enter()
 	  		.append("p")
   			.append("a")
-  				.attr("href", function(d){console.log(d);return "/ssv/pop/" + d;})
+  				.attr("href", function(d){console.log(d);return "/ssv/info/" + d;})
   				.html(function(d){return d;});
 	//init();
 
