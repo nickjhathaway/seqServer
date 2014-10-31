@@ -611,7 +611,7 @@ int main(int argc, char** argv){
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
-	setUp.setOption(port, "-clusDir", "Port Number to Serve On");
+	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.finishSetUp(std::cout);
   const std::string name = "/ssv";
   auto config = server_config(name, port);
