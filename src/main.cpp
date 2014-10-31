@@ -596,10 +596,10 @@ public:
 
 
 
-cppcms::json::object server_config(std::string name){
+cppcms::json::object server_config(std::string name, uint32_t port){
   cppcms::json::object args;
   args["service"]["api"] = "http";
-  args["service"]["port"] = 8881;
+  args["service"]["port"] = port;
   args["service"]["ip"] = "0.0.0.0";
   args["http"]["script"] = name;
   return args;
@@ -609,10 +609,12 @@ cppcms::json::object server_config(std::string name){
 int main(int argc, char** argv){
 	bibseq::seqSetUp setUp(argc, argv);
 	std::string clusDir = "";
+	uint32_t port = 8881;
 	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
+	setUp.setOption(port, "-clusDir", "Port Number to Serve On");
 	setUp.finishSetUp(std::cout);
   const std::string name = "/ssv";
-  auto config = server_config(name);
+  auto config = server_config(name, port);
 
   try {
       cppcms::service app(config);
