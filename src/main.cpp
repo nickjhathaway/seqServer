@@ -610,10 +610,12 @@ int main(int argc, char** argv){
 	bibseq::seqSetUp setUp(argc, argv);
 	std::string clusDir = "";
 	uint32_t port = 8881;
+	std::string name = "ssv";
 	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
+	setUp.setOption(name, "-name", "Nmae of root of the server");
 	setUp.finishSetUp(std::cout);
-  const std::string name = "/ssv";
+	name = "/" + name;
   auto config = server_config(name, port);
 
   try {
