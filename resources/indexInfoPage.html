@@ -117,7 +117,7 @@
 		  	.enter()
 		  		.append("p")
 	  			.append("a")
-	  				.attr("href", function(d){console.log(d);return "/ssv/showOneSampleInfo/" + d;})
+	  				.attr("href", function(d){console.log(d);return "/ssv/showOneSampleInfo/" + currentPopName + "/" + d;})
 	  				.html(function(d){return d;});
 			$('<a>',{
 			    text: 'See Population Data',

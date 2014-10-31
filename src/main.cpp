@@ -264,7 +264,7 @@ public:
       dispMap_1arg(&ssv::showInfo, "info", "(\\w+)");
       dispMap_1arg(&ssv::showSampInfo, "samp", "(\\w+)");
 
-      dispMap_1arg(&ssv::showOneSampleInfo, "showOneSampleInfo", "(\\w+)");
+      dispMap_2arg(&ssv::showOneSampleInfo, "showOneSampleInfo", "(\\w+)/(\\w+)");
 
       dispMap_1arg(&ssv::showSampInfoData, "sampInfo", "(\\w+)");
       dispMap_1arg(&ssv::showPopData, "pop", "(\\w+)");
@@ -360,9 +360,9 @@ public:
     	response().out() << infoHtml_.get();
     }
 
-    void showOneSampleInfo(std::string sampName){
-    	std::cout << "here" << std::endl;
-    	//currentPopName_ = mipName;
+    void showOneSampleInfo(std::string mipName ,std::string sampName){
+    	//std::cout << "here" << std::endl;
+    	currentPopName_ = mipName;
     	currentSampName_ = sampName;
     	std::cout << currentPopName_ << " " << currentSampName_ << std::endl;
     	response().out() << oneSampleHtml_.get();
