@@ -1,278 +1,6 @@
-var range = function(start, end, step) {
-	// from http://stackoverflow.com/questions/3895478/does-javascript-have-a-range-equivalent
-    var range = [];
-    var typeofStart = typeof start;
-    var typeofEnd = typeof end;
 
-    if (step === 0) {
-        throw TypeError("Step cannot be zero.");
-    }
 
-    if (typeofStart == "undefined" || typeofEnd == "undefined") {
-        throw TypeError("Must pass start and end arguments.");
-    } else if (typeofStart != typeofEnd) {
-        throw TypeError("Start and end arguments must be of same type.");
-    }
 
-    typeof step == "undefined" && (step = 1);
-
-    if (end < start) {
-        step = -step;
-    }
-
-    if (typeofStart == "number") {
-
-        while (step > 0 ? end >= start : end <= start) {
-            range.push(start);
-            start += step;
-        }
-
-    } else if (typeofStart == "string") {
-
-        if (start.length != 1 || end.length != 1) {
-            throw TypeError("Only strings with one character are supported.");
-        }
-
-        start = start.charCodeAt(0);
-        end = end.charCodeAt(0);
-
-        while (step > 0 ? end >= start : end <= start) {
-            range.push(String.fromCharCode(start));
-            start += step;
-        }
-
-    } else {
-        throw TypeError("Only string and number types are supported");
-    }
-
-    return range;
-
-};
-	function createTable(divId) {
-		//create the table and return it to be manipulate
-		var table = d3.select(divId).append("table");
-		table.append("thead").append("tr");
-		table.append("tbody");
-		return table;
-	}
-	function updateTable(tab, data, columns){
-		
-		//ensure header row
-		var headerRow = tab.select("thead")
-			.selectAll("tr")
-			.data([1])
-			.enter();
-		//attach column name data to header
-		var header = tab.select("thead").select("tr")
-	        .selectAll("th")
-	        .data(columns).text(function(column) { return column; });
-	    header
-	        .enter()
-			.append("th")
-				.attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
-	   //create headers as needed and add bolding 
-	  /*header.enter()
-	        .append("th")*/
-	            
-	  //remove any headers that don't have data attached to them
-	  console.log(columns);
-	  header.exit()
-        	.remove();
-		var currentColor = "#e9e9e9";
-	    // create a row for each object in the data
-	    var newRows = tab.select("tbody").selectAll("tr")
-	        .data(data)
-	        .enter()
-	        .append("tr")
-	        	.style("background-color",function(d,i){
-	        		if(i == 0){
-	        			return currentColor;
-	        		}else {
-	        			if (d[columns[0]] != data[i-1][columns[0]]){
-	        				if(currentColor == "#e9e9e9"){
-	        					currentColor = "#c9c9c9";
-	        				}else{
-	        					currentColor = "#e9e9e9";
-	        				}
-	        			}
-	        		}
-	        		return currentColor;
-	        		});
-		var rows = tab.select("tbody").selectAll("tr");
-	    //create a cell in each row for each column
-	    //console.log(rows);
-	    var cells = rows.selectAll("td")
-	        .data(function(row) {
-	        	var ret = columns.map(function(column) {
-	                return {column: column, value: row[column]};
-	            });         
-	            return ret;
-	            
-	        });
-	   	cells.enter()
-	        .append("td")
-	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
-	    cells.text(function(d) { return d.value; });
-	    //remove cells as needed
-	    cells.exit()
-        	.remove();
-	}
-	function tabulate(data, columns, divId) {
-		//adapted from http://stackoverflow.com/questions/9268645/creating-a-table-linked-to-a-csv-file
-	    var table = d3.select(divId).append("table"),
-	        thead = table.append("thead"),
-	        tbody = table.append("tbody");
-	
-	    // append the header row
-	    thead.append("tr")
-	        .selectAll("th")
-	        .data(columns)
-	        .enter()
-	        .append("th")
-	            .attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
-	
-	    // create a row for each object in the data
-	    var rows = tbody.selectAll("tr")
-	        .data(data)
-	        .enter()
-	        .append("tr");
-	
-	    // create a cell in each row for each column
-	    var cells = rows.selectAll("td")
-	        .data(function(row) {
-	            return columns.map(function(column) {
-	                return {column: column, value: row[column]};
-	            });
-	        })
-	        .enter()
-	        .append("td")
-	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
-	    
-	    return table;
-	}
-	function updateTableColWise(tab, data, columns){
-		//ensure header row
-		var headerRow = tab.select("thead")
-			.selectAll("tr")
-			.data([1])
-			.enter()
-			.append("tr");
-		//attach column name data to header
-		var header = tab.select("thead").select("tr")
-	        .selectAll("th")
-	        .data(columns);
-	   //create headers as needed and add bolding 
-	  header.enter()
-	        .append("th")
-	            .attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
-	  //remove any headers that don't have data attached to them
-	  header.exit()
-        	.remove();
-	
-	    // create a row for each object in the data
-	    var newRows = tab.select("tbody").selectAll("tr")
-	        .data(range(0,data[columns[0]].length - 1))
-	        .enter()
-	        .append("tr")
-	        	.style("background-color", "#e9e9e9");
-		var rows = tab.select("tbody").selectAll("tr");
-	    //create a cell in each row for each column
-	    //console.log(rows);
-	   var cells = rows.selectAll("td")
-	        .data(data);
-	        	/*function(row) {
-	        	var rowDat = {};
-	        	for(var c in columns){
-	        		console.log(c);
-	        		console.log(row);
-	        		rowDat[c] = (data[columns[c]][row]);
-	        	}
-	        	console.log(rowDat);
-	        	return rowDat;
-	            });*/
-	        
-	   	cells.enter()
-	         .append("td")
-	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
-	    //remove cells as needed
-	    cells.exit()
-        	.remove();
-	}
-	function tabulateColwise(data, columns, divId) {
-		//adapted from http://stackoverflow.com/questions/9268645/creating-a-table-linked-to-a-csv-file
-	    var table = d3.select(divId).append("table"),
-	        thead = table.append("thead"),
-	        tbody = table.append("tbody");
-	
-	    // append the header row
-	    thead.append("tr")
-	        .selectAll("th")
-	        .data(columns)
-	        .enter()
-	        .append("th")
-	            .attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
-	
-	    // create a row for each object in the data
-	    var rows = tbody.selectAll("tr")
-	        .data(data)
-	        .enter()
-	        .append("tr");
-	
-	    // create a cell in each row for each column
-	    var cells = rows.selectAll("td")
-	        .data(function(row) {
-	            return columns.map(function(column) {
-	                return {column: column, value: row[column]};
-	            });
-	        })
-	        .enter()
-	        .append("td")
-	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
-	    
-	    return table;
-	}
-	function addMouseScrollListener(obj, up, down){
-        // from http://www.sitepoint.com/html5-javascript-mouse-wheel/
-        this.handler = function(e){
-        
-	    var e = window.event || e; // old IE support
-	    
-	    var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-            if( delta > 0){
-                up(delta);
-            } else {
-                down(delta);
-            }
-         e.preventDefault();
-        };
-        if (obj.addEventListener) {
-	    // IE9, Chrome, Safari, Opera
-	    obj.addEventListener("mousewheel", handler, false);
-	    // Firefox
-	    obj.addEventListener("DOMMouseScroll", handler, false);
-        } else {
-            // IE 6/7/8
-            obj.attachEvent("onmousewheel", handler);
-        }
-    }
-    
-    var getRelCursorPosition = function(event, obj ) {
-        // from http://stackoverflow.com/a/5417934
-        var canoffset = $(obj).offset();
-        var x = event.clientX + document.body.scrollLeft +
-            document.documentElement.scrollLeft - Math.floor(canoffset.left);
-        var y = event.clientY + document.body.scrollTop +
-            document.documentElement.scrollTop - Math.floor(canoffset.top) + 1;
-        return [x,y];
-    };
     
 	function Canvas(i){
         this.canvas = $(i)[0];
@@ -379,7 +107,7 @@ var range = function(start, end, step) {
 	    
    };
 	
-	function SeqView(viewName, seqs, seqData, cellWidth, cellHeight, baseColors, qualChartName){
+	function SeqView(viewName, seqData, cellWidth, cellHeight, baseColors, qualChartName){
 		//need to add style and html, currently just there
 		//retrieve html elements 
 		this.masterDiv = document.getElementById(viewName);
@@ -389,6 +117,11 @@ var range = function(start, end, step) {
 		this.bSlider = $("#bottomSlider", this.masterDiv)[0];
 		this.popUp = $("#pop-up", this.masterDiv)[0];
 		this.sel = $("#select", this.masterDiv)[0];
+		this.seqData = seqData;
+		this.seqStart = 0;
+		this.baseStart = 0;
+		this.currentSeq = 0;
+		this.currentBase = 0;
 		// set up of sizes
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
 		$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
@@ -396,22 +129,18 @@ var range = function(start, end, step) {
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		var nameOffSet = 10 * cellWidth;
 		var numOfBases = Math.floor((this.canvas.width - cellWidth - nameOffSet)/cellWidth);
-	 	var numOfSeqs = Math.min(Math.floor((this.canvas.height - cellHeight)/cellHeight), seqs.length);
+	 	var numOfSeqs = Math.min(Math.floor((this.canvas.height - cellHeight)/cellHeight), this.seqData["seqs"].length);
 	 	console.log(numOfSeqs);
 	 	console.log(Math.floor((this.canvas.height - cellHeight)/cellHeight));
-	 	console.log(seqs.length);
+	 	console.log(this.seqData["seqs"].length);
 		this.painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
-		this.seqs = seqs;
-		this.seqData = seqData;
-		this.seqStart = 0;
-		this.baseStart = 0;
-		this.currentSeq = 0;
-		this.currentBase = 0;
+		//this.seqs = seqs;
+
 		this.chart = c3.generate({
-			bindto: 'qualChartName',
+			bindto: qualChartName,
 		    data: {
 		        json: {
-		            qual: this.seqs[this.currentSeq]["qual"]
+		            qual: this.seqData["seqs"][this.currentSeq]["qual"]
 		        }
 		    }, 
 			grid: {
@@ -432,19 +161,19 @@ var range = function(start, end, step) {
 	
 	SeqView.prototype.setUpCanvas = function(){
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
-		var maxPossHeight = this.painter.ch * (this.seqs.length + 4);
+		var maxPossHeight = this.painter.ch * (this.seqData["seqs"].length + 4);
 		$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
 		this.canvas.width = $(this.masterDiv).width() * 0.96;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		this.painter.nBases = Math.floor((this.canvas.width - this.painter.cw - this.painter.nameOffSet)/this.painter.cw);
-	 	this.painter.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch),this.seqs.length);
+	 	this.painter.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch),this.seqData["seqs"].length);
 	};
 	
 	SeqView.prototype.updateCanvas = function(){
 		var changingHeight = (window.innerHeight - 60) * 0.80;
 		var changingWidth = (window.innerWidth - 10) * 0.98;
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
-		var maxPossHeight = this.painter.ch * (this.seqs.length + 4);
+		var maxPossHeight = this.painter.ch * (this.seqData["seqs"].length + 4);
 		$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
 		this.canvas.width = $(this.masterDiv).width() * 0.96;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
@@ -459,14 +188,14 @@ var range = function(start, end, step) {
 	};
 
 	SeqView.prototype.paint = function(){
-		this.painter.paintSeqs(this.context, this.seqs, this.seqStart, this.baseStart);
+		this.painter.paintSeqs(this.context, this.seqData["seqs"], this.seqStart, this.baseStart);
 		this.painter.placeBasePos(this.context, this.seqStart, this.baseStart);
 		this.paintSelectedSeq();
 		this.setSelector();
 	};
 	
 	SeqView.prototype.paintSelectedSeq = function(){
-		this.painter.paintSelectedSeq(this.context, this.seqs[this.currentSeq], this.currentBase );
+		this.painter.paintSelectedSeq(this.context, this.seqData["seqs"][this.currentSeq], this.currentBase );
 	};
 	
 	SeqView.prototype.setSelector = function(){
@@ -538,14 +267,14 @@ var range = function(start, end, step) {
         console.log(pt);
         console.log(this.currentSeq);
         console.log(this.currentBase);
-        console.log(this.seqs[this.currentSeq]["name"]);
-        console.log(this.seqs[this.currentSeq]["seq"][this.currentBase]);
-        console.log(this.seqs[this.currentSeq]["qual"][this.currentBase]);
+        console.log(this.seqData["seqs"][this.currentSeq]["name"]);
+        console.log(this.seqData["seqs"][this.currentSeq]["seq"][this.currentBase]);
+        console.log(this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]);
         this.setSelector();
-        var currentQual = this.seqs[this.currentSeq]["qual"];
+        var currentQual = this.seqData["seqs"][this.currentSeq]["qual"];
 		this.chart.load({
 	        json: {
-	            qual: this.seqs[this.currentSeq]["qual"]
+	            qual: this.seqData["seqs"][this.currentSeq]["qual"]
 	        }
 	    });
 
@@ -570,7 +299,7 @@ var range = function(start, end, step) {
     }).bind(this);
     var popUpWindow = this.popUp;
     //var painter = this.painter;
-    //var seqs = this.seqs;
+    //var seqs = this.seqData["seqs"];
     //var seqStart = this.seqStart;
     //var baseStart = this.baseStart;
     $(this.canvas).mousemove(function(e) {
@@ -593,13 +322,13 @@ var range = function(start, end, step) {
         if(currentPoint[0] > this.painter.nameOffSet){
         	//console.log($("#info", popUpWindow)[0]);
         	$("#info", popUpWindow)[0].innerHTML = "name: " + 
-        	this.seqs[currentSeqHover]["name"]
-        	+ "<br>base: "  + this.seqs[currentSeqHover]["seq"][currentBaseHover] 
-        	+ "<br>qual: " +  this.seqs[currentSeqHover]["qual"][currentBaseHover]
+        	this.seqData["seqs"][currentSeqHover]["name"]
+        	+ "<br>base: "  + this.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover] 
+        	+ "<br>qual: " +  this.seqData["seqs"][currentSeqHover]["qual"][currentBaseHover]
         	+ "<br>pos: " + currentBaseHover;
         }else{
         	$("#info", popUpWindow)[0].innerHTML = "name: " + 
-        	this.seqs[currentSeqHover]["name"];
+        	this.seqData["seqs"][currentSeqHover]["name"];
         }
 
 		if(currentPoint[1] < (this.painter.nSeqs * this.painter.ch) && 
@@ -610,89 +339,4 @@ var range = function(start, end, step) {
 		}
     }.bind(this)).bind(this);
    };
-
-
-    var cellWidth = 20;
-    var cellHeight = 25;
-	function drawCircle(x, y, radius, color, borderColor){
-        context.beginPath();
-        context.arc(x, y, radius, 0, 2 * Math.PI, false);
-        context.fillStyle = color;
-        context.fill();
-        context.lineWidth = 5;
-        context.strokeStyle = borderColor;
-        context.stroke();
-    }
-
-    function drawLine(sx, sy, ex, ey, width){
-        context.beginPath();
-        context.moveTo(sx, sy);
-        context.lineTo(ex, ey, width);
-        context.stroke();
-    }
-
-    function ajax(url, func){
-        $.ajax({ url: url, dataType: 'json', async: false,
-            success: function(ct){ func(ct); } });
-    }
-
-    function ajaxAsync(url, func){
-        $.ajax({ url: url, dataType: 'json', async: true,
-                 success: function(ct){ func(ct); } });
-    }
-    var createMinTree = function(data, appendTo, name, width, height){
-	// create a interconnected graph for a minimum spanning tree
-	// data needs to have a "nodes" array and a "links" array 
-	// nodes need to have at least the following variables, color (color of node), 
-	// name (name of the node), and size (the size of the node)
-	// links need to have at least color (the color of the link), target (the node position to connect to), 
-	// source (the node position from where the connection is forming), and value (the value that controls the link distance)
-	var svg = d3.select(appendTo).append("svg")
-	    .attr("width", width)
-	    .attr("height", height)
-	    .attr("id", name);
-	
-	d3.json(data, function(error, graph)
-	 {
-	 var force = d3.layout.force()
-	    .charge(-120)
-	    .linkDistance(function(d, i){ return d.value * 10;})
-	    .size([width, height]);
-	    
-	  force
-	      .nodes(graph.nodes)
-	      .links(graph.links)
-	      .start();
-	
-	  var link = svg.selectAll(".link")
-	      .data(graph.links)
-	      .enter().append("line")
-	      .attr("class", "link")
-	      .style("stroke-width", function(d) { return Math.sqrt(d.value);})
-	      .style("stroke", function(d) { return d.color;});
-	
-	  var node = svg.selectAll(".node")
-	      .data(graph.nodes)
-	    .enter().append("circle")
-	      .attr("class", "node")
-	      .attr("r", function(d){ return Math.pow(d.size * 60, 1/2);})
-	      .style("fill", function(d) { return d.color; })
-	      .call(force.drag);
-	
-	  node.append("title")
-	      .text(function(d) { return d.name; });
-	
-	  force.on("tick", function() {
-	    link.attr("x1", function(d) { return d.source.x; })
-	        .attr("y1", function(d) { return d.source.y; })
-	        .attr("x2", function(d) { return d.target.x; })
-	        .attr("y2", function(d) { return d.target.y; });
-	
-	    node.attr("cx", function(d) { return d.x; })
-	        .attr("cy", function(d) { return d.y; });
-	  });
-	  
-	});
-	return force;
-};
 

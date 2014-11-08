@@ -12,6 +12,26 @@
 
 namespace bfs = boost::filesystem;
 
+template<typename T>
+cppcms::json::value seqsToJson(const std::vector<T> & reads){
+  cppcms::json::value ret;
+  auto& seqs = ret["seqs"];
+  //find number of reads
+  ret["numReads"] = reads.size();
+  // get the maximum length
+  uint32_t maxLen = 0;
+  bibseq::readVec::getMaxLength(reads, maxLen);
+  ret["maxLen"] = maxLen;
+  for(const auto & pos : iter::range(reads.size())){
+  	//std::cout << "pos" << std::endl;
+    seqs[pos]["seq"] = reads[pos].seqBase_.seq_;
+    seqs[pos]["name"] = reads[pos].seqBase_.name_;
+    seqs[pos]["qual"] = reads[pos].seqBase_.qual_;
+  }
+  return ret;
+}
+
+
 cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 	cppcms::json::value ret;
 	auto & outTab = ret["tab"];
@@ -34,6 +54,7 @@ cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 	ret["numericColNames"] = numericCols;
 	return ret;
 }
+
 cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab){
 	cppcms::json::value ret;
 	std::unordered_map<uint32_t, bool> numCheck;
@@ -170,23 +191,25 @@ cppcms::json::value dotToJson(const std::string& dotFilename){
 
 class ssv: public cppcms::application {
 private:
-    utils::FileCache html_;
 
-    utils::FileCache infoHtml_;
-    utils::FileCache sampHtml_;
-    utils::FileCache oneSampleHtml_;
-    utils::FileCache dotHtml_;
-    utils::FileCache popHtml_;
+    utils::FileCache mainPageHtml_;
+    utils::FileCache oneGeneInfoHtml_;
+    utils::FileCache oneMipInfoHtml_;
+    utils::FileCache allSampsInfoHtml_;
+    utils::FileCache oneSampInfoHtml_;
+    utils::FileCache minTreeViewHtml_;
+    utils::FileCache popInfoHtml_;
 
 
     utils::FilesCache jsLibs_;
-    utils::FileCache js_;
+    utils::FilesCache jsOwn_;
 
-    utils::FileCache SeqViwer_;
-    utils::FileCache c3css_;
+    utils::FilesCache cssLibs_;
+    utils::FilesCache cssOwn_;
+
 
     std::string fastqFilename_;
-    std::string currentPopName_;
+    std::string currentMipName_;
     std::string currentSampName_;
     std::unordered_map<std::string,std::vector<bibseq::readObject>> reads_;
     std::unordered_map<std::string, std::string> readsLocations_;
@@ -201,6 +224,7 @@ private:
 
     std::unordered_map<std::string, std::string> popInfoLocations_;
     std::unordered_map<std::string, std::string> allInfoLocations_;
+    std::string rootName_;
     std::string clusteringDir_;
     std::unordered_map<std::string, std::vector<bfs::path>> files_;
 
@@ -212,14 +236,17 @@ private:
         dispatcher().assign("", func, this);
         mapper().assign("");
     }
+
     template <typename T> void dispMap(T func, std::string n){
         dispatcher().assign("/" + n, func, this);
         mapper().assign(n, "/" + n);
     }
+
     template <typename T> void dispMap_1arg(T func, std::string n, std::string r){
         dispatcher().assign("/" + n + "/" + r, func, this, 1);
         mapper().assign(n, "/" + n + "/{1}");
     }
+
     template <typename T> void dispMap_2arg(T func, std::string n, std::string r){
         dispatcher().assign("/" + n + "/" + r, func, this, 1, 2);
         mapper().assign(n, "/" + n + "/{1}/{2}");
@@ -228,6 +255,7 @@ private:
     void ret_json(){
         response().content_type("application/json");
     }
+
     void ret_js(){
         response().content_type("text/javascript");
     }
@@ -240,60 +268,73 @@ public:
     ssv(cppcms::service& srv, std::string name,
     		std::string clusDir)
         : cppcms::application(srv)
-        , html_(make_path("../resources/index.html"))
-				, infoHtml_(make_path("../resources/indexInfoPage.html"))
-				, sampHtml_(make_path("../resources/sampInfoPage.html"))
-				, oneSampleHtml_(make_path("../resources/oneSampleView.html"))
-    		, dotHtml_(make_path("../resources/minTreeView.html"))
-    		, popHtml_(make_path("../resources/indexSeqViewerTemplate.html"))
-    		, jsLibs_(std::vector<bfs::path>{make_path("../resources/jsLibs/d3/d3.v3.min.js"),
-    																		 make_path("../resources/jsLibs/c3/c3.min.js"),
-    																		 make_path("../resources/jsLibs/canvas2svg.js"),
-    																		 make_path("../resources/jsLibs/rgbcolor.js"),
-    																		 make_path("../resources/jsLibs/jspdf.min.js"),
-    																		 make_path("../resources/jsLibs/svgToPdf.js"),
-    																		 make_path("../resources/jsLibs/underscore-min.js")})
-        , js_(make_path("../resources/main.js"))
-    		, SeqViwer_(make_path("../resources/SeqViewer.js"))
-    		, c3css_(make_path("../resources/css/c3.css"))
+        , mainPageHtml_(make_path("../resources/mainPage.html"))
+    		, oneGeneInfoHtml_(make_path("../resources/oneGeneView.html"))
+				, oneMipInfoHtml_(make_path("../resources/oneMipInfo.html"))
+				, allSampsInfoHtml_(make_path("../resources/allSampsInfo.html"))
+				, oneSampInfoHtml_(make_path("../resources/oneSampInfo.html"))
+    		, minTreeViewHtml_(make_path("../resources/minTreeView.html"))
+    		, popInfoHtml_(make_path("../resources/popInfo.html"))
+    		, jsLibs_(std::vector<bfs::path>{make_path("../resources/js/libs/d3/d3.v3.min.js"),
+    																		 make_path("../resources/js/libs/c3/c3.min.js"),
+    																		 make_path("../resources/js/libs/canvas2svg.js"),
+    																		 make_path("../resources/js/libs/rgbcolor.js"),
+    																		 make_path("../resources/js/libs/jspdf.min.js"),
+    																		 make_path("../resources/js/libs/svgToPdf.js"),
+    																		 make_path("../resources/js/libs/underscore-min.js")})
+        , jsOwn_(std::vector<bfs::path>{make_path("../resources/js/own/utils.js"),
+																				make_path("../resources/js/own/tableFuncs.js"),
+																				make_path("../resources/js/own/SeqView.js"),
+																				make_path("../resources/js/own/minSpanTree.js")})
+    		, cssLibs_(std::vector<bfs::path>{make_path("../resources/css/libs/c3.css")})
+    		, cssOwn_(std::vector<bfs::path>{make_path("../resources/css/own/SeqView.css")})
+    		, rootName_(name)
     		, clusteringDir_(clusDir)
     {
-    	dispMap(&ssv::mainData, "mainData");
-    	dispMap(&ssv::mainSeqData, "mainSeqData");
-      dispMap(&ssv::colorsData, "baseColors");
-      dispMap_1arg(&ssv::showInfo, "info", "(\\w+)");
-      dispMap_1arg(&ssv::showSampInfo, "samp", "(\\w+)");
-
-      dispMap_2arg(&ssv::showOneSampleInfo, "showOneSampleInfo", "(\\w+)/(\\w+)");
-
-      dispMap_1arg(&ssv::showSampInfoData, "sampInfo", "(\\w+)");
-      dispMap_1arg(&ssv::showPopData, "pop", "(\\w+)");
-      dispMap_1arg(&ssv::showPopInfoData, "popInfo", "(\\w+)");
-
+    	mainPageHtml_.replaceStr("/ssv", name);
+    	oneGeneInfoHtml_.replaceStr("/ssv", name);
+    	oneMipInfoHtml_.replaceStr("/ssv", name);
+    	allSampsInfoHtml_.replaceStr("/ssv", name);
+    	oneSampInfoHtml_.replaceStr("/ssv", name);
+    	minTreeViewHtml_.replaceStr("/ssv", name);
+    	popInfoHtml_.replaceStr("/ssv", name);
+    	//main page
+      dispMapRoot(&ssv::mainPage);
+      dispMap(&ssv::geneNames, "geneNames");
+      //gene page
+      dispMap_1arg(&ssv::showGeneInfo, "geneInfo", "(\\w+)");
+      dispMap_1arg(&ssv::mipNames, "mipNames", "(\\w+)");
+      //show one mip target info and sample names
+      dispMap_1arg(&ssv::showMipInfo, "mipInfo", "(\\w+)");
+      dispMap_1arg(&ssv::mipSampleNames, "mipSampleNames", "(\\w+)");
+      //show the data table with all sample information
+      dispMap_1arg(&ssv::showAllSampInfo, "allSamps", "(\\w+)");
+      dispMap_1arg(&ssv::allSampsInfoData, "allSampsInfo", "(\\w+)");
+      //show the mip target info for one sample
+      dispMap_2arg(&ssv::showOneSampleInfo, "oneSampInfo", "(\\w+)/(\\w+)");
+      dispMap_2arg(&ssv::oneSampInitSeqData, "oneSampInitSeqData", "(\\w+)/(\\w+)");
+      dispMap_2arg(&ssv::oneSampFinalSeqData, "oneSampFinalSeqData", "(\\w+)/(\\w+)");
+      dispMap_2arg(&ssv::oneSampTabData, "oneSampTabData", "(\\w+)/(\\w+)");
+      //show the minimum spanning tree for one sample info
       dispMap_2arg(&ssv::showMinTree, "showMinTree", "(\\w+)/(\\w+)");
-
-      dispMap_2arg(&ssv::mainSampleData, "mainSampleData", "(\\w+)/(\\w+)");
-      dispMap_2arg(&ssv::mainSampleSeqData, "mainSampleSeqData", "(\\w+)/(\\w+)");
-
-      dispMap_2arg(&ssv::mainFinalSampleData, "mainFinalSampleData", "(\\w+)/(\\w+)");
-      dispMap_2arg(&ssv::mainFinalSampleSeqData, "mainFinalSampleSeqData", "(\\w+)/(\\w+)");
-
-
-      dispMap_2arg(&ssv::mainSampleTableData, "mainSampleTableData", "(\\w+)/(\\w+)");
-      dispMap_2arg(&ssv::mainSampleDotData, "mainSampleDotData", "(\\w+)/(\\w+)");
-
-      dispMap_1arg(&ssv::mainSampleNames, "mainSampleNames", "(\\w+)");
-
-
-
-      dispMap(&ssv::js, "js");
-      dispMap(&ssv::jsLibs, "jsLibs");
-      dispMap(&ssv::c3css, "c3css");
-      dispMap(&ssv::SeqViwer, "SeqViewer");
-      dispMap(&ssv::mipNames, "mipNames");
+      dispMap_2arg(&ssv::minTreeData, "minTreeData", "(\\w+)/(\\w+)");
+      //show the Population information for one mip target
+      dispMap_1arg(&ssv::showPopData, "pop", "(\\w+)");
+      dispMap_1arg(&ssv::popInfoData, "popInfo", "(\\w+)");
+      dispMap_1arg(&ssv::popSeqData, "popSeqData", "(\\w+)");
+      //general information
       dispMap(&ssv::currentSampName, "currentSampName");
+      dispMap(&ssv::rootName, "rootName");
       dispMap(&ssv::currentPopName, "currentPopName");
-      dispMapRoot(&ssv::html);
+      dispMap(&ssv::colorsData, "baseColors");
+      //js and css loading
+      dispMap(&ssv::jsLibs, "jsLibs");
+      dispMap(&ssv::jsOwn, "jsOwn");
+      dispMap(&ssv::cssLibs, "cssLibs");
+      dispMap(&ssv::cssOwn, "cssOwn");
+
+
+
       mapper().root(name);
 
     	auto files = listAllFiles(clusDir, true, bibseq::VecStr {"analysis"});
@@ -329,7 +370,7 @@ public:
     void currentPopName(){
     	ret_json();
     	cppcms::json::value r;
-    	r = currentPopName_;
+    	r = currentMipName_;
     	response().out() << r;
     }
 
@@ -340,67 +381,85 @@ public:
     	response().out() << r;
     }
 
-    void mipNames(){
+    void rootName(){
+    	ret_json();
+    	cppcms::json::value r;
+    	r = rootName_;
+    	response().out() << r;
+    }
+
+    void mipNames(std::string geneName){
     	ret_json();
     	cppcms::json::value ret;
     	auto mipNames = bibseq::getVectorOfMapKeys(files_);
     	bibseq::sort(mipNames);
     	for(const auto & mPos : iter::range(mipNames.size())){
-    		ret[mPos] = mipNames[mPos];
+    		if(bibseq::beginsWith(mipNames[mPos], geneName)){
+    			ret[mPos] = mipNames[mPos];
+    		}
     	}
     	response().out() << ret;
     }
-    void showPopData(std::string mipName){
-    	currentPopName_ = mipName;
-    	response().out() << popHtml_.get();
+
+    void geneNames(){
+    	ret_json();
+    	cppcms::json::value ret;
+    	auto mipNames = bibseq::getVectorOfMapKeys(files_);
+    	bibseq::sort(mipNames);
+    	std::set<std::string> geneNames;
+    	for(const auto & mPos : iter::range(mipNames.size())){
+    		geneNames.emplace(mipNames[mPos].substr(0,mipNames[mPos].find_last_of("_")));
+    	}
+    	for(const auto & gEnum : iter::enumerate(geneNames)){
+    		ret[gEnum.index] = gEnum.element;
+    	}
+    	response().out() << ret;
     }
 
-    void showInfo(std::string mipName){
-    	currentPopName_ = mipName;
-    	response().out() << infoHtml_.get();
+    void showPopData(std::string mipName){
+    	currentMipName_ = mipName;
+    	response().out() << popInfoHtml_.get();
+    }
+
+    void showGeneInfo(std::string geneName){
+    	response().out() << oneGeneInfoHtml_.get();
+    }
+
+    void showMipInfo(std::string mipName){
+    	currentMipName_ = mipName;
+    	response().out() << oneMipInfoHtml_.get();
     }
 
     void showOneSampleInfo(std::string mipName ,std::string sampName){
     	//std::cout << "here" << std::endl;
-    	currentPopName_ = mipName;
+    	currentMipName_ = mipName;
     	currentSampName_ = sampName;
-    	std::cout << currentPopName_ << " " << currentSampName_ << std::endl;
-    	response().out() << oneSampleHtml_.get();
+    	std::cout << currentMipName_ << " " << currentSampName_ << std::endl;
+    	response().out() << oneSampInfoHtml_.get();
     }
 
-    void showSampInfo(std::string mipName){
-    	currentPopName_ = mipName;
-    	response().out() << sampHtml_.get();
+    void showAllSampInfo(std::string mipName){
+    	currentMipName_ = mipName;
+    	response().out() << allSampsInfoHtml_.get();
     }
 
     void showMinTree(std::string mipName, std::string sampname){
-    	currentPopName_ = mipName;
+    	currentMipName_ = mipName;
     	currentSampName_ = sampname;
-    	response().out() << dotHtml_.get();
+    	response().out() << minTreeViewHtml_.get();
     }
 
-    void showPopInfoData(std::string mipName){
+    void popInfoData(std::string mipName){
     	ret_json();
-    	//std::cout << "mipName" << std::endl;
-    	//std::cout << popInfoLocations_[mipName] << std::endl;
     	auto ret = tableToJsonRowWise(bibseq::table(popInfoLocations_[mipName], "\t", true));
       response().out() << ret;
     }
-    void showSampInfoData(std::string mipName){
+    void allSampsInfoData(std::string mipName){
     	ret_json();
-    	//std::cout << "mipName" << std::endl;
-    	//std::cout << popInfoLocations_[mipName] << std::endl;
     	auto ret = tableToJsonRowWise(bibseq::table(allInfoLocations_[mipName], "\t", true));
       response().out() << ret;
     }
-    void mainSampleNames(std::string mipName){
-    	/*std::cout << "msn" << std::endl;
-    	for(const auto & d : dotFilesLocations_){
-    		std::cout << d.first << std::endl;
-    		for(const auto & s : d.second){
-    			std::cout << s.first << std::endl;
-    		}
-    	}*/
+    void mipSampleNames(std::string mipName){
     	ret_json();
     	cppcms::json::value ret;
     	auto sampNames =  bibseq::getVectorOfMapKeys(dotFilesLocations_[mipName]);
@@ -431,85 +490,38 @@ public:
       response().out() << r;
     }
 
-    void mainSeqData(){
-      ret_json();
-      cppcms::json::value r;
-      auto& c = r["seqs"];
-      //if reads haven't been read yet, read them in
-      if(reads_.find(currentPopName_) == reads_.end()){
-      	bibseq::readObjectIO reader;
-      	reader.read("fastq", readsLocations_[currentPopName_],false);
-      	reads_[currentPopName_] = reader.reads;
-      }
-      //std::cout << currentPopName_ << std::endl;
-      //std::cout << readsLocations_[currentPopName_] << std::endl;
-      for(const auto & pos : iter::range(reads_[currentPopName_].size())){
-      	//std::cout << "pos" << std::endl;
-        c[pos]["seq"] = reads_[currentPopName_][pos].seqBase_.seq_;
-        c[pos]["name"] = reads_[currentPopName_][pos].seqBase_.name_;
-        c[pos]["qual"] = reads_[currentPopName_][pos].seqBase_.qual_;
-      }
-      response().out() << r;
-    }
 
-    void mainData(){
+    void popSeqData(std::string mipName){
+    	currentMipName_ = mipName;
       ret_json();
       //if reads haven't been read yet, read them in
-      if(reads_.find(currentPopName_) == reads_.end()){
+      if(reads_.find(mipName) == reads_.end()){
       	bibseq::readObjectIO reader;
-      	reader.read("fastq", readsLocations_[currentPopName_],false);
-      	reads_[currentPopName_] = reader.reads;
+      	reader.read("fastq", readsLocations_[mipName],false);
+      	reads_[mipName] = reader.reads;
       }
-      cppcms::json::value r;
-      r["numReads"] = reads_[currentPopName_].size();
-      uint32_t maxLen = 0;
-      bibseq::readVec::getMaxLength(reads_[currentPopName_], maxLen);
-      r["maxLen"] = maxLen;
-      response().out() << r;
+      response().out() << seqsToJson(reads_[mipName]);
     }
 
-    void mainSampleDotData(std::string mipname, std::string sampname){
+    void minTreeData(std::string mipName, std::string sampname){
     	currentSampName_ = sampname;
-
-    	auto ret = bibseq::dotToJson(dotFilesLocations_[mipname][sampname]);
+    	currentMipName_ = mipName;
+    	auto ret = bibseq::dotToJson(dotFilesLocations_[mipName][sampname]);
     	ret_json();
     	response().out() << ret;
     }
 
-    void mainSampleTableData(std::string mipName, std::string sampname){
+    void oneSampTabData(std::string mipName, std::string sampname){
+    	currentMipName_ = mipName;
     	currentSampName_ = sampname;
     	ret_json();
-    	//std::cout << "mipName" << std::endl;
-    	//std::cout << popInfoLocations_[mipName] << std::endl;
     	auto tab = bibseq::table(allInfoLocations_[mipName], "\t", true);
     	auto outTab = tab.getRows("sName", sampname);
     	auto ret = tableToJsonRowWise(outTab);
       response().out() << ret;
     }
 
-    void mainSampleSeqData(std::string mipname, std::string sampname){
-    	currentSampName_ = sampname;
-      ret_json();
-      cppcms::json::value r;
-      auto& c = r["seqs"];
-      //if reads haven't been read yet, read them in
-      if(initialReads_[mipname][sampname].empty()){
-      	bibseq::readObjectIO reader;
-      	reader.read("fastq", initialReadsLocations_[mipname][sampname],false);
-      	initialReads_[mipname][sampname] = reader.reads;
-      }
-      //std::cout << currentPopName_ << std::endl;
-      //std::cout << readsLocations_[currentPopName_] << std::endl;
-      for(const auto & pos : iter::range(initialReads_[mipname][sampname].size())){
-      	//std::cout << "pos" << std::endl;
-        c[pos]["seq"] = initialReads_[mipname][sampname][pos].seqBase_.seq_;
-        c[pos]["name"] = initialReads_[mipname][sampname][pos].seqBase_.name_;
-        c[pos]["qual"] = initialReads_[mipname][sampname][pos].seqBase_.qual_;
-      }
-      response().out() << r;
-    }
-
-    void mainSampleData(std::string mipname, std::string sampname){
+    void oneSampInitSeqData(std::string mipname, std::string sampname){
     	currentSampName_ = sampname;
       ret_json();
       //if reads haven't been read yet, read them in
@@ -518,37 +530,11 @@ public:
       	reader.read("fastq", initialReadsLocations_[mipname][sampname],false);
       	initialReads_[mipname][sampname] = reader.reads;
       }
-      cppcms::json::value r;
-      r["numReads"] = initialReads_[mipname][sampname].size();
-      uint32_t maxLen = 0;
-      bibseq::readVec::getMaxLength(initialReads_[mipname][sampname], maxLen);
-      r["maxLen"] = maxLen;
-      response().out() << r;
+
+      response().out() << seqsToJson(initialReads_[mipname][sampname]);
     }
 
-    void mainFinalSampleSeqData(std::string mipname, std::string sampname){
-    	currentSampName_ = sampname;
-      ret_json();
-      cppcms::json::value r;
-      auto& c = r["seqs"];
-      //if reads haven't been read yet, read them in
-      if(finalReads_[mipname][sampname].empty()){
-      	bibseq::readObjectIO reader;
-      	reader.read("fastq", finalReadsLocations_[mipname][sampname],false);
-      	finalReads_[mipname][sampname] = reader.reads;
-      }
-      //std::cout << currentPopName_ << std::endl;
-      //std::cout << readsLocations_[currentPopName_] << std::endl;
-      for(const auto & pos : iter::range(finalReads_[mipname][sampname].size())){
-      	//std::cout << "pos" << std::endl;
-        c[pos]["seq"] = finalReads_[mipname][sampname][pos].seqBase_.seq_;
-        c[pos]["name"] = finalReads_[mipname][sampname][pos].seqBase_.name_;
-        c[pos]["qual"] = finalReads_[mipname][sampname][pos].seqBase_.qual_;
-      }
-      response().out() << r;
-    }
-
-    void mainFinalSampleData(std::string mipname, std::string sampname){
+    void oneSampFinalSeqData(std::string mipname, std::string sampname){
     	currentSampName_ = sampname;
       ret_json();
       //if reads haven't been read yet, read them in
@@ -557,39 +543,32 @@ public:
       	reader.read("fastq", finalReadsLocations_[mipname][sampname],false);
       	finalReads_[mipname][sampname] = reader.reads;
       }
-      cppcms::json::value r;
-      r["numReads"] = finalReads_[mipname][sampname].size();
-      uint32_t maxLen = 0;
-      bibseq::readVec::getMaxLength(finalReads_[mipname][sampname], maxLen);
-      r["maxLen"] = maxLen;
-      response().out() << r;
+      response().out() << seqsToJson(finalReads_[mipname][sampname]);
     }
 
+    void mainPage(){
 
-
-
-
-    void html(){
-      response().out() << html_.get();
+      response().out() << mainPageHtml_.get();
     }
 
-    void js(){
-      ret_js();
-      response().out() << js_.get();
-    }
     void jsLibs(){
       ret_js();
       response().out() << jsLibs_.get();
     }
 
-    void SeqViwer(){
+    void jsOwn(){
       ret_js();
-      response().out() << SeqViwer_.get();
+      response().out() << jsOwn_.get();
     }
 
-    void c3css(){
+    void cssLibs(){
     	ret_css();
-      response().out() << c3css_.get();
+      response().out() << cssLibs_.get();
+    }
+
+    void cssOwn(){
+      ret_css();
+      response().out() << cssOwn_.get();
     }
 
 };
