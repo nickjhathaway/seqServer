@@ -393,9 +393,11 @@ public:
     	cppcms::json::value ret;
     	auto mipNames = bibseq::getVectorOfMapKeys(files_);
     	bibseq::sort(mipNames);
+    	uint32_t count = 0;
     	for(const auto & mPos : iter::range(mipNames.size())){
     		if(bibseq::beginsWith(mipNames[mPos], geneName)){
-    			ret[mPos] = mipNames[mPos];
+    			ret[count] = mipNames[mPos];
+    			++count;
     		}
     	}
     	response().out() << ret;
