@@ -4,10 +4,30 @@
   <head>
 	<title>All Samples Info</title>
 	<style>	
+	
+.bar {
+  /*fill: steelblue;*/
+  stroke: #000;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
 	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
@@ -23,7 +43,7 @@
 			var rName = locSplit[2];
 			var currentPopName = locSplit.pop();
 			$("title", "head").html(currentPopName);
-			console.log(currentPopName);
+			//console.log(currentPopName);
 			ajax('/' + rName + '/allSampsInfo/' + currentPopName, function(tab){ mainPopInfoTab = tab; });
 			
 			var tab = createTable("#sampTable");
@@ -31,7 +51,7 @@
 			var popInfoTab = mainPopInfoTab["tab"];
 			var numericCols = mainPopInfoTab["numericColNames"];
 			updateTable(tab, popInfoTab,  columnNames);
-			console.log(popInfoTab[0]);
+			//console.log(popInfoTab[0]);
 			function updateTableOnClick() {         
 			     var allVals = [];
 			     $('#sampTableMenu :checked').each(function() {
@@ -56,42 +76,96 @@
 					;
 				 ;
 			 $( '#sampTableMenu input' ).click( updateTableOnClick );
-			//var f = showValues();
+			var margin = {top: 20, right: 30, bottom: 80, left: 40},
+			    width = $(window).width() -100 - margin.left - margin.right,
+			    height = 500 - margin.top - margin.bottom;
 			
-
-			var xLabs = [];
-			for(obj in popInfoTab){
-				//console.log(popInfoTab[obj]["popUID"]);
-				xLabs.push(popInfoTab[obj]["popUID"]);
+			var x = d3.scale.ordinal()
+			    .rangeRoundBands([0, width], .1);
+			
+			var y = d3.scale.linear()
+			    .range([height, 0]);
+			    
+			
+			var xAxis = d3.svg.axis()
+			    .scale(x)
+			    .orient("bottom");
+			
+			var yAxis = d3.svg.axis()
+			    .scale(y)
+			    .orient("left");
+			
+			var chart = d3.select("#chart")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			var sampleSum = {};
+			var samplePopNames = {};
+			var color = d3.scale.ordinal()
+			    .domain(popInfoTab.map(function(d) { return d.popUID; }))
+			    .range(mainPopInfoTab["popColors"]);
+			    console.log(mainPopInfoTab["popColors"]);
+			for(pos in popInfoTab){
+				//console.log(popInfoTab[pos]);
+				sampleSum[popInfoTab[pos].Sample] = 0;
+				samplePopNames[popInfoTab[pos].Sample] = [];
 			}
-			 chart = c3.generate({
-		        data: {
-		            json: popInfoTab,
-		            keys: {
-		                value: numericCols,
-		            }, 
-		            axes: {
-		            	hapSampCNT :'y',
-		            	hapReadCNT :'y2'
-		            }, 
-		            type: 'bar'
-		        },
-		        axis: {
-		            x: {
-		                type: 'category',
-						categories: xLabs ,
-			            tick: {
-			                rotate: 75
-			            },
-			            height: 130
-		            },
-		            y2: {
-		            	show:true
-		            }
-		        },
-		        bindto: "#chart"
-		        
-		    });
+			for(pos in popInfoTab){
+				var actualPos = popInfoTab.length - 1 - pos;
+				//console.log(popInfoTab[pos]);\
+				samplePopNames[popInfoTab[actualPos].Sample].push({popUID: popInfoTab[actualPos].popUID,
+					 cAveragedFrac: popInfoTab[actualPos].cAveragedFrac,
+					 color: color(popInfoTab[actualPos].popUID) });
+			}
+			console.log(samplePopNames);
+
+			//console.log(sampleSum);
+			//d3.json(popInfoTab, function(error, data) {
+			  //data = dataLoad["tab"];
+			  x.domain(popInfoTab.map(function(d) { return d.Sample; }));
+			  y.domain([0,1]);
+			var tooltip = d3.select("body")
+				.append("div")
+				.style("position", "absolute")
+				.style("z-index", "10")
+				.style("visibility", "hidden")
+				.style("background-color", "#88aaaa")
+				.attr("id", "popHover");
+			  var hoverTab = createTable("#popHover");
+			  chart.append("g")
+			      .attr("class", "x axis")
+			      .attr("transform", "translate(0," + height + ")")
+			      .call(xAxis)
+			      .selectAll("text")
+				    .attr("y", 0)
+				    .attr("x", 9)
+				    .attr("dy", ".35em")
+				    .attr("transform", "rotate(90)")
+				    .style("text-anchor", "start");
+			
+			  chart.append("g")
+			      .attr("class", "y axis")
+			      .call(yAxis);
+			
+			  chart.selectAll(".bar")
+			      .data(popInfoTab)
+			    .enter().append("rect")
+			      .attr("class", "bar")
+			      .attr("x", function(d) { return x(d.Sample); })
+			      .attr("y", function(d) { 
+			      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
+			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+			      		return ret; 
+			      		})
+			      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+			      .attr("width", x.rangeBand())
+			      .attr("fill", function(d){ return color(d.popUID);})
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+			//});
+
 		});
 		
     </script>
@@ -99,9 +173,9 @@
     <div id = "sampTable">
     	<div id = "sampTableMenu"></div>
     </div>
-    <div id = "chart">
+    <svg id = "chart">
     	
-    </div>
+    </s>
 
   </body>
 </html>

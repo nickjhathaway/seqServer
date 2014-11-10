@@ -322,11 +322,13 @@ public:
       dispMap_1arg(&ssv::showPopData, "pop", "(\\w+)");
       dispMap_1arg(&ssv::popInfoData, "popInfo", "(\\w+)");
       dispMap_1arg(&ssv::popSeqData, "popSeqData", "(\\w+)");
+
       //general information
       dispMap(&ssv::currentSampName, "currentSampName");
       dispMap(&ssv::rootName, "rootName");
       dispMap(&ssv::currentPopName, "currentPopName");
       dispMap(&ssv::colorsData, "baseColors");
+      dispMap_1arg(&ssv::getColors, "getColors", "(\\d+)");
       //js and css loading
       dispMap(&ssv::jsLibs, "jsLibs");
       dispMap(&ssv::jsOwn, "jsOwn");
@@ -456,9 +458,48 @@ public:
     	auto ret = tableToJsonRowWise(bibseq::table(popInfoLocations_[mipName], "\t", true));
       response().out() << ret;
     }
+
+    void getColors(std::string num){
+    	ret_json();
+    	cppcms::json::value ret;
+    	auto outColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1,std::stoi(num));
+    	bibseq::VecStr outColorsStrs;
+    	outColorsStrs.reserve(outColors.size());
+    	for(const auto & c : outColors){
+    		outColorsStrs.emplace_back("#" + c.hexStr_);
+    	}
+    	ret["colors"] = outColorsStrs;
+      response().out() << ret;
+    }
+
     void allSampsInfoData(std::string mipName){
     	ret_json();
-    	auto ret = tableToJsonRowWise(bibseq::table(allInfoLocations_[mipName], "\t", true));
+    	auto sampTab = bibseq::table(allInfoLocations_[mipName], "\t", true);
+    	auto ret = tableToJsonRowWise(sampTab);
+    	auto popCounts = bibseq::countVec(sampTab.getColumn("popUID"));
+    	auto popColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1,popCounts.size());
+    	bibseq::VecStr popColorsStrs(popColors.size());
+    	uint32_t count = 0;
+    	uint32_t halfCount = 0;
+    	//std::cout << popColorsStrs.size() << std::endl;
+    	for(const auto & cPos : iter::range(popColors.size())){
+
+    		uint32_t pos = 0;
+    		if(cPos %2 == 0){
+    			pos = popColors.size()/2 + halfCount;
+    			++halfCount;
+    		}else{
+    			pos = count;
+    			++count;
+    		}
+    		//std::cout << "\tcPos:" << cPos << std::endl;
+    		//std::cout << "\tpos:" << pos << std::endl;
+    		popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
+    	}
+    	//auto gen = bibseq::randomGenerator();
+
+    	//bibseq::shuffle(popColorsStrs, gen.mtGen_);
+    	ret["popColors"] = popColorsStrs;
       response().out() << ret;
     }
     void mipSampleNames(std::string mipName){
@@ -549,7 +590,6 @@ public:
     }
 
     void mainPage(){
-
       response().out() << mainPageHtml_.get();
     }
 

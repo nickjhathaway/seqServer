@@ -46,7 +46,7 @@
 	}
 	
 	function updateTable(tab, data, columns){
-		
+		//console.log(data);
 		//ensure header row
 		var headerRow = tab.select("thead")
 			.selectAll("tr")
@@ -66,16 +66,19 @@
 	        .append("th")*/
 	            
 	  //remove any headers that don't have data attached to them
-	  console.log(columns);
+	  //console.log(columns);
 	  header.exit()
         	.remove();
-		var currentColor = "#e9e9e9";
+		
 	    // create a row for each object in the data
 	    var newRows = tab.select("tbody").selectAll("tr")
 	        .data(data)
 	        .enter()
-	        .append("tr")
-	        	.style("background-color",function(d,i){
+	        .append("tr");
+	    tab.select("tbody").selectAll("tr")
+	        .data(data).exit().remove();
+	    var currentColor = "#e9e9e9";
+		var rows = tab.select("tbody").selectAll("tr").style("background-color",function(d,i){
 	        		if(i == 0){
 	        			return currentColor;
 	        		}else {
@@ -88,8 +91,7 @@
 	        			}
 	        		}
 	        		return currentColor;
-	        		});
-		var rows = tab.select("tbody").selectAll("tr");
+	        		});;
 	    //create a cell in each row for each column
 	    //console.log(rows);
 	    var cells = rows.selectAll("td")
@@ -98,7 +100,6 @@
 	                return {column: column, value: row[column]};
 	            });         
 	            return ret;
-	            
 	        });
 	   	cells.enter()
 	        .append("td")
@@ -107,7 +108,64 @@
 	    cells.text(function(d) { return d.value; });
 	    //remove cells as needed
 	    cells.exit()
+        	 .remove();
+       
+	}
+	function updateTableWithColors(tab, data, columns){
+		//console.log(data);
+		//ensure header row
+		var headerRow = tab.select("thead")
+			.selectAll("tr")
+			.data([1])
+			.enter();
+		//attach column name data to header
+		var header = tab.select("thead").select("tr")
+	        .selectAll("th")
+	        .data(columns).text(function(column) { return column; });
+	    header
+	        .enter()
+			.append("th")
+				.attr("style", "font-weight: bold; padding: 2px 4px;")
+	            .text(function(column) { return column; });
+	   //create headers as needed and add bolding 
+	  /*header.enter()
+	        .append("th")*/
+	            
+	  //remove any headers that don't have data attached to them
+	  //console.log(columns);
+	  header.exit()
         	.remove();
+		
+	    // create a row for each object in the data
+	    var newRows = tab.select("tbody").selectAll("tr")
+	        .data(data)
+	        .enter()
+	        .append("tr");
+	    tab.select("tbody").selectAll("tr")
+	        .data(data).exit().remove();
+	    var currentColor = "#e9e9e9";
+		var rows = tab.select("tbody")
+		.selectAll("tr")
+		.style("background-color",function(d){
+	        		return d.color;});
+	    //create a cell in each row for each column
+	    //console.log(rows);
+	    var cells = rows.selectAll("td")
+	        .data(function(row) {
+	        	var ret = columns.map(function(column) {
+	                return {column: column, value: row[column]};
+	            });         
+	            return ret;
+	        });
+	   	cells.enter()
+	        .append("td")
+	            .attr("style", "padding: 2px 4px;")
+	            .text(function(d) { return d.value; });
+	    cells.text(function(d) { return d.value; });
+	    //remove cells as needed
+	    cells.exit()
+        	 .remove();
+       
 	}
 	
 			function createLinksTable(addToSelector,linkPrefix, links, colNum, mouseOverColor, mouseLeaveColor){
