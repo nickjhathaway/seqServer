@@ -68,56 +68,10 @@ cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab){
 	return ret;
 }
 
-bool checkForSubStrs(const std::string & str,
-		const std::vector<std::string> & contains){
-	for(const auto & s : contains){
-		if(str.find(s) != std::string::npos){
-			return true;
-		}
-	}
-	return false;
-}
 
 
-void listAllFilesHelper(const boost::filesystem::path & dirName, bool recursive,
-		std::map<boost::filesystem::path, bool> & files,
-		uint32_t currentLevel,
-		uint32_t levels){
-	boost::filesystem::path dir(dirName);
-	boost::filesystem::directory_iterator end_iter;
-	if(boost::filesystem::exists(dir) && boost::filesystem::is_directory(dir)){
-	  for(boost::filesystem::directory_iterator dir_iter(dir); dir_iter != end_iter ; ++dir_iter){
-	  	boost::filesystem::path current = dir_iter->path();
-	  	if(boost::filesystem::is_directory(dir_iter->path())){
-	  		files[current] = true;
-	  		if(recursive && currentLevel <levels){
-	  			listAllFilesHelper(current, recursive, files,
-	  					currentLevel + 1, levels);
-	  		}
-	  	}else{
-	  		files[current] = false;
-	  	}
-	  }
-	}
-}
 
 
-std::map<boost::filesystem::path, bool> listAllFiles(const std::string & dirName,
-		bool recursive,const std::vector<std::string>& contains,
-		uint32_t levels = std::numeric_limits<uint32_t>::max()){
-	std::map<boost::filesystem::path, bool> files;
-	listAllFilesHelper(dirName, recursive, files, 1, levels);
-	if(!contains.empty()){
-		std::map<boost::filesystem::path, bool> specificFiles;
-		for(const auto & f : files){
-			if(checkForSubStrs(f.first.string(), contains)){
-				specificFiles.emplace(f);
-			}
-		}
-		return specificFiles;
-	}
-	return files;
-}
 
 namespace bibseq{
 cppcms::json::value dotToJson(const std::string& dotFilename){
@@ -339,7 +293,7 @@ public:
 
       mapper().root(name);
 
-    	auto files = listAllFiles(clusDir, true, bibseq::VecStr {"analysis"});
+    	auto files = bib::files::listAllFiles(clusDir, true, bibseq::VecStr {"analysis"});
     	for(const auto & f : files){
     		auto toks = bibseq::tokenizeString(f.first.string(), "/");
     		auto aPos = bibseq::find(toks,"analysis" );
