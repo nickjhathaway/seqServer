@@ -277,6 +277,8 @@
 	            qual: this.seqData["seqs"][this.currentSeq]["qual"]
 	        }
 	    });
+	    //this.chart.xgrids.remove();
+	    this.chart.xgrids([{value: this.currentBase, text:this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]}]);
 
     };
    SeqView.prototype.setUpListeners = function(){
