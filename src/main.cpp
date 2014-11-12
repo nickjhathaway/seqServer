@@ -235,6 +235,7 @@ public:
     																		 make_path("../resources/js/libs/rgbcolor.js"),
     																		 make_path("../resources/js/libs/jspdf.min.js"),
     																		 make_path("../resources/js/libs/svgToPdf.js"),
+    																		 make_path("../resources/js/libs/d3.legend.js"),
     																		 make_path("../resources/js/libs/underscore-min.js")})
         , jsOwn_(std::vector<bfs::path>{make_path("../resources/js/own/utils.js"),
 																				make_path("../resources/js/own/tableFuncs.js"),

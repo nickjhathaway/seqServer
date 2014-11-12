@@ -18,6 +18,8 @@
 		.x.axis path {
 		  display: none;
 		}
+		
+
 	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -108,7 +110,7 @@
 			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 			    
 			var x = d3.scale.ordinal()
-			    .rangeRoundBands([0, width], .1);
+			    .rangeRoundBands([0, width - 100], .1);
 			
 			var y = d3.scale.linear()
 			    .range([height, 0]);
@@ -173,15 +175,30 @@
 			      .attr("width", x.rangeBand())
 			      .attr("fill", function(d){ return color(d.popUID);})
 			      .style("stroke", "#000")
+			      .attr("data-legend",function(d) { return d.popUID;})
 			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			bars.exit()
 			    .remove();
-
+			var legend = chart.append("g")
+			  .attr("class","legend")
+			  .attr("transform","translate(" + (width - 100) + ",10)")
+			  .style("font-size","12px")
+			  .call(d3.legend);
+			  d3.select(".legend-box").style("fill", "#fff");
+			  d3.select(".legend-items").style("fill", "#000");
+			/*
+			 * 		.legend {
+			fill: #fff;
+		}
+		.legend-items {
+			fill: #000;
+		}
+			 */
 			function updateChart(){
 			x = d3.scale.ordinal()
-			    .rangeRoundBands([0, width], .1);
+			    .rangeRoundBands([0, width - 100], .1);
 			x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
 			xAxis = d3.svg.axis()
 			    .scale(x)
@@ -227,6 +244,7 @@
 			      .attr("width", x.rangeBand())
 			      .attr("fill", function(d){ return color(d.popUID);})
 			      .style("stroke", "#000")
+			      .attr("data-legend",function(d) { return d.popUID;})
 			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
@@ -242,11 +260,13 @@
 			      .attr("width", x.rangeBand())
 			      .attr("fill", function(d){ return color(d.popUID);})
 			      .style("stroke", "#000")
-			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+			      .attr("data-legend",function(d) { return d.popUID;})
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 				bars.exit()
 			    .remove();
+			   legend.call(d3.legend);
 			}
 
 			function updateChartOnClick() {         
