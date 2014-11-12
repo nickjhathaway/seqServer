@@ -336,6 +336,9 @@ public:
     	for(const auto & allSampInfo : allInfoLocations_){
     		auto tab = bibseq::table(allSampInfo.second, "\t", true );
     		auto expNames = tab.getColumn("popUID");
+    		std::cout << bib::bashCT::red << "expnames " << std::endl;
+    		std::cout << bib::conToStr(expNames) << std::endl;
+    		std::cout << bib::bashCT::reset;
     		auto expName = expNames.front().substr(0,expNames.front().find("_"));
     		auto targetName = expNames.front().substr(0,expNames.front().find("."));
     		tab.columnNames_.insert(tab.columnNames_.begin(), "geneName");
