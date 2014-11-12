@@ -336,6 +336,9 @@ public:
     	for(const auto & allSampInfo : allInfoLocations_){
     		auto tab = bibseq::table(allSampInfo.second, "\t", true );
     		auto expNames = tab.getColumn("popUID");
+    		if(expNames.empty()){
+    			continue;
+    		}
     		std::cout << bib::bashCT::red << "expnames " << std::endl;
     		std::cout << bib::conToStr(expNames) << std::endl;
     		std::cout << bib::bashCT::reset;
