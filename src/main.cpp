@@ -461,11 +461,11 @@ public:
     	};
     	//std::cout << bibseq::vectorToString(sampToks,",")<< std::endl;
     	auto trimedTab = mipTab.extractByComp("mipName", containsMipName);
-
+    	trimedTab.sortTable("mipName", true);
     	auto ret = tableToJsonRowWise(trimedTab);
     	auto outMipNames = trimedTab.getColumn("mipName");
     	auto geneNames = trimedTab.getColumn("geneName");
-    	trimedTab.sortTable("mipName", true);
+
     	auto mipCounts = bibseq::countVec(outMipNames);
     	auto geneCounts = bibseq::countVec(geneNames);
     	auto singleMipNames = bib::getVecOfMapKeys(mipCounts);
