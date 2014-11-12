@@ -5,28 +5,22 @@
 	<title>All Samples Info</title>
 	<style>	
 	
-.bar {
-  /*fill: steelblue;*/
-  stroke: #000;
-}
-
-.axis text {
-  font: 10px sans-serif;
-}
-
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-.x.axis path {
-  display: none;
-}
+		.axis text {
+		  font: 12px sans-serif;
+		}
+		.axis path,
+		.axis line {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+		
+		.x.axis path {
+		  display: none;
+		}
 	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
@@ -43,22 +37,23 @@
 			var rName = locSplit[2];
 			var currentPopName = locSplit.pop();
 			$("title", "head").html(currentPopName);
-			//console.log(currentPopName);
-			ajax('/' + rName + '/allSampsInfo/' + currentPopName, function(tab){ mainPopInfoTab = tab; });
+			var sampNames;
+			ajax("/" + rName + "/mipSampleNames/" + currentPopName, function(mn){ sampNames = mn; });
+			//ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + "samp073?samp014", function(tab){ mainPopInfoTab = tab; });
+			//console.log(sampNames.join("DELIM"));
+			ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + sampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			
 			var tab = createTable("#sampTable");
 			var columnNames = mainPopInfoTab["columnNames"];
-			var popInfoTab = mainPopInfoTab["tab"];
-			var numericCols = mainPopInfoTab["numericColNames"];
-			updateTable(tab, popInfoTab,  columnNames);
-			//console.log(popInfoTab[0]);
+			updateTable(tab, mainPopInfoTab["tab"],  columnNames);
+			//console.log(mainPopInfoTab["tab"][0]);
 			function updateTableOnClick() {         
 			     var allVals = [];
 			     $('#sampTableMenu :checked').each(function() {
 			       allVals.push($(this).val());
 			     });
 			     var currentColumnNames = _.intersection(columnNames, allVals);
-			     updateTable(tab,popInfoTab, currentColumnNames );;
+			     updateTable(tab, mainPopInfoTab["tab"], currentColumnNames );;
 			 };
 			var inputs = d3.select("#sampTableMenu").selectAll("input")
 				.data(columnNames)
@@ -70,23 +65,54 @@
 				.append("input")
 					.attr("type","checkbox")
 					.attr("name", "check")
+					.attr("checked", true)
 					.attr("value",function(d){return d;})
-					.attr("id", function(d){return d;})
-					
-					;
-				 ;
-			 $( '#sampTableMenu input' ).click( updateTableOnClick );
+					.attr("id", function(d){return d;});
+			$( '#sampTableMenu input' ).click( updateTableOnClick );
+			$('<br>').appendTo('#sampTableMenu');
+			$('<a>',{
+			    text: 'Check All',
+			    href: "javascript:void(0);",
+			    id: "check-all"
+			}).appendTo('#sampTableMenu');
+			$('<br>').appendTo('#sampTableMenu');
+			$('<a>',{
+			    text: 'Uncheck All',
+			    href: "javascript:void(0);",
+			    id: "uncheck-all"
+			}).appendTo('#sampTableMenu');
+			$('#check-all', "#sampTableMenu").click(function(){
+				//console.log("check-all");
+			    $("input:checkbox", "#sampTableMenu").prop('checked', true);
+			   updateTableOnClick();
+			  });
+			  $('#uncheck-all', "#sampTableMenu").click(function(){
+			  	//console.log("uncheck-all");
+			    $("input:checkbox", "#sampTableMenu").prop('checked', false);
+			    updateTableOnClick();
+			  });
+			var tooltip = d3.select("body")
+				.append("div")
+				.style("position", "absolute")
+				.style("visibility", "hidden")
+				.style("background-color", "#88aaaa")
+				.attr("id", "popHover");
+			var hoverTab = createTable("#popHover");
 			var margin = {top: 20, right: 30, bottom: 80, left: 40},
 			    width = $(window).width() -100 - margin.left - margin.right,
 			    height = 500 - margin.top - margin.bottom;
-			
+			var chart = d3.select("#chart")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			    
 			var x = d3.scale.ordinal()
 			    .rangeRoundBands([0, width], .1);
 			
 			var y = d3.scale.linear()
 			    .range([height, 0]);
 			    
-			
 			var xAxis = d3.svg.axis()
 			    .scale(x)
 			    .orient("bottom");
@@ -94,45 +120,29 @@
 			var yAxis = d3.svg.axis()
 			    .scale(y)
 			    .orient("left");
-			
-			var chart = d3.select("#chart")
-			    .attr("width", width + margin.left + margin.right)
-			    .attr("height", height + margin.top + margin.bottom)
-			  .append("g")
-			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+		
 			var sampleSum = {};
 			var samplePopNames = {};
 			var color = d3.scale.ordinal()
-			    .domain(popInfoTab.map(function(d) { return d.popUID; }))
+			    .domain(mainPopInfoTab["tab"].map(function(d) { return d.popUID; }))
 			    .range(mainPopInfoTab["popColors"]);
 			    console.log(mainPopInfoTab["popColors"]);
-			for(pos in popInfoTab){
-				//console.log(popInfoTab[pos]);
-				sampleSum[popInfoTab[pos].Sample] = 0;
-				samplePopNames[popInfoTab[pos].Sample] = [];
+			for(pos in mainPopInfoTab["tab"]){
+				//console.log(mainPopInfoTab["tab"][pos]);
+				sampleSum[mainPopInfoTab["tab"][pos].Sample] = 0;
+				samplePopNames[mainPopInfoTab["tab"][pos].Sample] = [];
 			}
-			for(pos in popInfoTab){
-				var actualPos = popInfoTab.length - 1 - pos;
-				//console.log(popInfoTab[pos]);\
-				samplePopNames[popInfoTab[actualPos].Sample].push({popUID: popInfoTab[actualPos].popUID,
-					 cAveragedFrac: popInfoTab[actualPos].cAveragedFrac,
-					 color: color(popInfoTab[actualPos].popUID) });
+			for(pos in mainPopInfoTab["tab"]){
+				var actualPos = mainPopInfoTab["tab"].length - 1 - pos;
+				samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({Sample: mainPopInfoTab["tab"][actualPos].Sample,
+				popUID: mainPopInfoTab["tab"][actualPos].popUID,
+					 cAveragedFrac: mainPopInfoTab["tab"][actualPos].cAveragedFrac,
+					 color: color(mainPopInfoTab["tab"][actualPos].popUID) });
 			}
 			console.log(samplePopNames);
+			x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
+			y.domain([0,1]);
 
-			//console.log(sampleSum);
-			//d3.json(popInfoTab, function(error, data) {
-			  //data = dataLoad["tab"];
-			  x.domain(popInfoTab.map(function(d) { return d.Sample; }));
-			  y.domain([0,1]);
-			var tooltip = d3.select("body")
-				.append("div")
-				.style("position", "absolute")
-				.style("z-index", "10")
-				.style("visibility", "hidden")
-				.style("background-color", "#88aaaa")
-				.attr("id", "popHover");
-			  var hoverTab = createTable("#popHover");
 			  chart.append("g")
 			      .attr("class", "x axis")
 			      .attr("transform", "translate(0," + height + ")")
@@ -148,9 +158,10 @@
 			      .attr("class", "y axis")
 			      .call(yAxis);
 			
-			  chart.selectAll(".bar")
-			      .data(popInfoTab)
-			    .enter().append("rect")
+			  var bars = chart.selectAll(".bar")
+			      .data(mainPopInfoTab["tab"]);
+			      
+			  bars.enter().append("rect")
 			      .attr("class", "bar")
 			      .attr("x", function(d) { return x(d.Sample); })
 			      .attr("y", function(d) { 
@@ -161,11 +172,178 @@
 			      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
 			      .attr("width", x.rangeBand())
 			      .attr("fill", function(d){ return color(d.popUID);})
+			      .style("stroke", "#000")
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+			bars.exit()
+			    .remove();
+
+			function updateChart(){
+			x = d3.scale.ordinal()
+			    .rangeRoundBands([0, width], .1);
+			x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
+			xAxis = d3.svg.axis()
+			    .scale(x)
+			    .orient("bottom");
+			sampleSum = {};
+			samplePopNames = {};
+			color = d3.scale.ordinal()
+			    .domain(mainPopInfoTab["tab"].map(function(d) { return d.popUID; }))
+			    .range(mainPopInfoTab["popColors"]);
+			    //console.log(mainPopInfoTab["popColors"]);
+			for(pos in mainPopInfoTab["tab"]){
+				//console.log(mainPopInfoTab["tab"][pos]);
+				sampleSum[mainPopInfoTab["tab"][pos].Sample] = 0;
+				samplePopNames[mainPopInfoTab["tab"][pos].Sample] = [];
+			}
+			for(pos in mainPopInfoTab["tab"]){
+				var actualPos = mainPopInfoTab["tab"].length - 1 - pos;
+				samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({Sample: mainPopInfoTab["tab"][actualPos].Sample,
+				popUID: mainPopInfoTab["tab"][actualPos].popUID,
+					 cAveragedFrac: mainPopInfoTab["tab"][actualPos].cAveragedFrac,
+					 color: color(mainPopInfoTab["tab"][actualPos].popUID) });
+			}
+			//console.log(samplePopNames);
+			
+			chart.select("g.x.axis")
+			      .call(xAxis)
+			      .selectAll("text")
+				    .attr("y", 0)
+				    .attr("x", 9)
+				    .attr("dy", ".35em")
+				    .attr("transform", "rotate(90)")
+				    .style("text-anchor", "start");
+			  var bars = chart.selectAll(".bar")
+		      .data(mainPopInfoTab["tab"]);
+			  bars
+			  	  .attr("x", function(d) { return x(d.Sample); })
+			      .attr("y", function(d) { 
+			      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
+			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+			      		return ret; 
+			      		})
+			      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+			      .attr("width", x.rangeBand())
+			      .attr("fill", function(d){ return color(d.popUID);})
+			      .style("stroke", "#000")
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+			  bars.enter().append("rect")
+			      .attr("class", "bar")
+			      .attr("x", function(d) { return x(d.Sample); })
+			      .attr("y", function(d) { 
+			      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
+			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+			      		return ret; 
+			      		})
+			      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+			      .attr("width", x.rangeBand())
+			      .attr("fill", function(d){ return color(d.popUID);})
+			      .style("stroke", "#000")
 			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
-			//});
+				bars.exit()
+			    .remove();
+			}
 
+			function updateChartOnClick() {         
+			     var allVals = [];
+			     $('#sampNameMenu :checked').each(function() {
+			       allVals.push($(this).val());
+			     });
+			     var currentSampNames = _.intersection(sampNames, allVals);
+			     console.log(currentSampNames);
+			     if(currentSampNames.length == 0){
+			     	mainPopInfoTab = {};
+			     }else{
+			     	ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			     }
+			     console.log(currentSampNames);
+			     
+			 	 console.log(mainPopInfoTab);
+			 	 updateTableOnClick();
+			 	 updateChart();
+			 };
+			 //function checkAll()
+			var inputs = d3.select("#sampNameMenu").selectAll("input")
+				.data(sampNames)
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("for",function(d){return d;})
+					.attr("style", "border:2px solid black; padding: 2;")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("checked", true)
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;});
+			$('<br>').appendTo('#sampNameMenu');
+			$('<a>',{
+			    text: 'Check All',
+			    href: "javascript:void(0);",
+			    id: "check-all"
+			}).appendTo('#sampNameMenu');
+			$('<br>').appendTo('#sampNameMenu');
+			$('<a>',{
+			    text: 'Uncheck All',
+			    href: "javascript:void(0);",
+			    id: "uncheck-all"
+			}).appendTo('#sampNameMenu');
+			$('#check-all', "#sampNameMenu").click(function(){
+				//console.log("check-all");
+			    $("input:checkbox", "#sampNameMenu").prop('checked', true);
+			    updateChartOnClick();
+			  });
+			  $('#uncheck-all', "#sampNameMenu").click(function(){
+			  	//console.log("uncheck-all");
+			    $("input:checkbox", "#sampNameMenu").prop('checked', false);
+			    updateChartOnClick();
+			  });
+			  
+			$( '#sampNameMenu input' ).click( updateChartOnClick );
+			d3.select("#save").append("a").attr("id", "imgDownload");
+			d3.select("#save").on("click", function(){
+			  var html = d3.select("#chart")
+			        .attr("version", 1.1)
+			        .attr("xmlns", "http://www.w3.org/2000/svg")
+			        .node().parentNode.innerHTML;
+			 
+			  //console.log(html);
+			  var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+			  d3.select("#imgDownload").attr("download", currentPopName);
+			  d3.select("#imgDownload").attr("href", imgsrc);
+			  var a = $("#imgDownload")[0];
+			  a.click();
+			  //console.log(imgsrc);
+			  console.log(this);
+			  console.log(a);
+			  /*
+			  var img = '<img src="'+imgsrc+'">'; 
+			  d3.select("#svgdataurl").html(img);
+			  var canvas = document.querySelector("canvas"),
+				  context = canvas.getContext("2d");
+			 
+			  var image = new Image;
+			  image.src = imgsrc;
+			  image.onload = function() {
+				  context.drawImage(image, 0, 0);
+			 
+				  var canvasdata = canvas.toDataURL("image/png");
+			 
+				  var pngimg = '<img src="'+canvasdata+'">'; 
+			  	  d3.select("#pngdataurl").html(pngimg);
+			 
+				  var a = document.createElement("a");
+				  a.download = "sample.png";
+				  a.href = canvasdata;
+				  a.click();
+			  };
+			 */
+			});
 		});
 		
     </script>
@@ -173,9 +351,14 @@
     <div id = "sampTable">
     	<div id = "sampTableMenu"></div>
     </div>
-    <svg id = "chart">
+    <div id = "sampNameMenu">
     	
-    </s>
+    </div>
+    <div id = "chartSvg">
+    	 <svg id = "chart">
+    </div>
+    </svg>
+    <button id="save">Save as Svg</button>
 
   </body>
 </html>

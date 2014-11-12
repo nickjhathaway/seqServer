@@ -263,7 +263,7 @@ public:
       dispMap_1arg(&ssv::mipSampleNames, "mipSampleNames", "(\\w+)");
       //show the data table with all sample information
       dispMap_1arg(&ssv::showAllSampInfo, "allSamps", "(\\w+)");
-      dispMap_1arg(&ssv::allSampsInfoData, "allSampsInfo", "(\\w+)");
+      dispMap_2arg(&ssv::allSampsInfoData, "allSampsInfo", "(\\w+)/(\\w+)");
       //show the mip target info for one sample
       dispMap_2arg(&ssv::showOneSampleInfo, "oneSampInfo", "(\\w+)/(\\w+)");
       dispMap_2arg(&ssv::oneSampInitSeqData, "oneSampInitSeqData", "(\\w+)/(\\w+)");
@@ -426,12 +426,19 @@ public:
       response().out() << ret;
     }
 
-    void allSampsInfoData(std::string mipName){
+    void allSampsInfoData(std::string mipName, std::string sampNames){
     	ret_json();
     	auto sampTab = bibseq::table(allInfoLocations_[mipName], "\t", true);
-    	auto ret = tableToJsonRowWise(sampTab);
-    	auto popCounts = bibseq::countVec(sampTab.getColumn("popUID"));
-    	auto popColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1,popCounts.size());
+    	auto sampToks = bibseq::tokenizeString(sampNames, "DELIM");
+    	auto containsSampName = [&sampToks](const std::string & str){
+    		return bibseq::in(str, sampToks);
+    	};
+    	//std::cout << bibseq::vectorToString(sampToks,",")<< std::endl;
+    	auto trimedTab = sampTab.extractByComp("Sample", containsSampName);
+    	auto ret = tableToJsonRowWise(trimedTab);
+    	auto popCounts = bibseq::countVec(trimedTab.getColumn("popUID"));
+    	auto popColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1, popCounts.size());
+
     	bibseq::VecStr popColorsStrs(popColors.size());
     	uint32_t count = 0;
     	uint32_t halfCount = 0;
@@ -454,6 +461,7 @@ public:
 
     	//bibseq::shuffle(popColorsStrs, gen.mtGen_);
     	ret["popColors"] = popColorsStrs;
+
       response().out() << ret;
     }
     void mipSampleNames(std::string mipName){
