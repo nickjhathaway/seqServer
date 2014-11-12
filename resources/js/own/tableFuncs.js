@@ -184,7 +184,7 @@
 				    .style("border-collapse", "collapse")
 				    .style("border", "2px black solid")
 				    
-				    .selectAll("tr")
+				    .selectAll("addToSelector tr")
 				    .data(dataset)
 				    .enter().append("tr")
 				    

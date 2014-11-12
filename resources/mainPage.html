@@ -40,7 +40,16 @@
 			$("body").append("<h1>Genes</h1>");
 			$("body").append("<div id=\"geneLinks\"></div>");
 			createLinksTable(addTo, linkPre, gNames,cols, mouseOverC, mouseLeaveC);
-
+			
+			var sampNames;
+			ajax("/" + rName + "/allSampNames", function(mn) {
+				sampNames = mn;
+			});
+			var linkPreSamp = "/" + rName + "/oneSampAllMipInfo/";
+			var addToSamp = "#sampLinks";
+			$("body").append("<h1>Samples</h1>");
+			$("body").append("<div id=\"sampLinks\"></div>");
+			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
 			
 		});
 	</script>

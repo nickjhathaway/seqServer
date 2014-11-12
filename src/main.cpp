@@ -148,6 +148,7 @@ private:
 
     utils::FileCache mainPageHtml_;
     utils::FileCache oneGeneInfoHtml_;
+    utils::FileCache oneSampAllMipInfoHtml_;
     utils::FileCache oneMipInfoHtml_;
     utils::FileCache allSampsInfoHtml_;
     utils::FileCache oneSampInfoHtml_;
@@ -178,6 +179,8 @@ private:
 
     std::unordered_map<std::string, std::string> popInfoLocations_;
     std::unordered_map<std::string, std::string> allInfoLocations_;
+    std::unordered_map<std::string, bibseq::table> allInfoBySample_;
+
     std::string rootName_;
     std::string clusteringDir_;
     std::unordered_map<std::string, std::vector<bfs::path>> files_;
@@ -224,6 +227,7 @@ public:
         : cppcms::application(srv)
         , mainPageHtml_(make_path("../resources/mainPage.html"))
     		, oneGeneInfoHtml_(make_path("../resources/oneGeneView.html"))
+    		, oneSampAllMipInfoHtml_(make_path("../resources/oneSampAllMipInfo.html"))
 				, oneMipInfoHtml_(make_path("../resources/oneMipInfo.html"))
 				, allSampsInfoHtml_(make_path("../resources/allSampsInfo.html"))
 				, oneSampInfoHtml_(make_path("../resources/oneSampInfo.html"))
@@ -248,6 +252,7 @@ public:
     {
     	mainPageHtml_.replaceStr("/ssv", name);
     	oneGeneInfoHtml_.replaceStr("/ssv", name);
+    	oneSampAllMipInfoHtml_.replaceStr("/ssv", name);
     	oneMipInfoHtml_.replaceStr("/ssv", name);
     	allSampsInfoHtml_.replaceStr("/ssv", name);
     	oneSampInfoHtml_.replaceStr("/ssv", name);
@@ -256,9 +261,14 @@ public:
     	//main page
       dispMapRoot(&ssv::mainPage);
       dispMap(&ssv::geneNames, "geneNames");
+      dispMap(&ssv::getAllSampleNames, "allSampNames");
       //gene page
       dispMap_1arg(&ssv::showGeneInfo, "geneInfo", "(\\w+)");
       dispMap_1arg(&ssv::mipNames, "mipNames", "(\\w+)");
+      //one samp all mips page
+      dispMap_1arg(&ssv::showOneSampAllMip, "oneSampAllMipInfo", "(\\w+)");
+      dispMap_2arg(&ssv::oneSampAllMipData, "oneSampAllMipData", "(\\w+)/(\\w+)");
+      dispMap_1arg(&ssv::sampMipNamesData, "sampMipNames", "(\\w+)");
       //show one mip target info and sample names
       dispMap_1arg(&ssv::showMipInfo, "mipInfo", "(\\w+)");
       dispMap_1arg(&ssv::mipSampleNames, "mipSampleNames", "(\\w+)");
@@ -279,6 +289,7 @@ public:
       dispMap_1arg(&ssv::popSeqData, "popSeqData", "(\\w+)");
 
       //general information
+
       dispMap(&ssv::currentSampName, "currentSampName");
       dispMap(&ssv::rootName, "rootName");
       dispMap(&ssv::currentPopName, "currentPopName");
@@ -322,6 +333,38 @@ public:
       		dotFilesLocations_[*aPos][samp] = f.first.string();
     		}
     	}
+    	for(const auto & allSampInfo : allInfoLocations_){
+    		auto tab = bibseq::table(allSampInfo.second, "\t", true );
+    		auto expNames = tab.getColumn("popUID");
+    		auto expName = expNames.front().substr(0,expNames.front().find("_"));
+    		auto targetName = expNames.front().substr(0,expNames.front().find("."));
+    		tab.columnNames_.insert(tab.columnNames_.begin(), "geneName");
+    		tab.columnNames_.insert(tab.columnNames_.begin(), "mipName");
+    		for(auto & row : tab.content_){
+    			row.insert(row.begin(), expName);
+    			row.insert(row.begin(), targetName);
+    		}
+    		auto split = tab.splitTableOnColumn("Sample");
+    		//std::cout << bib::conToStr(tab.columnNames_, ",") << std::endl;
+    		for(const auto & s : split){
+    			auto search = allInfoBySample_.find(s.first);
+    			if(search == allInfoBySample_.end()){
+    				allInfoBySample_[s.first] = s.second;
+    			} else {
+    				allInfoBySample_[s.first].rbind(s.second);
+    			}
+    		}
+    	}
+    }
+
+    void getAllSampleNames(){
+    	ret_json();
+    	cppcms::json::value r;
+    	auto samps = bib::getVecOfMapKeys(allInfoBySample_);
+    	bibseq::sort(samps);
+    	std::cout <<bib::conToStr( samps , ",")<< std::endl;
+    	r = samps;
+    	response().out() << r;
     }
 
     void currentPopName(){
@@ -382,6 +425,56 @@ public:
 
     void showGeneInfo(std::string geneName){
     	response().out() << oneGeneInfoHtml_.get();
+    }
+
+    void showOneSampAllMip(std::string sampName){
+    	response().out() << oneSampAllMipInfoHtml_.get();
+    }
+    void sampMipNamesData(std::string sampName){
+    	ret_json();
+    	cppcms::json::value ret;
+    	auto mipNames = allInfoBySample_[sampName].getColumn("mipName");
+    	auto mipCounts = bibseq::countVec(mipNames);
+    	auto singleMipNames = bib::getVecOfMapKeys(mipCounts);
+    	ret["mipNames"] = singleMipNames;
+    	response().out() << ret;
+    }
+
+    void oneSampAllMipData(std::string sampName, std::string mipNames){
+    	ret_json();
+    	auto mipTab = allInfoBySample_[sampName];
+    	auto mipToks = bibseq::tokenizeString(mipNames, "DELIM");
+    	auto containsMipName = [&mipToks](const std::string & str){
+    		return bibseq::in(str, mipToks);
+    	};
+    	//std::cout << bibseq::vectorToString(sampToks,",")<< std::endl;
+    	auto trimedTab = mipTab.extractByComp("mipName", containsMipName);
+
+    	auto ret = tableToJsonRowWise(trimedTab);
+    	auto outMipNames = trimedTab.getColumn("mipName");
+    	auto geneNames = trimedTab.getColumn("geneName");
+    	auto mipCounts = bibseq::countVec(outMipNames);
+    	auto geneCounts = bibseq::countVec(geneNames);
+    	auto singleMipNames = bib::getVecOfMapKeys(mipCounts);
+    	ret["mipNames"] = singleMipNames;
+    	auto singleGeneNames = bib::getVecOfMapKeys(geneCounts);
+    	ret["geneNames"] = singleGeneNames;
+    	auto & genInfo = ret["geneInfo"];
+    	for(const auto & g : geneNames){
+    		genInfo[g] = bibseq::getTargetsAtPositions(singleMipNames, bibseq::getPositionsOfTargetStartsWith(singleMipNames, g));
+    	}
+    	std::unordered_map<std::string,uint32_t> mipClusIdCounts;
+    	for(const auto & m : trimedTab.getColumn("popUID")){
+    		++mipClusIdCounts[bib::tokenizeString(m,".")[1]];
+    	}
+    	auto outColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1,mipClusIdCounts.size());
+    	bibseq::VecStr outColorsStrs;
+    	outColorsStrs.reserve(outColors.size());
+    	for(const auto & c : outColors){
+    		outColorsStrs.emplace_back("#" + c.hexStr_);
+    	}
+    	ret["popColors"] = outColorsStrs;
+    	response().out() << ret;
     }
 
     void showMipInfo(std::string mipName){
