@@ -465,6 +465,7 @@ public:
     	auto ret = tableToJsonRowWise(trimedTab);
     	auto outMipNames = trimedTab.getColumn("mipName");
     	auto geneNames = trimedTab.getColumn("geneName");
+    	trimedTab.sortTable("mipName", true);
     	auto mipCounts = bibseq::countVec(outMipNames);
     	auto geneCounts = bibseq::countVec(geneNames);
     	auto singleMipNames = bib::getVecOfMapKeys(mipCounts);
