@@ -355,9 +355,11 @@ public:
     			}
     		}
     	}
+    	std::cout << "finish set up " << std::endl;
     }
 
     void getAllSampleNames(){
+    	std::cout << "getAllSampleNames" << std::endl;
     	ret_json();
     	cppcms::json::value r;
     	auto samps = bib::getVecOfMapKeys(allInfoBySample_);
@@ -383,6 +385,7 @@ public:
     }
 
     void rootName(){
+    	std::cout << "rootName" << std::endl;
     	ret_json();
     	cppcms::json::value r;
     	r = rootName_;
@@ -405,6 +408,7 @@ public:
     }
 
     void geneNames(){
+    	std::cout << "geneNames" << std::endl;
     	ret_json();
     	cppcms::json::value ret;
     	auto mipNames = bibseq::getVectorOfMapKeys(files_);
