@@ -4,7 +4,7 @@
   <head>
 	<title>PopInfo</title>
 	<style>
-		#qualChart, #popTable, #chart {
+		#qualChart, #popTable, #popChart {
 			position: relative;
 			clear: both;
 			top: 80px;
@@ -30,6 +30,7 @@
 			var currentPopName = locSplit.pop();
 			ajax('/' + rName + '/popSeqData/' + currentPopName, function(md){ mainData = md; });
 			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			
 			var cellWidth = 20;
 			var cellHeight = 25;
 			var SeqViewer = new SeqView("canvasDiv1",  mainData, cellWidth, cellHeight, baseColors);
@@ -47,11 +48,8 @@
 
 			//console.log(svg);
 			var mainPopInfoTab;
-			var currentPopName;
-			
-			ajax('/' + rName + '/currentPopName', function(name){ currentPopName = name; });
 			$("title", "head").html(currentPopName);
-			console.log(currentPopName);
+			//console.log(currentPopName);
 			ajax('/' + rName + '/popInfo/' + currentPopName, function(tab){ mainPopInfoTab = tab; });
 			//console.log(Object.keys(popInfoTab[0]));
 
@@ -103,8 +101,7 @@
 		                value: numericCols,
 		            }, 
 		            axes: {
-		            	hapSampCNT :'y',
-		            	hapReadCNT :'y2'
+		            	hapSampCNT :'y'
 		            }, 
 		            type: 'bar'
 		        },
@@ -116,12 +113,9 @@
 			                rotate: 75
 			            },
 			            height: 130
-		            },
-		            y2: {
-		            	show:true
 		            }
 		        },
-		        bindto: "#chart"
+		        bindto: "#popChart"
 		        
 		    });
 		    /*
@@ -210,7 +204,7 @@ var aa = $("<a>")
     <div id = "popTable">
     	<div id = "popTableMenu"></div>
     </div>
-    <div id = "chart">
+    <div id = "popChart">
     	
     </div>
 

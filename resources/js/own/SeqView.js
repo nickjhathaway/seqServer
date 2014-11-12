@@ -54,8 +54,8 @@
 	        seqContext.strokeStyle = "#000000";
 			seqContext.lineWidth   = 1;
 	    	for(var hi = sStart;( hi -sStart < this.nSeqs ) && (hi < seqData.length); hi++){
-	    		console.log(hi);
-	    		console.log(this.nSeqs);
+	    		//console.log(hi);
+	    		//console.log(this.nSeqs);
 	    		seqContext.fillStyle = "#EEEEEE";
 		    	seqContext.fillRect(0, (hi - sStart)*this.ch, this.nameOffSet, this.ch);
 		    	seqContext.strokeRect(0, (hi - sStart)*this.ch, this.nameOffSet, this.ch);
@@ -102,7 +102,7 @@
         seqContext.fillStyle = "#EEEEEE";
 	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , tWidth, this.ch);
 	    seqContext.fillStyle = "#000000";
-	    console.log(tWidth);
+	    //console.log(tWidth);
 	    seqContext.fillText(logInfo,this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2  + this.ch/2 );
 	    
    };
@@ -130,9 +130,9 @@
 		var nameOffSet = 10 * cellWidth;
 		var numOfBases = Math.floor((this.canvas.width - cellWidth - nameOffSet)/cellWidth);
 	 	var numOfSeqs = Math.min(Math.floor((this.canvas.height - cellHeight)/cellHeight), this.seqData["seqs"].length);
-	 	console.log(numOfSeqs);
-	 	console.log(Math.floor((this.canvas.height - cellHeight)/cellHeight));
-	 	console.log(this.seqData["seqs"].length);
+	 	//console.log(numOfSeqs);
+	 	//console.log(Math.floor((this.canvas.height - cellHeight)/cellHeight));
+	 	//console.log(this.seqData["seqs"].length);
 		this.painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
 		//this.seqs = seqs;
 
@@ -264,12 +264,12 @@
         this.currentBase = Math.ceil(pt[0]/this.painter.cw) - this.painter.nameOffSet/this.painter.cw + this.baseStart -1;
         this.currentSeq = Math.ceil(pt[1]/this.painter.ch) + this.seqStart - 1;
         this.paintSelectedSeq();
-        console.log(pt);
-        console.log(this.currentSeq);
-        console.log(this.currentBase);
-        console.log(this.seqData["seqs"][this.currentSeq]["name"]);
-        console.log(this.seqData["seqs"][this.currentSeq]["seq"][this.currentBase]);
-        console.log(this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]);
+        //console.log(pt);
+        //console.log(this.currentSeq);
+        //console.log(this.currentBase);
+        //console.log(this.seqData["seqs"][this.currentSeq]["name"]);
+        //console.log(this.seqData["seqs"][this.currentSeq]["seq"][this.currentBase]);
+        //console.log(this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]);
         this.setSelector();
         var currentQual = this.seqData["seqs"][this.currentSeq]["qual"];
 		this.chart.load({

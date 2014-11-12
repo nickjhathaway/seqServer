@@ -21,7 +21,7 @@ d3.legend = function(g) {
           color : self.attr("data-legend-color") != undefined ? self.attr("data-legend-color") : self.style("fill") != 'none' ? self.style("fill") : self.style("stroke") 
         };
      });
-	items = d3.entries(items).sort(function(a,b) {console.log(a.key); return a.key.localeCompare(b.key);});
+	items = d3.entries(items).sort(function(a,b) {/*console.log(a.key);*/ return a.key.localeCompare(b.key);});
     //items = d3.entries(items).sort(function(a,b) {console.log(a.key); return a.key > b.key;});
     //items = d3.entries(items).sort(function(a,b) {console.log(a.value); return a.value.pos-b.value.pos;});
 	//items.sort();
