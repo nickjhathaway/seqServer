@@ -364,6 +364,7 @@ public:
     	bibseq::sort(samps);
     	std::cout <<bib::conToStr( samps , ",")<< std::endl;
     	r = samps;
+    	std::cout << "before resposne out" << std::endl;
     	response().out() << r;
     }
 
