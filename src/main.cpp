@@ -447,6 +447,7 @@ public:
     	auto mipNames = allInfoBySample_[sampName].getColumn("mipName");
     	auto mipCounts = bibseq::countVec(mipNames);
     	auto singleMipNames = bib::getVecOfMapKeys(mipCounts);
+    	bibseq::sort(singleMipNames);
     	ret["mipNames"] = singleMipNames;
     	response().out() << ret;
     }
@@ -475,10 +476,10 @@ public:
     		genInfo[g] = bibseq::getTargetsAtPositions(singleMipNames, bibseq::getPositionsOfTargetStartsWith(singleMipNames, g));
     	}
     	std::unordered_map<std::string,uint32_t> mipClusIdCounts;
-    	for(const auto & m : trimedTab.getColumn("popUID")){
-    		++mipClusIdCounts[bib::tokenizeString(m,".")[1]];
+    	for(const auto & m : trimedTab.getColumn("clusterID")){
+    		++mipClusIdCounts[m];
     	}
-    	auto outColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1,mipClusIdCounts.size());
+    	auto outColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1, mipClusIdCounts.size());
     	bibseq::VecStr outColorsStrs;
     	outColorsStrs.reserve(outColors.size());
     	for(const auto & c : outColors){
