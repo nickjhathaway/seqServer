@@ -339,9 +339,9 @@ public:
     		if(expNames.empty()){
     			continue;
     		}
-    		std::cout << bib::bashCT::red << "expnames " << std::endl;
-    		std::cout << bib::conToStr(expNames) << std::endl;
-    		std::cout << bib::bashCT::reset;
+    		//std::cout << bib::bashCT::red << "expnames " << std::endl;
+    		//std::cout << bib::conToStr(expNames) << std::endl;
+    		//std::cout << bib::bashCT::reset;
     		auto expName = expNames.front().substr(0,expNames.front().find("_"));
     		auto targetName = expNames.front().substr(0,expNames.front().find("."));
     		tab.columnNames_.insert(tab.columnNames_.begin(), "geneName");
@@ -370,7 +370,7 @@ public:
     	cppcms::json::value r;
     	auto samps = bib::getVecOfMapKeys(allInfoBySample_);
     	bibseq::sort(samps);
-    	std::cout <<bib::conToStr( samps , ",")<< std::endl;
+    	//std::cout <<bib::conToStr( samps , ",")<< std::endl;
     	r = samps;
     	std::cout << "before resposne out" << std::endl;
     	response().out() << r;
