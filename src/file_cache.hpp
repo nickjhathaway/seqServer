@@ -53,6 +53,15 @@ public:
 		return d_;
 	}
 
+	const std::string& get(const std::string & str,
+			const std::string & replacement) {
+		if (needsUpdate()) {
+			load();
+			d_ = bibseq::replaceString(d_, str, replacement);
+		}
+		return d_;
+	}
+
 	bool needsUpdate() const {
 		return time_ != bfs::last_write_time(fnp_);
 	}

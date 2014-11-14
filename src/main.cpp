@@ -431,15 +431,15 @@ public:
 
     void showPopData(std::string mipName){
     	currentMipName_ = mipName;
-    	response().out() << popInfoHtml_.get();
+    	response().out() << popInfoHtml_.get("/ssv", rootName_);
     }
 
     void showGeneInfo(std::string geneName){
-    	response().out() << oneGeneInfoHtml_.get();
+    	response().out() << oneGeneInfoHtml_.get("/ssv", rootName_);
     }
 
     void showOneSampAllMip(std::string sampName){
-    	response().out() << oneSampAllMipInfoHtml_.get();
+    	response().out() << oneSampAllMipInfoHtml_.get("/ssv", rootName_);
     }
     void sampMipNamesData(std::string sampName){
     	ret_json();
@@ -492,7 +492,7 @@ public:
 
     void showMipInfo(std::string mipName){
     	currentMipName_ = mipName;
-    	response().out() << oneMipInfoHtml_.get();
+    	response().out() << oneMipInfoHtml_.get("/ssv", rootName_);
     }
 
     void showOneSampleInfo(std::string mipName ,std::string sampName){
@@ -500,18 +500,18 @@ public:
     	currentMipName_ = mipName;
     	currentSampName_ = sampName;
     	std::cout << currentMipName_ << " " << currentSampName_ << std::endl;
-    	response().out() << oneSampInfoHtml_.get();
+    	response().out() << oneSampInfoHtml_.get("/ssv", rootName_);
     }
 
     void showAllSampInfo(std::string mipName){
     	currentMipName_ = mipName;
-    	response().out() << allSampsInfoHtml_.get();
+    	response().out() << allSampsInfoHtml_.get("/ssv", rootName_);
     }
 
     void showMinTree(std::string mipName, std::string sampname){
     	currentMipName_ = mipName;
     	currentSampName_ = sampname;
-    	response().out() << minTreeViewHtml_.get();
+    	response().out() << minTreeViewHtml_.get("/ssv", rootName_);
     }
 
     void popInfoData(std::string mipName){
@@ -659,7 +659,7 @@ public:
     }
 
     void mainPage(){
-      response().out() << mainPageHtml_.get();
+      response().out() << mainPageHtml_.get("/ssv", rootName_);
     }
 
     void jsLibs(){
