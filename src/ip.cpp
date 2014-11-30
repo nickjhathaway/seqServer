@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "ip.hpp"
-#include "exception.hpp"
+#include <bibcpp/debug/exception.hpp>
 
 namespace utils {
 
@@ -36,7 +36,7 @@ void GetIFaddrs::find_ips(){
 
 GetIFaddrs::GetIFaddrs(){
     if (getifaddrs(&ifaddr) == -1){
-        throw err::str("could not getifaddrs");
+        throw bib::err::str("could not getifaddrs");
     }
 
     find_ips();
@@ -53,7 +53,7 @@ std::string GetIFaddrs::get_host_ip() const {
             return it->second;
         }
     }
-    throw err::str("could not determine host ip");
+    throw bib::err::str("could not determine host ip");
 }
 
 std::ostream& operator<< (std::ostream& s, const GetIFaddrs& e) {

@@ -4,10 +4,11 @@
 #include <cppcms/url_dispatcher.h>
 #include <cppcms/url_mapper.h>
 #include <cppcms/applications_pool.h>
-#include <seqTools.h>
+#include <bibseq.h>
 #include <bibcpp.h>
 #include <cppitertools/range.hpp>
-#include "file_cache.hpp"
+
+
 #include "ip.hpp"
 
 namespace bfs = boost::filesystem;
@@ -19,7 +20,7 @@ cppcms::json::value seqsToJson(const std::vector<T> & reads){
   //find number of reads
   ret["numReads"] = reads.size();
   // get the maximum length
-  uint32_t maxLen = 0;
+  uint64_t maxLen = 0;
   bibseq::readVec::getMaxLength(reads, maxLen);
   ret["maxLen"] = maxLen;
   for(const auto & pos : iter::range(reads.size())){
@@ -44,7 +45,7 @@ cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 		for(const auto & colPos : iter::range(tab.columnNames_.size())){
 			if(numCheck[colPos]){
 				numericCols.emplace_back(tab.columnNames_[colPos]);
-				outTab[rowPos][tab.columnNames_[colPos]] = bibseq::lexical_cast<double>(tab.content_[rowPos][colPos]);
+				outTab[rowPos][tab.columnNames_[colPos]] = bib::lexical_cast<double>(tab.content_[rowPos][colPos]);
 			}else{
 				outTab[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];
 			}
@@ -60,7 +61,7 @@ cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab){
 	std::unordered_map<uint32_t, bool> numCheck;
 	for(const auto & colPos : iter::range(tab.columnNames_.size())){
 		if(bibseq::vectorOfNumberStringsDouble(tab.getColumn(colPos))){
-			ret[tab.columnNames_[colPos]] = bibseq::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos));
+			ret[tab.columnNames_[colPos]] = bib::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos));
 		}else{
 			ret[tab.columnNames_[colPos]] = tab.getColumn(colPos);
 		}
@@ -113,7 +114,7 @@ cppcms::json::value dotToJson(const std::string& dotFilename){
 					auto nameSplit = tokenizeString(line, "[");
 					nodes[nodeCount]["name"] = trimEndWhiteSpaceReturn(nameSplit.front());
 					//std::cout << trimEndWhiteSpaceReturn(nameSplit.front()) << "\n";
-					nameIndex[trimEndWhiteSpaceReturn(nameSplit.front())] = nodeCount ;
+					nameIndex[trimEndWhiteSpaceReturn(nameSplit.front())] = nodeCount;
 					nameSplit.back().erase(nameSplit.back().end() - 1);
 					auto attrSplit = tokenizeString(nameSplit.back(), ",");
 					std::unordered_map<std::string, std::string> attrs;
@@ -146,21 +147,21 @@ cppcms::json::value dotToJson(const std::string& dotFilename){
 class ssv: public cppcms::application {
 private:
 
-    utils::FileCache mainPageHtml_;
-    utils::FileCache oneGeneInfoHtml_;
-    utils::FileCache oneSampAllMipInfoHtml_;
-    utils::FileCache oneMipInfoHtml_;
-    utils::FileCache allSampsInfoHtml_;
-    utils::FileCache oneSampInfoHtml_;
-    utils::FileCache minTreeViewHtml_;
-    utils::FileCache popInfoHtml_;
+    bib::FileCache mainPageHtml_;
+    bib::FileCache oneGeneInfoHtml_;
+    bib::FileCache oneSampAllMipInfoHtml_;
+    bib::FileCache oneMipInfoHtml_;
+    bib::FileCache allSampsInfoHtml_;
+    bib::FileCache oneSampInfoHtml_;
+    bib::FileCache minTreeViewHtml_;
+    bib::FileCache popInfoHtml_;
 
 
-    utils::FilesCache jsLibs_;
-    utils::FilesCache jsOwn_;
+    bib::FilesCache jsLibs_;
+    bib::FilesCache jsOwn_;
 
-    utils::FilesCache cssLibs_;
-    utils::FilesCache cssOwn_;
+    bib::FilesCache cssLibs_;
+    bib::FilesCache cssOwn_;
 
 
     std::string fastqFilename_;
@@ -320,16 +321,16 @@ public:
     		}else if (f.first.string().find("populationCluster.tab.txt")!= std::string::npos){
     			popInfoLocations_[*aPos] = f.first.string();
     		}else if (f.first.string().find("originals") != std::string::npos){
-    			std::string samp = bibseq::removeExtention(toks.back());
+    			std::string samp = bib::files::removeExtension(toks.back());
       		initialReadsLocations_[*aPos][samp] = f.first.string();
       		//std::cout << f.first.string() << std::endl;
     		}else if (f.first.string().find("final") != std::string::npos){
-    			std::string samp = bibseq::removeExtention(toks.back());
+    			std::string samp = bib::files::removeExtension(toks.back());
       		finalReadsLocations_[*aPos][samp] = f.first.string();
       		//std::cout << f.first.string() << std::endl;
     		}else if (f.first.string().find(".dot") != std::string::npos &&
     				f.first.string().find(".pdf") == std::string::npos){
-      		std::string samp = bibseq::removeExtention(toks.back());
+      		std::string samp = bib::files::removeExtension(toks.back());
       		dotFilesLocations_[*aPos][samp] = f.first.string();
     		}
     	}
@@ -480,7 +481,7 @@ public:
     	for(const auto & m : trimedTab.getColumn("clusterID")){
     		++mipClusIdCounts[m];
     	}
-    	auto outColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1, mipClusIdCounts.size());
+    	auto outColors = bib::njhColors(mipClusIdCounts.size());
     	bibseq::VecStr outColorsStrs;
     	outColorsStrs.reserve(outColors.size());
     	for(const auto & c : outColors){
@@ -523,7 +524,7 @@ public:
     void getColors(std::string num){
     	ret_json();
     	cppcms::json::value ret;
-    	auto outColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1,std::stoi(num));
+    	auto outColors = bib::njhColors(std::stoi(num));
     	bibseq::VecStr outColorsStrs;
     	outColorsStrs.reserve(outColors.size());
     	for(const auto & c : outColors){
@@ -544,7 +545,7 @@ public:
     	auto trimedTab = sampTab.extractByComp("Sample", containsSampName);
     	auto ret = tableToJsonRowWise(trimedTab);
     	auto popCounts = bibseq::countVec(trimedTab.getColumn("popUID"));
-    	auto popColors = bibseq::getColsBetweenInc(120,420,.40, .70, .8, 1, popCounts.size());
+    	auto popColors = bib::njhColors(popCounts.size());
 
     	bibseq::VecStr popColorsStrs(popColors.size());
     	uint32_t count = 0;
