@@ -226,14 +226,14 @@ public:
     ssv(cppcms::service& srv, std::string name,
     		std::string clusDir)
         : cppcms::application(srv)
-        , mainPageHtml_(make_path("../resources/mainPage.html"))
-    		, oneGeneInfoHtml_(make_path("../resources/oneGeneView.html"))
-    		, oneSampAllMipInfoHtml_(make_path("../resources/oneSampAllMipInfo.html"))
-				, oneMipInfoHtml_(make_path("../resources/oneMipInfo.html"))
-				, allSampsInfoHtml_(make_path("../resources/allSampsInfo.html"))
-				, oneSampInfoHtml_(make_path("../resources/oneSampInfo.html"))
-    		, minTreeViewHtml_(make_path("../resources/minTreeView.html"))
-    		, popInfoHtml_(make_path("../resources/popInfo.html"))
+        , mainPageHtml_(make_path("../resources/mip/mainPage.html"))
+    		, oneGeneInfoHtml_(make_path("../resources/mip/oneGeneView.html"))
+    		, oneSampAllMipInfoHtml_(make_path("../resources/mip/oneSampAllMipInfo.html"))
+				, oneMipInfoHtml_(make_path("../resources/mip/oneMipInfo.html"))
+				, allSampsInfoHtml_(make_path("../resources/mip/allSampsInfo.html"))
+				, oneSampInfoHtml_(make_path("../resources/mip/oneSampInfo.html"))
+    		, minTreeViewHtml_(make_path("../resources/mip/minTreeView.html"))
+    		, popInfoHtml_(make_path("../resources/mip/popInfo.html"))
     		, jsLibs_(std::vector<bfs::path>{make_path("../resources/js/libs/d3/d3.v3.min.js"),
     																		 make_path("../resources/js/libs/c3/c3.min.js"),
     																		 make_path("../resources/js/libs/canvas2svg.js"),
@@ -685,6 +685,213 @@ public:
 
 };
 
+class mtv: public cppcms::application {
+private:
+
+    bib::FileCache mainPageHtml_;
+    bib::FileCache minTreeViewHtml_;
+
+
+    bib::FilesCache jsLibs_;
+    bib::FilesCache jsOwn_;
+
+    bib::FilesCache cssLibs_;
+    bib::FilesCache cssOwn_;
+
+
+    std::string rootName_;
+    std::string dir_;
+    std::unordered_map<std::string, std::map<std::string, bfs::path>> files_;
+
+    static bfs::path make_path(const bfs::path fn){
+        return fn; // TODO: make absolute path, or from config file?
+    }
+
+    template <typename T> void dispMapRoot(T func){
+        dispatcher().assign("", func, this);
+        mapper().assign("");
+    }
+
+    template <typename T> void dispMap(T func, std::string n){
+        dispatcher().assign("/" + n, func, this);
+        mapper().assign(n, "/" + n);
+    }
+
+    template <typename T> void dispMap_1arg(T func, std::string n, std::string r){
+        dispatcher().assign("/" + n + "/" + r, func, this, 1);
+        mapper().assign(n, "/" + n + "/{1}");
+    }
+
+    template <typename T> void dispMap_2arg(T func, std::string n, std::string r){
+        dispatcher().assign("/" + n + "/" + r, func, this, 1, 2);
+        mapper().assign(n, "/" + n + "/{1}/{2}");
+    }
+
+    void ret_json(){
+        response().content_type("application/json");
+    }
+
+    void ret_js(){
+        response().content_type("text/javascript");
+    }
+
+    void ret_css(){
+        response().content_type("text/css");
+    }
+
+public:
+    mtv(cppcms::service& srv, std::string name,
+    		std::string dir)
+        : cppcms::application(srv)
+        , mainPageHtml_(make_path("../resources/mtv/mainPage.html"))
+    		, minTreeViewHtml_(make_path("../resources/mtv/minTreeView.html"))
+    		, jsLibs_(std::vector<bfs::path>{make_path("../resources/js/libs/d3/d3.v3.min.js"),
+    																		 make_path("../resources/js/libs/c3/c3.min.js"),
+    																		 make_path("../resources/js/libs/bootstrap/bootstrap.min.js"),
+    																		 make_path("../resources/js/libs/canvas2svg.js"),
+    																		 make_path("../resources/js/libs/rgbcolor.js"),
+    																		 make_path("../resources/js/libs/jspdf.min.js"),
+    																		 make_path("../resources/js/libs/svgToPdf.js"),
+    																		 make_path("../resources/js/libs/d3.legend.js"),
+    																		 make_path("../resources/js/libs/underscore-min.js")})
+        , jsOwn_(std::vector<bfs::path>{make_path("../resources/js/own/utils.js"),
+																				make_path("../resources/js/own/tableFuncs.js"),
+																				make_path("../resources/js/own/SeqView.js"),
+																				make_path("../resources/js/own/minSpanTree.js")})
+    		, cssLibs_(std::vector<bfs::path>{make_path("../resources/css/libs/c3.css"),
+    																		  make_path("../resources/css/libs/bootstrap.min.css"),
+    																		  make_path("../resources/css/libs/bootstrap-theme.min.css")})
+    		, cssOwn_(std::vector<bfs::path>{make_path("../resources/css/own/SeqView.css")})
+    		, rootName_(name)
+    		, dir_(dir)
+    {
+    	mainPageHtml_.replaceStr("/ssv", name);
+    	minTreeViewHtml_.replaceStr("/ssv", name);
+    	//main page
+      dispMapRoot(&mtv::mainPage);
+      dispMap(&mtv::sampleNames, "sampleNames");
+      dispMap_1arg(&mtv::treeNames, "treeNames",  "(\\w+)");
+      //show the minimum spanning tree for one sample info
+      dispMap_1arg(&mtv::showMinTree, "showMinTree", "(\\w+)");
+      dispMap_1arg(&mtv::minTreeData, "minTreeData", "(\\w+)");
+      //js and css loading
+      dispMap(&mtv::jsLibs, "jsLibs");
+      dispMap(&mtv::jsOwn, "jsOwn");
+      dispMap(&mtv::cssLibs, "cssLibs");
+      dispMap(&mtv::cssOwn, "cssOwn");
+      mapper().root(name);
+    	auto files = bib::files::listAllFiles(dir_, false, bibseq::VecStr{".dot"});
+    	for(const auto & f : files){
+    		auto timePointName = f.first.filename().replace_extension("").string();
+    		files_[timePointName.substr(0,timePointName.find("_"))].emplace(timePointName,f.first);
+    	}
+    	/*
+    	for(const auto & f : files_){
+    		for(const auto & subF : f.second){
+    			std::cout << "f: " << f.first << " " << "subF: " << subF.first << " " << subF.second << std::endl;
+    		}
+    	}*/
+    	std::cout << "finish set up " << std::endl;
+    }
+
+    void sampleNames(){
+    	std::cout << "sampleNames" << std::endl;
+    	ret_json();
+    	cppcms::json::value r;
+    	auto trees = bib::getVecOfMapKeys(files_);
+    	std::sort(trees.begin(), trees.end());
+    	r = trees;
+    	response().out() << r;
+    }
+
+    void treeNames(std::string sampName){
+    	std::cout << "treeNames" << std::endl;
+    	ret_json();
+    	cppcms::json::value r;
+    	auto trees = bib::getVecOfMapKeys(files_);
+    	std::sort(trees.begin(), trees.end());
+    	r = trees;
+    	response().out() << r;
+    }
+
+    void getColors(std::string num){
+    	ret_json();
+    	cppcms::json::value ret;
+    	auto outColors = bib::njhColors(std::stoi(num));
+    	bibseq::VecStr outColorsStrs;
+    	outColorsStrs.reserve(outColors.size());
+    	for(const auto & c : outColors){
+    		outColorsStrs.emplace_back("#" + c.hexStr_);
+    	}
+    	ret["colors"] = outColorsStrs;
+      response().out() << ret;
+    }
+
+
+
+    void colorsData(){
+      ret_json();
+      cppcms::json::value r;
+      r["A"] = "#ff8787";
+      r["a"] = "#ff8787";
+
+      r["C"] = "#afffaf";
+      r["c"] = "#afffaf";
+
+      r["G"] = "#ffffaf";
+      r["g"] = "#ffffaf";
+
+      r["T"] = "#87afff";
+      r["t"] = "#87afff";
+
+      r["-"] = "e6e6e6";
+
+
+      response().out() << r;
+    }
+
+    void showMinTree(std::string mipName){
+    	response().out() << minTreeViewHtml_.get("/ssv", rootName_);
+    }
+
+    void minTreeData(std::string sampName){
+    	cppcms::json::value ret;
+    	uint32_t count = 0;
+    	for(const auto & tp :files_[sampName] ){
+    		ret[count]["treeData"] = bibseq::dotToJson(tp.second.string());
+    		ret[count]["name"] = tp.first;
+    		++count;
+    	}
+    	ret_json();
+    	response().out() << ret;
+    }
+
+    void mainPage(){
+      response().out() << mainPageHtml_.get("/ssv", rootName_);
+    }
+
+    void jsLibs(){
+      ret_js();
+      response().out() << jsLibs_.get();
+    }
+
+    void jsOwn(){
+      ret_js();
+      response().out() << jsOwn_.get();
+    }
+
+    void cssLibs(){
+    	ret_css();
+      response().out() << cssLibs_.get();
+    }
+
+    void cssOwn(){
+      ret_css();
+      response().out() << cssOwn_.get();
+    }
+
+};
+
 
 
 cppcms::json::object server_config(std::string name, uint32_t port){
@@ -697,8 +904,8 @@ cppcms::json::object server_config(std::string name, uint32_t port){
 }
 
 
-int main(int argc, char** argv){
-	bibseq::seqSetUp setUp(argc, argv);
+int mipViewer(std::map<std::string, std::string> inputCommands){
+	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	std::string name = "ssv";
@@ -708,7 +915,6 @@ int main(int argc, char** argv){
 	setUp.finishSetUp(std::cout);
 	name = "/" + name;
   auto config = server_config(name, port);
-
   try {
       cppcms::service app(config);
       app.applications_pool().mount(cppcms::applications_factory<ssv>(name, clusDir));
@@ -716,6 +922,54 @@ int main(int argc, char** argv){
   } catch(const std::exception& e) {
       std::cerr << e.what() << std::endl;
   }
+	return 0;
+}
+
+int minTreeViewer(std::map<std::string, std::string> inputCommands){
+	bibseq::seqSetUp setUp(inputCommands);
+	std::string dir = "";
+	uint32_t port = 8882;
+	std::string name = "mtv";
+	setUp.setOption(dir, "-dir", "Name of the Master Result Directory", true);
+	setUp.setOption(port, "-port", "Port Number to Serve On");
+	setUp.setOption(name, "-name", "Nmae of root of the server");
+	setUp.finishSetUp(std::cout);
+	name = "/" + name;
+  auto config = server_config(name, port);
+  try {
+      cppcms::service app(config);
+      app.applications_pool().mount(cppcms::applications_factory<mtv>(name, dir));
+      app.run();
+  } catch(const std::exception& e) {
+      std::cerr << e.what() << std::endl;
+  }
+	return 0;
+}
+
+class serverRunner : public bib::progutils::programRunner {
+ public:
+	serverRunner();
+
+};
+
+serverRunner::serverRunner()
+    : bib::progutils::programRunner(
+          {addFunc("mipViewer", mipViewer, false),
+					 addFunc("minTreeViewer", minTreeViewer, false)
+           },
+          "serverRunner") {}
+
+int runServer(int argc, char* argv[]) {
+  serverRunner serRunner;
+  if (argc > 1) {
+    return serRunner.run(argc, argv);
+  }
+  serRunner.listPrograms(std::cout);
+  return 0;
+}
+
+int main(int argc, char** argv){
+	return runServer(argc, argv);
 }
 
 
