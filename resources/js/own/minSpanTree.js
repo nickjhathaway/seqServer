@@ -78,7 +78,7 @@ var createMinTreeRawData = function(graph, appendTo, name, width, height){
 	vis.append('svg:rect')
 	    .attr('width', width)
 	    .attr('height', height)
-	    .attr('fill', '#354449');
+	    .attr('fill', '#FFF');
 	 var force = d3.layout.force()
 	    .charge(-120)
 	    .linkDistance(function(d, i){ return d.value * 10;})
@@ -89,20 +89,47 @@ var createMinTreeRawData = function(graph, appendTo, name, width, height){
 	      .links(graph.links)
 	      .start();
 	
-	  var link = vis.selectAll(".link").data(graph.links)
-	      .enter().append("line")
-	      .attr("class", "link")
-	      .style("stroke-width", function(d) { return Math.sqrt(d.value);})
-	      .style("stroke", function(d) { return d.color;});
+	  
 	 var node = vis.selectAll(".node")
 	 	.data(graph.nodes)
 	    .enter().append("circle")
 	      .attr("class",function(d) { return  "node " + d.name; })
-	      .attr("r", function(d){ return d.size * 8;})
-		  .style("fill", function(d) { return d.color; })
+	      .attr("r", function(d){ 
+	      	if(d.size == 0.15){
+	      		return 2.5;
+	      	}else{
+	      		return d.size * 8;
+	      	}
+	      	})
+		  .style("fill", function(d) { 
+		  	if(d.name == "00"){
+		  		return "#489C28";
+		  	}else if (d.name == "01"){
+		  		return "#890309";
+		  	}else if (d.name == "02"){
+		  		return "#AED22D";
+		  	}else if (d.name == "03"){
+		  		return "#FEF035";
+		  	}else if (d.name == "05"){
+		  		return "#F68423";
+		  	}else if (d.name == "06"){
+		  		return "#BF4315";
+		  	}else if (d.name == "08"){
+		  		return "#1B5E44";
+		  	}else if (d.name == "11"){
+		  		return "#FDBB2C";
+		  	}else {
+		  		return d.color; 
+		  	}
+		  	})
 	      .call(force.drag);
 	  node.append("title")
 	      .text(function(d) { return d.name; });
+	  var link = vis.selectAll(".link").data(graph.links)
+	      .enter().append("line")
+	      .attr("class", "link")
+	      .style("stroke-width", function(d) { return 1;})
+	      .style("stroke", function(d) { return "#000";});
 	  force.on("tick", function() {
 	    link.attr("x1", function(d) { return d.source.x; })
 	        .attr("y1", function(d) { return d.source.y; })

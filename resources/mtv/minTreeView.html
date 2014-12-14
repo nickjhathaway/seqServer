@@ -3,13 +3,13 @@
 <style>
 
 .node {
-  stroke: #fff;
-  stroke-width: 1.5px;
+  stroke: #354449;
+  stroke-width: 0px;
 }
 
 .link {
   stroke: #999;
-  stroke-opacity: .6;
+  stroke-opacity: .8;
 }
 
 body{
@@ -43,10 +43,10 @@ body{
 			$("#" + treeName + "_master").append("<div id=\"" + treeName + "_title\"><p><h1>" + name + "</h1></p></div>");
 			var treeDiv = document.getElementById(treeName);
 			$(treeDiv).css("background-color", "#354449");
-			//$(treeDiv).width((window.innerWidth - 20 * treeTotalNum) * 1.0/treeTotalNum);
-			//$(treeDiv).height($(treeDiv).width());
-			$(treeDiv).width(1500);
-			$(treeDiv).height(1500);
+			$(treeDiv).width((window.innerWidth - 20 * treeTotalNum) * 1.0/treeTotalNum);
+			$(treeDiv).height($(treeDiv).width());
+			//$(treeDiv).width(1500);
+			//$(treeDiv).height(1500);
 			var treeDivMaster = document.getElementById(treeName + "_master");
 			var treeDivTitle = document.getElementById(treeName + "_title");
 			$(treeDivTitle).css("text-align", "center");
