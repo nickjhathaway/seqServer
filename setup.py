@@ -131,8 +131,8 @@ class Paths():
         return self.__package_dirs(url, "mathgl")
 
     def __bibseq(self):
-        url = "https://github.com/bailey-lab/bibseq.git"
-        name = "bibseq"
+        url = "https://github.com/bailey-lab/bibseqPrivate.git"
+        name = "bibseqPrivate"
         build_dir = os.path.join(self.ext_build, name)
         fn = os.path.basename(url)
         fn_noex = fn.replace(".git", "")
@@ -141,8 +141,8 @@ class Paths():
         return BuildPaths(url, build_dir, build_sub_dir, local_dir)
     
     def __SeekDeep(self):
-        url = "https://github.com/bailey-lab/SeekDeep.git"
-        name = "SeekDeep"
+        url = "https://github.com/bailey-lab/SeekDeepPrivate.git"
+        name = "SeekDeepPrivate"
         build_dir = os.path.join(self.ext_build, name)
         fn = os.path.basename(url)
         fn_noex = fn.replace(".git", "")
@@ -151,8 +151,8 @@ class Paths():
         return BuildPaths(url, build_dir, build_sub_dir, local_dir)
 
     def __bibcpp(self):
-        url = "https://github.com/umass-bib/bibcpp.git"
-        name = "bibcpp"
+        url = "https://github.com/umass-bib/bibcppDev.git"
+        name = "bibcppDev"
         build_dir = os.path.join(self.ext_build, name)
         fn = os.path.basename(url)
         fn_noex = fn.replace(".git", "")
