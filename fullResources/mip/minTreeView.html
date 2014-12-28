@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+body{
+    background-color: #354449;
+}
+</style>
+<body>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs"></script>
+	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+
+<script>
+	$(document).ready(function() {
+		var locSplit = window.location.toString().split(/[\/]+/);
+		var rName = locSplit[2];
+		var currentSampName = locSplit.pop();
+		var currentPopName = locSplit.pop();
+		var dataFile = "/" + rName + "/minTreeData/" + currentPopName + "/" + currentSampName;
+		var appendToElement = "body";
+		var name = "testTree";
+		var wid = 2000;
+		var hei = 2000;
+		var force = createMinTree(dataFile, appendToElement, name, wid, hei);
+	});
+
+</script>
+
+
+
+
+
+
+

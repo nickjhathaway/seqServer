@@ -1,0 +1,212 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>PopInfo</title>
+	<style>
+		#qualChart, #popTable, #popChart {
+			position: relative;
+			clear: both;
+			top: 80px;
+		}
+	</style>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+  </head>
+  <body>
+
+	
+    <script>
+    	$(document).ready(function(){
+	    	var mainData;
+	        var baseColors = {};
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var currentPopName = locSplit.pop();
+			ajax('/' + rName + '/popSeqData/' + currentPopName, function(md){ mainData = md; });
+			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			
+			var cellWidth = 20;
+			var cellHeight = 25;
+			var SeqViewer = new SeqView("canvasDiv1",  mainData, cellWidth, cellHeight, baseColors);
+			
+			function init(){
+				$(window).bind("resize", function(){
+					SeqViewer.updateCanvas();
+					SeqViewer.setUpSliders();
+					SeqViewer.paint();
+				});
+				SeqViewer.setUp();
+				SeqViewer.paint();
+			}
+			init();
+
+			//console.log(svg);
+			var mainPopInfoTab;
+			$("title", "head").html(currentPopName);
+			//console.log(currentPopName);
+			ajax('/' + rName + '/popInfo/' + currentPopName, function(tab){ mainPopInfoTab = tab; });
+			//console.log(Object.keys(popInfoTab[0]));
+
+			//var colNames = Object.keys(popInfoTab[0]);
+			
+			var tab = createTable("#popTable");
+			var columnNames = mainPopInfoTab["columnNames"];
+			var popInfoTab = mainPopInfoTab["tab"];
+			var numericCols = mainPopInfoTab["numericColNames"];
+			updateTable(tab,popInfoTab,  columnNames);
+			//updateTable(tab,popInfoTab,  [columns[0]]);
+			//console.log(popInfoTab[0]);
+			function updateTableOnClick() {         
+			     var allVals = [];
+			     $('#popTableMenu :checked').each(function() {
+			       allVals.push($(this).val());
+			     });
+			     var currentColumnNames = _.intersection(columnNames, allVals);
+			     updateTable(tab,popInfoTab, currentColumnNames );;
+			 };
+			var inputs = d3.select("#popTableMenu").selectAll("input")
+				.data(columnNames)
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("for",function(d){return d;})
+					.attr("style", "border:2px solid black; padding: 2;")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;})
+					
+					;
+				 ;
+			 $( '#popTableMenu input' ).click( updateTableOnClick );
+			//var f = showValues();
+			
+
+			var xLabs = [];
+			for(obj in popInfoTab){
+				//console.log(popInfoTab[obj]["popUID"]);
+				xLabs.push(popInfoTab[obj]["popUID"]);
+			}
+			 chart = c3.generate({
+		        data: {
+		            json: popInfoTab,
+		            keys: {
+		                value: numericCols,
+		            }, 
+		            axes: {
+		            	hapSampCNT :'y'
+		            }, 
+		            type: 'bar'
+		        },
+		        axis: {
+		            x: {
+		                type: 'category',
+						categories: xLabs ,
+			            tick: {
+			                rotate: 75
+			            },
+			            height: 130
+		            }
+		        },
+		        bindto: "#popChart"
+		        
+		    });
+		    /*
+		    var ctx = new C2S(SeqViewer.canvas.width,SeqViewer.canvas.height);
+			SeqViewer.painter.needToPaint = true;
+			SeqViewer.painter.paintSeqs(ctx, SeqViewer.seqs, SeqViewer.seqStart, SeqViewer.baseStart);
+			SeqViewer.painter.placeBasePos(ctx, SeqViewer.seqStart, SeqViewer.baseStart);
+			SeqViewer.painter.paintSelectedSeq(ctx, SeqViewer.seqs[SeqViewer.currentSeq], SeqViewer.currentBase );
+			var svg = ctx.getSvg();
+
+
+			// the canvas calls to output a png
+			var canvas = document.getElementById("canvas2");
+			var img = canvas.toDataURL("image/jpeg");
+			var doc = new jsPDF('l', 'pt', [canvas.width, canvas.height]);
+
+			doc.setFontSize(40);
+			doc.text(35, 25, "Paranyan loves jsPDF");
+			doc.addImage(img, 'JPEG', 0,0);
+			var download = d3.select("body").append("a")
+		    	.attr("href", doc.output('dataurlstring'))
+				.attr("download", "filename.pdf")
+				.attr("style", "position: relative;clear: both;top: 80px;")
+				.text('Click to download');*/
+		    /*
+		    var ctx = new C2S(SeqViewer.canvas.width,SeqViewer.canvas.height);
+			SeqViewer.painter.needToPaint = true;
+			SeqViewer.painter.paintSeqs(ctx, SeqViewer.seqs, SeqViewer.seqStart, SeqViewer.baseStart);
+			SeqViewer.painter.placeBasePos(ctx, SeqViewer.seqStart, SeqViewer.baseStart);
+			SeqViewer.painter.paintSelectedSeq(ctx, SeqViewer.seqs[SeqViewer.currentSeq], SeqViewer.currentBase );*/
+
+/*var svg = $("svg", "#cont").append('<circle cx="100" cy="50" r="40" stroke="black" stroke-width="2" fill="red"/>');
+$("#cont").html($("#cont").html());
+$(svg).appendTo("body");
+var pdf = new jsPDF('p', 'pt', 'a4');
+svgElementToPdf(svg, pdf, {
+    scale: 72/96, // this is the ratio of px to pt units
+    removeInvalid: true // this removes elements that could not be translated to pdf from the source svg
+});
+
+var pdfData = pdf.output('datauristring');
+var aa = $("<a>")
+.attr("href", pdfData)
+.attr("download", "filename.pdf")
+.text('Click to download')
+.appendTo($("body"));*/
+
+			/*
+			var svg = ctx.getSvg();
+			$(svg).attr("style", "position: relative;clear: both;top: 80px;");
+			$(svg).appendTo("body");
+			
+			var chartSvg = d3.select("#chart svg");
+			console.log(chartSvg[0]);
+			var pdf = new jsPDF('p', 'pt', 'a4');
+			var scale = 72/96.0;
+			console.log(pdf.getFontList());
+			svgElementToPdf(svg, pdf, {
+			//svgElementToPdf(chartSvg[0], pdf, {
+			    scale: 72/96, // this is the ratio of px to pt units
+			    removeInvalid: true // this removes elements that could not be translated to pdf from the source svg
+			});
+			var dat = pdf.output('dataurlstring');
+			console.log(dat);
+		   var download = d3.select("body").append("a")
+		    	.attr("href", pdf.output('dataurlstring'))
+				.attr("download", "filename.pdf")
+				.attr("style", "position: relative;clear: both;top: 80px;")
+				.text('Click to download');
+		
+			$(svg).attr("style", "position: relative;clear: both;top: 80px;");
+			$(svg).appendTo("body");*/
+		});
+		
+    </script>
+
+    <div id="canvasDiv1" class = "SeqView">
+    	<div id="rightSlider"></div>
+	    <canvas id="canvas"></canvas>
+	    <div id="bottomSlider"></div>
+	    <div id="pop-up"><p id="info"></p></div>
+      	<div id="select"></div>
+    </div>
+    <div id = "qualChart"></div>
+    
+    <div id = "popTable">
+    	<div id = "popTableMenu"></div>
+    </div>
+    <div id = "popChart">
+    	
+    </div>
+
+  </body>
+</html>

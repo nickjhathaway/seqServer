@@ -1,0 +1,165 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Sample Info</title>
+	<style>
+		#qualChart, #qualChartFinal, h1, #popTable, #chart {
+			position: relative;
+			clear: both;
+			top: 80px;
+		}
+	</style>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs"></script>
+	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+  </head>
+  <body>
+    <script>
+    	$(document).ready(function(){
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var currentSampName = locSplit.pop();
+			var currentPopName = locSplit.pop();
+			$("title", "head").html(currentPopName);
+			console.log(currentPopName);
+	    	var mainData;
+	    	var mainFinalData;
+	        var baseColors = {};
+			ajax('/' + rName + '/oneSampInitSeqData/' +currentPopName + "/" + currentSampName, function(md){ mainData = md; });
+			ajax('/' + rName + '/oneSampFinalSeqData/' +currentPopName + "/" + currentSampName, function(md){ mainFinalData = md; });
+			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			var cellWidth = 20;
+			var cellHeight = 25;
+			var SeqViewerInitial = new SeqView("canvasDiv1", mainData, cellWidth, cellHeight, baseColors, "#qualChart");
+			var SeqViewerFinal = new SeqView("canvasDiv2", mainFinalData, cellWidth, cellHeight, baseColors, "#qualChartFinal");
+
+			function init(){
+				$(window).bind("resize", function(){
+					SeqViewerInitial.updateCanvas();
+					SeqViewerInitial.setUpSliders();
+					SeqViewerInitial.paint();
+					SeqViewerFinal.updateCanvas();
+					SeqViewerFinal.setUpSliders();
+					SeqViewerFinal.paint();
+				});
+				SeqViewerInitial.setUp();
+				SeqViewerInitial.paint();
+				SeqViewerFinal.setUp();
+				SeqViewerFinal.paint();
+			}
+			init();
+
+			//console.log(svg);
+			var mainPopInfoTab;
+
+			ajax('/' + rName + '/oneSampTabData/'+currentPopName + "/" + currentSampName, function(tab){ mainPopInfoTab = tab; });
+
+			var tab = createTable("#popTable");
+			var columnNames = mainPopInfoTab["columnNames"];
+			var popInfoTab = mainPopInfoTab["tab"];
+			var numericCols = mainPopInfoTab["numericColNames"];
+			updateTable(tab,popInfoTab,  columnNames);
+			console.log(popInfoTab[0]);
+			function updateTableOnClick() {         
+			     var allVals = [];
+			     $('#popTableMenu :checked').each(function() {
+			       allVals.push($(this).val());
+			     });
+			     var currentColumnNames = _.intersection(columnNames, allVals);
+			     updateTable(tab,popInfoTab, currentColumnNames );;
+			 };
+			var inputs = d3.select("#popTableMenu").selectAll("input")
+				.data(columnNames)
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("for",function(d){return d;})
+					.attr("style", "border:2px solid black; padding: 2;")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;})
+					;
+				 ;
+			 $( '#popTableMenu input' ).click( updateTableOnClick );
+			var xLabs = [];
+			for(obj in popInfoTab){
+				//console.log(popInfoTab[obj]["popUID"]);
+				xLabs.push(popInfoTab[obj]["popUID"]);
+			}
+			 chart = c3.generate({
+		        data: {
+		            json: popInfoTab,
+		            keys: {
+		                value: numericCols,
+		            }, 
+		            axes: {
+		            	hapSampCNT :'y',
+		            	hapReadCNT :'y2'
+		            }, 
+		            type: 'bar'
+		        },
+		        axis: {
+		            x: {
+		                type: 'category',
+						categories: xLabs ,
+			            tick: {
+			                rotate: 75
+			            },
+			            height: 130
+		            },
+		            y2: {
+		            	show:true
+		            }
+		        },
+		        bindto: "#chart"
+					});
+		$("#minTree")
+			.attr("href", "/" + rName + "/showMinTree/" + currentPopName + "/" + currentSampName)
+			.html("Show Tree");
+		});
+
+    </script>
+    <a id = "minTree"> </a>
+	<h1>Initial Clustering</h1>
+    <div id="canvasDiv1" class = "SeqView">
+    	<div id="rightSlider"></div>
+	    <canvas id="canvas"></canvas>
+	    <div id="bottomSlider"></div>
+	    <div id="pop-up">
+        	<p id="info"></p>
+      	</div>
+      	<div id="select"></div>
+    </div>
+    <div id = "qualChart">
+    	
+    </div>
+    <h1>Final Clusters with Filtering for chimeras and low freq</h1>
+        <div id="canvasDiv2" class = "SeqView">
+    	<div id="rightSlider"></div>
+	    <canvas id="canvas"></canvas>
+	    <div id="bottomSlider"></div>
+	    <div id="pop-up">
+        	<p id="info"></p>
+      	</div>
+      	<div id="select"></div>
+    </div>
+    <div id = "qualChartFinal" class="qualGraph">
+    	
+    </div>
+    
+    <div id = "popTable">
+    	<div id = "popTableMenu"></div>
+    </div>
+    <div id = "chart">
+    	
+    </div>
+
+  </body>
+</html>

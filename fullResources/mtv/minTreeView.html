@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #354449;
+  stroke-width: 0px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .8;
+}
+
+body{
+    background-color: #354449;
+}
+</style>
+<body>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+    <script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs"></script>
+	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+
+<script>
+	$(document).ready(function() {
+		var locSplit = window.location.toString().split(/[\/]+/);
+		var rName = locSplit[2];
+		var currentSampName = locSplit.pop();
+		var sampleDataFile = "/" + rName + "/minTreeData/" + currentSampName;
+		var sampleData;
+		ajax(sampleDataFile, function(mn) {
+				sampleData = mn;
+		});
+		
+		function addTree(treeName,treeNum, treeTotalNum, treeData, name){
+			var appendToElement = "#" + treeName;
+			$("body").append("<div id=\"" + treeName + "_master\"></div>");
+			$("#" + treeName + "_master").append("<div id=\"" + treeName + "\"></div>");
+			$("#" + treeName + "_master").append("<div id=\"" + treeName + "_title\"><p><h1>" + name + "</h1></p></div>");
+			var treeDiv = document.getElementById(treeName);
+			$(treeDiv).css("background-color", "#354449");
+			$(treeDiv).width((window.innerWidth - 20 * treeTotalNum) * 1.0/treeTotalNum);
+			$(treeDiv).height($(treeDiv).width());
+			//$(treeDiv).width(1500);
+			//$(treeDiv).height(1500);
+			var treeDivMaster = document.getElementById(treeName + "_master");
+			var treeDivTitle = document.getElementById(treeName + "_title");
+			$(treeDivTitle).css("text-align", "center");
+			$(treeDivMaster).css("margin", 10);
+			$(treeDivMaster).css("float", "left");
+			$(treeDivMaster).attr("class", "minTree");
+			var name = treeName + "_svg";
+			var wid = $(treeDiv).width();
+			var hei = $(treeDiv).height();
+			var svgEl = createMinTreeRawData(treeData, appendToElement, name, wid, hei);
+		}
+		for(var i=0,j=sampleData.length; i<j; i++){
+			addTree("tree" + i,i, j, sampleData[i]["treeData"], sampleData[i]["name"]);
+			console.log(sampleData[i]["name"]);
+		};
+		
+		//addTree("tree2",1, 4, rawData);
+		//addTree("tree3",2, 4, rawData);
+		//addTree("tree4",3, 4, rawData);
+		
+
+		
+	});
+
+</script>
+
+
+
+
+
+
+
