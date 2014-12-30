@@ -265,6 +265,7 @@ public:
 	}
 
 	void oneSampAllMipData(std::string sampName, std::string mipNames) {
+		std::cout << "oneSampAllMipData - sampName: " << sampName << " mipNames: " << mipNames << std::endl;
 		ret_json();
 		auto mipTab = allInfoBySample_[sampName];
 		auto mipToks = bibseq::tokenizeString(mipNames, "DELIM");
@@ -346,6 +347,7 @@ public:
 	}
 
 	void allSampsInfoData(std::string mipName, std::string sampNames) {
+		std::cout << "allSampsInfoData - mipName: " << mipName << " sampNames: " << sampNames << std::endl;
 		ret_json();
 		auto sampTab = bibseq::table(allInfoLocations_[mipName], "\t", true);
 		auto sampToks = bibseq::tokenizeString(sampNames, "DELIM");
@@ -433,6 +435,7 @@ public:
 	}
 
 	void oneSampTabData(std::string mipName, std::string sampname) {
+		std::cout << "oneSampTabData - mipName: " << mipName << " sampName: " << sampname << std::endl;
 		currentMipName_ = mipName;
 		currentSampName_ = sampname;
 		ret_json();
