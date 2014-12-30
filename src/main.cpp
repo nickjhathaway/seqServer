@@ -13,7 +13,8 @@ class serverRunner : public bib::progutils::programRunner {
 serverRunner::serverRunner()
     : bib::progutils::programRunner(
           {addFunc("mipViewer", bibseq::mipViewer, false),
-					 addFunc("minTreeViewer", bibseq::minTreeViewer, false)
+					 addFunc("minTreeViewer", bibseq::minTreeViewer, false),
+					 addFunc("pearOutViwer", bibseq::pearOutViwer, false)
            },
           "serverRunner") {}
 

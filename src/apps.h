@@ -9,4 +9,5 @@
 #include "apps/seqApp.hpp"
 #include "apps/mipViewer.hpp"
 #include "apps/minTreeViewer.hpp"
+#include "apps/pearOutViewer.hpp"
 
