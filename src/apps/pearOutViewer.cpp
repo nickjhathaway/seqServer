@@ -33,7 +33,7 @@ int pearOutViwer(std::map<std::string, std::string> inputCommands){
 	try {
 		cppcms::service app(config);
 		app.applications_pool().mount(
-				cppcms::applications_factory<ssv>(appConfig));
+				cppcms::applications_factory<pov>(appConfig));
 		app.run();
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;
