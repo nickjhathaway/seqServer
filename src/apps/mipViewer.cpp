@@ -14,6 +14,11 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	std::string name = "ssv";
+	std::string resourceDirName = "";
+	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
+	if(resourceDirName.back() != '/'){
+		resourceDirName.append("/");
+	}
 	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
@@ -24,9 +29,10 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
   std::map<std::string, std::string> appConfig;
   appConfig["name"] = name;
   appConfig["clusDir"] = clusDir;
-  appConfig["js"] = "../resources/js/";
-  appConfig["css"] = "../resources/css/";
-  auto pass = configTest(appConfig, VecStr{});
+  appConfig["resources"] = resourceDirName;
+  appConfig["js"] = resourceDirName + "js/";
+  appConfig["css"] = resourceDirName + "css/";
+  auto pass = configTest(appConfig, ssv::requiredOptions());
   if(!pass){
   	exit(1);
   }

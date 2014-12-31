@@ -8,6 +8,7 @@
 
 #include "apps/seqApp.hpp"
 #include "utils.h"
+#define RESOURCE_LOCATION
 
 namespace bibseq {
 namespace bfs = boost::filesystem;
@@ -55,14 +56,14 @@ private:
 public:
 	ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	: bibseq::seqApp(srv, config)
-	, mainPageHtml_(make_path("../resources/mip/mainPage.html"))
-	, oneGeneInfoHtml_(make_path("../resources/mip/oneGeneView.html"))
-	, oneSampAllMipInfoHtml_(make_path("../resources/mip/oneSampAllMipInfo.html"))
-	, oneMipInfoHtml_(make_path("../resources/mip/oneMipInfo.html"))
-	, allSampsInfoHtml_(make_path("../resources/mip/allSampsInfo.html"))
-	, oneSampInfoHtml_(make_path("../resources/mip/oneSampInfo.html"))
-	, minTreeViewHtml_(make_path("../resources/mip/minTreeView.html"))
-	, popInfoHtml_(make_path("../resources/mip/popInfo.html"))
+	, mainPageHtml_(make_path(config["resources"] + "mip/mainPage.html"))
+	, oneGeneInfoHtml_(make_path(config["resources"] + "mip/oneGeneView.html"))
+	, oneSampAllMipInfoHtml_(make_path(config["resources"] + "mip/oneSampAllMipInfo.html"))
+	, oneMipInfoHtml_(make_path(config["resources"] + "mip/oneMipInfo.html"))
+	, allSampsInfoHtml_(make_path(config["resources"] + "mip/allSampsInfo.html"))
+	, oneSampInfoHtml_(make_path(config["resources"] + "mip/oneSampInfo.html"))
+	, minTreeViewHtml_(make_path(config["resources"] + "mip/minTreeView.html"))
+	, popInfoHtml_(make_path(config["resources"] + "mip/popInfo.html"))
 	, rootName_(config["name"])
 	, clusteringDir_(config["clusDir"])
 	{
@@ -174,6 +175,10 @@ public:
 			}
 		}
 		std::cout << "Finished set up" << std::endl;
+	}
+
+	static VecStr requiredOptions(){
+		return VecStr{"name", "clusDir", "resources", "js", "css"};
 	}
 
 	void getAllSampleNames() {
