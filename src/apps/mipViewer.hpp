@@ -8,7 +8,6 @@
 
 #include "apps/seqApp.hpp"
 #include "utils.h"
-#define RESOURCE_LOCATION
 
 namespace bibseq {
 namespace bfs = boost::filesystem;
@@ -24,11 +23,8 @@ private:
 	bib::FileCache oneSampInfoHtml_;
 	bib::FileCache minTreeViewHtml_;
 	bib::FileCache popInfoHtml_;
+	bib::FileCache redirectPageHtml_;
 
-
-	std::string fastqFilename_;
-	std::string currentMipName_;
-	std::string currentSampName_;
 	std::unordered_map<std::string, std::vector<bibseq::readObject>> reads_;
 	std::unordered_map<std::string, std::string> readsLocations_;
 
@@ -64,6 +60,7 @@ public:
 	, oneSampInfoHtml_(make_path(config["resources"] + "mip/oneSampInfo.html"))
 	, minTreeViewHtml_(make_path(config["resources"] + "mip/minTreeView.html"))
 	, popInfoHtml_(make_path(config["resources"] + "mip/popInfo.html"))
+	, redirectPageHtml_(make_path(config["resources"] + "html/redirectPage.html"))
 	, rootName_(config["name"])
 	, clusteringDir_(config["clusDir"])
 	{
@@ -75,6 +72,7 @@ public:
 		oneSampInfoHtml_.replaceStr("/ssv", rootName_);
 		minTreeViewHtml_.replaceStr("/ssv", rootName_);
 		popInfoHtml_.replaceStr("/ssv", rootName_);
+		redirectPageHtml_.replaceStr("/ssv", rootName_);
 		//main page
 		//<std::remove_reference<decltype(*this)>::type>
 		dispMapRoot(&ssv::mainPage, this);
@@ -107,10 +105,7 @@ public:
 		dispMap_1arg(&ssv::popSeqData,this, "popSeqData", "(\\w+)");
 
 		//general information
-
-		dispMap(&ssv::currentSampName,this, "currentSampName");
 		dispMap(&ssv::rootName,this, "rootName");
-		dispMap(&ssv::currentPopName,this, "currentPopName");
 		dispMap(&ssv::colorsData,this, "baseColors");
 		dispMap_1arg(&ssv::getColors,this, "getColors", "(\\d+)");
 
@@ -193,19 +188,6 @@ public:
 		response().out() << r;
 	}
 
-	void currentPopName() {
-		ret_json();
-		cppcms::json::value r;
-		r = currentMipName_;
-		response().out() << r;
-	}
-
-	void currentSampName() {
-		ret_json();
-		cppcms::json::value r;
-		r = currentSampName_;
-		response().out() << r;
-	}
 
 	void rootName() {
 		//std::cout << "rootName" << std::endl;
@@ -247,17 +229,41 @@ public:
 	}
 
 	void showPopData(std::string mipName) {
-		currentMipName_ = mipName;
-		response().out() << popInfoHtml_.get("/ssv", rootName_);
+		if(readsLocations_.find(mipName) == readsLocations_.end() ){
+			std::cout << "Couldn't find mipname " << mipName << std::endl;
+			response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		}else{
+			response().out() << popInfoHtml_.get("/ssv", rootName_);
+		}
+
 	}
 
 	void showGeneInfo(std::string geneName) {
-		response().out() << oneGeneInfoHtml_.get("/ssv", rootName_);
+		auto mipNames = bibseq::getVectorOfMapKeys(files_);
+		bibseq::sort(mipNames);
+		uint32_t count = 0;
+		for(const auto & mPos : iter::range(mipNames.size())) {
+			if(bibseq::beginsWith(mipNames[mPos], geneName)) {
+				++count;
+			}
+		}
+		if(0 == count){
+			std::cout << "Gene name wasn't found :" << geneName << std::endl;
+			response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		}else{
+			response().out() << oneGeneInfoHtml_.get("/ssv", rootName_);
+		}
 	}
 
 	void showOneSampAllMip(std::string sampName) {
-		response().out() << oneSampAllMipInfoHtml_.get("/ssv", rootName_);
+		if(allInfoBySample_.find(sampName) == allInfoBySample_.end()){
+			std::cout << "Sample Name wasn't found: " << sampName << std::endl;
+			response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		}else{
+			response().out() << oneSampAllMipInfoHtml_.get("/ssv", rootName_);
+		}
 	}
+
 	void sampMipNamesData(std::string sampName) {
 		ret_json();
 		cppcms::json::value ret;
@@ -309,26 +315,39 @@ public:
 	}
 
 	void showMipInfo(std::string mipName) {
-		currentMipName_ = mipName;
-		response().out() << oneMipInfoHtml_.get("/ssv", rootName_);
+		if(dotFilesLocations_.find(mipName) == dotFilesLocations_.end()){
+			std::cout << "Could not find " << mipName << std::endl;
+			response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		}else{
+			response().out() << oneMipInfoHtml_.get("/ssv", rootName_);
+		}
+
 	}
 
 	void showOneSampleInfo(std::string mipName ,std::string sampName) {
-		//std::cout << "here" << std::endl;
-		currentMipName_ = mipName;
-		currentSampName_ = sampName;
-		std::cout << currentMipName_ << " " << currentSampName_ << std::endl;
-		response().out() << oneSampInfoHtml_.get("/ssv", rootName_);
+		std::cout << "showOneSampleInfo" << std::endl;
+		std::cout << mipName << " " << sampName << std::endl;
+		if(initialReadsLocations_[mipName][sampName] == ""){
+			std::cout << "couldn't find data" << std::endl;
+			response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		}else{
+			response().out() << oneSampInfoHtml_.get("/ssv", rootName_);
+		}
+
 	}
 
 	void showAllSampInfo(std::string mipName) {
-		currentMipName_ = mipName;
-		response().out() << allSampsInfoHtml_.get("/ssv", rootName_);
+		if(allInfoLocations_.find(mipName) == allInfoLocations_.end()){
+			std::cout << "Could not find mipname " << mipName << std::endl;
+			response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		}else{
+			response().out() << allSampsInfoHtml_.get("/ssv", rootName_);
+		}
+
 	}
 
 	void showMinTree(std::string mipName, std::string sampname) {
-		currentMipName_ = mipName;
-		currentSampName_ = sampname;
+
 		response().out() << minTreeViewHtml_.get("/ssv", rootName_);
 	}
 
@@ -420,7 +439,6 @@ public:
 	}
 
 	void popSeqData(std::string mipName) {
-		currentMipName_ = mipName;
 		ret_json();
 		//if reads haven't been read yet, read them in
 		if(reads_.find(mipName) == reads_.end()) {
@@ -432,8 +450,7 @@ public:
 	}
 
 	void minTreeData(std::string mipName, std::string sampname) {
-		currentSampName_ = sampname;
-		currentMipName_ = mipName;
+
 		auto ret = bibseq::dotToJson(dotFilesLocations_[mipName][sampname]);
 		ret_json();
 		response().out() << ret;
@@ -441,8 +458,7 @@ public:
 
 	void oneSampTabData(std::string mipName, std::string sampname) {
 		std::cout << "oneSampTabData - mipName: " << mipName << " sampName: " << sampname << std::endl;
-		currentMipName_ = mipName;
-		currentSampName_ = sampname;
+
 		ret_json();
 		auto tab = bibseq::table(allInfoLocations_[mipName], "\t", true);
 		auto outTab = tab.getRows("sName", sampname);
@@ -451,7 +467,7 @@ public:
 	}
 
 	void oneSampInitSeqData(std::string mipname, std::string sampname) {
-		currentSampName_ = sampname;
+
 		ret_json();
 		//if reads haven't been read yet, read them in
 		if(initialReads_[mipname][sampname].empty()) {
@@ -464,7 +480,7 @@ public:
 	}
 
 	void oneSampFinalSeqData(std::string mipname, std::string sampname) {
-		currentSampName_ = sampname;
+
 		ret_json();
 		//if reads haven't been read yet, read them in
 		if(finalReads_[mipname][sampname].empty()) {
