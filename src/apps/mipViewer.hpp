@@ -12,7 +12,7 @@
 namespace bibseq {
 namespace bfs = boost::filesystem;
 
-class ssv: public bibseq::seqApp {
+class miv: public bibseq::seqApp {
 private:
 
 	bib::FileCache mainPageHtml_;
@@ -50,7 +50,7 @@ private:
 	}
 
 public:
-	ssv(cppcms::service& srv, std::map<std::string, std::string> config)
+	miv(cppcms::service& srv, std::map<std::string, std::string> config)
 	: bibseq::seqApp(srv, config)
 	, mainPageHtml_(make_path(config["resources"] + "mip/mainPage.html"))
 	, oneGeneInfoHtml_(make_path(config["resources"] + "mip/oneGeneView.html"))
@@ -75,39 +75,39 @@ public:
 		redirectPageHtml_.replaceStr("/ssv", rootName_);
 		//main page
 		//<std::remove_reference<decltype(*this)>::type>
-		dispMapRoot(&ssv::mainPage, this);
-		dispMap(&ssv::geneNames,this, "geneNames");
-		dispMap(&ssv::getAllSampleNames, this,"allSampNames");
+		dispMapRoot(&miv::mainPage, this);
+		dispMap(&miv::geneNames,this, "geneNames");
+		dispMap(&miv::getAllSampleNames, this,"allSampNames");
 		//gene page
-		dispMap_1arg(&ssv::showGeneInfo,this, "geneInfo", "(\\w+)");
-		dispMap_1arg(&ssv::mipNames,this, "mipNames", "(\\w+)");
+		dispMap_1arg(&miv::showGeneInfo,this, "geneInfo", "(\\w+)");
+		dispMap_1arg(&miv::mipNames,this, "mipNames", "(\\w+)");
 		//one samp all mips page
-		dispMap_1arg(&ssv::showOneSampAllMip,this, "oneSampAllMipInfo", "(\\w+)");
-		dispMap_2arg(&ssv::oneSampAllMipData,this, "oneSampAllMipData", "(\\w+)/(\\w+)");
-		dispMap_1arg(&ssv::sampMipNamesData,this, "sampMipNames", "(\\w+)");
+		dispMap_1arg(&miv::showOneSampAllMip,this, "oneSampAllMipInfo", "(\\w+)");
+		dispMap_2arg(&miv::oneSampAllMipData,this, "oneSampAllMipData", "(\\w+)/(\\w+)");
+		dispMap_1arg(&miv::sampMipNamesData,this, "sampMipNames", "(\\w+)");
 		//show one mip target info and sample names
-		dispMap_1arg(&ssv::showMipInfo,this, "mipInfo", "(\\w+)");
-		dispMap_1arg(&ssv::mipSampleNames,this, "mipSampleNames", "(\\w+)");
+		dispMap_1arg(&miv::showMipInfo,this, "mipInfo", "(\\w+)");
+		dispMap_1arg(&miv::mipSampleNames,this, "mipSampleNames", "(\\w+)");
 		//show the data table with all sample information
-		dispMap_1arg(&ssv::showAllSampInfo,this, "allSamps", "(\\w+)");
-		dispMap_2arg(&ssv::allSampsInfoData,this, "allSampsInfo", "(\\w+)/(\\w+)");
+		dispMap_1arg(&miv::showAllSampInfo,this, "allSamps", "(\\w+)");
+		dispMap_2arg(&miv::allSampsInfoData,this, "allSampsInfo", "(\\w+)/(\\w+)");
 		//show the mip target info for one sample
-		dispMap_2arg(&ssv::showOneSampleInfo,this, "oneSampInfo", "(\\w+)/(\\w+)");
-		dispMap_2arg(&ssv::oneSampInitSeqData,this, "oneSampInitSeqData", "(\\w+)/(\\w+)");
-		dispMap_2arg(&ssv::oneSampFinalSeqData,this, "oneSampFinalSeqData", "(\\w+)/(\\w+)");
-		dispMap_2arg(&ssv::oneSampTabData,this, "oneSampTabData", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::showOneSampleInfo,this, "oneSampInfo", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::oneSampInitSeqData,this, "oneSampInitSeqData", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::oneSampFinalSeqData,this, "oneSampFinalSeqData", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::oneSampTabData,this, "oneSampTabData", "(\\w+)/(\\w+)");
 		//show the minimum spanning tree for one sample info
-		dispMap_2arg(&ssv::showMinTree,this, "showMinTree", "(\\w+)/(\\w+)");
-		dispMap_2arg(&ssv::minTreeData,this, "minTreeData", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::showMinTree,this, "showMinTree", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::minTreeData,this, "minTreeData", "(\\w+)/(\\w+)");
 		//show the Population information for one mip target
-		dispMap_1arg(&ssv::showPopData,this, "pop", "(\\w+)");
-		dispMap_1arg(&ssv::popInfoData,this, "popInfo", "(\\w+)");
-		dispMap_1arg(&ssv::popSeqData,this, "popSeqData", "(\\w+)");
+		dispMap_1arg(&miv::showPopData,this, "pop", "(\\w+)");
+		dispMap_1arg(&miv::popInfoData,this, "popInfo", "(\\w+)");
+		dispMap_1arg(&miv::popSeqData,this, "popSeqData", "(\\w+)");
 
 		//general information
-		dispMap(&ssv::rootName,this, "rootName");
-		dispMap(&ssv::colorsData,this, "baseColors");
-		dispMap_1arg(&ssv::getColors,this, "getColors", "(\\d+)");
+		dispMap(&miv::rootName,this, "rootName");
+		dispMap(&miv::colorsData,this, "baseColors");
+		dispMap_1arg(&miv::getColors,this, "getColors", "(\\d+)");
 
 
 

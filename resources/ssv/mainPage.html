@@ -1,0 +1,64 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Sequence Viewer</title>
+	<style>
+		#qualChart, #popTable, #popChart {
+			position: relative;
+			clear: both;
+			top: 80px;
+		}
+	</style>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+  </head>
+  <body>
+
+	
+    <script>
+    	$(document).ready(function(){
+	    	var mainData;
+	        var baseColors = {};
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var currentPopName = locSplit.pop();
+			ajax('/' + rName + '/seqData', function(md){ mainData = md; });
+			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			
+			var cellWidth = 20;
+			var cellHeight = 25;
+			var SeqViewer = new SeqView("canvasDiv1",  mainData, cellWidth, cellHeight, baseColors, "#qualChart");
+			
+			function init(){
+				$(window).bind("resize", function(){
+					SeqViewer.updateCanvas();
+					SeqViewer.setUpSliders();
+					SeqViewer.paint();
+				});
+				SeqViewer.setUp();
+				SeqViewer.paint();
+			}
+			init();
+
+
+		});
+		
+    </script>
+
+    <div id="canvasDiv1" class = "SeqView">
+    	<div id="rightSlider"></div>
+	    <canvas id="canvas"></canvas>
+	    <div id="bottomSlider"></div>
+	    <div id="pop-up"><p id="info"></p></div>
+      	<div id="select"></div>
+    </div>
+    <div id = "qualChart"></div>
+
+  </body>
+</html>

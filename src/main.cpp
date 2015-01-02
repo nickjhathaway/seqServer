@@ -14,13 +14,11 @@ serverRunner::serverRunner()
     : bib::progutils::programRunner(
           {addFunc("mipViewer", bibseq::mipViewer, false),
 					 addFunc("minTreeViewer", bibseq::minTreeViewer, false),
-					 addFunc("pearOutViwer", bibseq::pearOutViwer, false)
+					 addFunc("seqViewer", bibseq::seqViewer, false)
            },
           "serverRunner") {}
 
 int runServer(int argc, char* argv[]) {
-
-
   serverRunner serRunner;
   if (argc > 1) {
     return serRunner.run(argc, argv);
