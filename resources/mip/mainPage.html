@@ -9,18 +9,9 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
-	<style>	
-		body {
-			background-color: #354449;
-		}
-		a {
-			color: #87d7ff;
-		}
+	<style>
 		a:visited {
-			color: #d787d7;
-		}
-		h1,h3{
-			color:#44bbcc;
+			color:#8844CC;
 		}
 	</style>
   </head>
@@ -34,11 +25,14 @@
 			});
 			var cols = 10;
 			var linkPre = "/" + rName + "/geneInfo/";
-			var mouseOverC = "#4f666d";
-			var mouseLeaveC = "#354449";
+			var mouseOverC = "#999";
+			var mouseLeaveC = "#FFF";
 			var addTo = "#geneLinks";
-			$("body").append("<h1>Genes</h1>");
-			$("body").append("<div id=\"geneLinks\"></div>");
+			//var gPanel = d3.select(".container.theme-showcase").attr("class", "panel panel-primary");
+			//gPanel.append("div").attr("class", "panel-heading").append("h1").
+			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"gPanel\"></div>");
+			$("#gPanel").append("<div class=\"panel-heading\"><h1>Genes</h1></div>");
+			$("#gPanel").append("<div class=\"panel-body\"><div id=\"geneLinks\"></div></div>");
 			createLinksTable(addTo, linkPre, gNames,cols, mouseOverC, mouseLeaveC);
 			
 			var sampNames;
@@ -47,11 +41,17 @@
 			});
 			var linkPreSamp = "/" + rName + "/oneSampAllMipInfo/";
 			var addToSamp = "#sampLinks";
-			$("body").append("<h1>Samples</h1>");
-			$("body").append("<div id=\"sampLinks\"></div>");
+			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"sPanel\"></div>");
+			$("#sPanel").append("<div class=\"panel-heading\"><h1>Samples</h1></div>");
+			$("#sPanel").append("<div class=\"panel-body\"><div id=\"sampLinks\"></div></div>");
 			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
 			
 		});
 	</script>
+		<div class="container theme-showcase" role="main">
+			<div class="jumbotron">
+				<h1>Mips</h1>
+			</div>
+		</div>
   </body>
 </html>

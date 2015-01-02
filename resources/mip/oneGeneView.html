@@ -2,20 +2,7 @@
 <html>
   <head>
 	<title>Mips!</title>
-	<style>	
-		body {
-			background-color: #354449;
-		}
-		a {
-			color: #87d7ff;
-		}
-		a:visited {
-			color: #d787d7;
-		}
-		h1,h3{
-			color:#44bbcc;
-		}
-	</style>
+
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -23,6 +10,11 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<style>	
+		a:visited {
+			color:#8844CC;
+		}
+	</style>
   </head>
   <body>
 	<script>
@@ -36,13 +28,20 @@
 			});
 			var cols = 10;
 			var linkPre = "/" + rName + "/mipInfo/";
-			var mouseOverC = "#4f666d";
-			var mouseLeaveC = "#354449";
+			var mouseOverC = "#999";
+			var mouseLeaveC = "#FFF";
 			var addTo = "#mipLinks";
-			$("body").append("<h1>Mip Targets</h1>");
-			$("body").append("<div id=\"mipLinks\"></div>");
+			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"tPanel\"></div>");
+			$("#tPanel").append("<div class=\"panel-heading\"><h1>" + currentGeneName + "</h1></div>");
+			$("#tPanel").append("<div class=\"panel-body\"><div id=\"mipLinks\"></div></div>");
 			createLinksTable(addTo, linkPre, mNames,cols, mouseOverC, mouseLeaveC);
+			
 		});
 	</script>
+		<div class="container theme-showcase" role="main">
+			<div class="jumbotron">
+				<h1>Mip Targets</h1>
+			</div>
+		</div>
   </body>
 </html>

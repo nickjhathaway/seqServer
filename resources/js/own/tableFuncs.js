@@ -179,7 +179,7 @@
 				    }
 				    dataset.push(tmpDataset);
 				}
-				d3.select(addToSelector)
+				var tab = d3.select(addToSelector)
 				    .append("table")
 				    .style("border-collapse", "collapse")
 				    .style("border", "2px black solid")
@@ -198,4 +198,5 @@
 				    .append("a")
 		  				.attr("href", function(d){return d.link;})
 		  				.html(function(d){return d.text;});
+		  		return tab;
 			}

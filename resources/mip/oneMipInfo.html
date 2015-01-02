@@ -3,20 +3,6 @@
 <html>
   <head>
 	<title>Info Page</title>
-	<style>
-		body {
-			background-color: #354449;
-		}
-		a {
-			color: #87d7ff;
-		}
-		a:visited {
-			color: #d787d7;
-		}
-		h1,h3{
-			color:#44bbcc;
-		}
-	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -24,6 +10,11 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<style>
+		a:visited {
+			color:#8844CC;
+		}
+	</style>
   </head>
   <body>
 
@@ -37,34 +28,40 @@
 			var sampNames;
 			ajax("/" + rName + "/mipSampleNames/" + currentPopName, function(mn){ sampNames = mn; });
 			$("title", "head").html(currentPopName);
-			$("body").append("<h1>" + currentPopName +"</h3>");
+			$("#jTitle").html(currentPopName);
+			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"linkPanel\"></div>");
+			$("#linkPanel").append("<div class=\"panel-heading\"><h3></h3></div>");
+			$("#linkPanel").append("<div class=\"panel-body\" id =\"linkPanelBody\"></div></div>");
 			$('<a>',{
 			    text: 'See All Sample Data',
 			    title: 'Sample Data',
 			    href: "/" + rName + "/allSamps/" + currentPopName,
 			    id: "samp"
-			}).appendTo('body');
-			$("body").append("<h3>Each Sample</h3>");
-			$("body").append("<div id=\"sampLinks\"></div>");
-			var cols = 10;
-			var linkPre = "/" + rName + "/oneSampInfo/" + currentPopName + "/" ;
-			var mouseOverC = "#4f666d";
-			var mouseLeaveC = "#354449";
-			var addTo = "#sampLinks";
-			createLinksTable(addTo, linkPre, sampNames,cols, mouseOverC, mouseLeaveC);
-			
-
+			}).appendTo('#linkPanelBody');
+			$('<p>').appendTo('#linkPanelBody');
 			$('<a>',{
 			    text: 'See Population Data',
 			    title: 'Pop Data',
 			    href: "/" + rName + "/pop/" + currentPopName,
-			    id: "pop",
-			    style: "position: relative;top: 20px;"
-			}).appendTo('body');
+			    id: "pop"
+			}).appendTo('#linkPanelBody');
+			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"sPanel\"></div>");
+			$("#sPanel").append("<div class=\"panel-heading\"><h3>Each Sample</h3></div>");
+			$("#sPanel").append("<div class=\"panel-body\"><div id=\"sampLinks\"></div></div>");
+			var cols = 10;
+			var linkPre = "/" + rName + "/oneSampInfo/" + currentPopName + "/" ;
+			var mouseOverC = "#999";
+			var mouseLeaveC = "#FFF";
+			var addTo = "#sampLinks";
+			createLinksTable(addTo, linkPre, sampNames,cols, mouseOverC, mouseLeaveC);
 		});
 		
     </script>
-
+		<div class="container theme-showcase" role="main">
+			<div class="jumbotron">
+				<h1 id="jTitle"></h1>
+			</div>
+		</div>
 
   </body>
 </html>

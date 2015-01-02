@@ -12,6 +12,10 @@ var createMinTree = function(data, appendTo, name, width, height){
 	
 	d3.json(data, function(error, graph)
 	 {
+	 	svg.append('rect')
+	    .attr('width',width)
+	    .attr('height', height)
+	    .attr('fill',"#000");
 	 var force = d3.layout.force()
 	    .charge(-120)
 	    .linkDistance(function(d, i){ return d.value * 10;})
