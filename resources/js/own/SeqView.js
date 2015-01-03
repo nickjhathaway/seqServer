@@ -98,7 +98,7 @@
         	+ " pos: " + currentBase;
         var tWidth = seqContext.measureText(logInfo).width;
         seqContext.fillStyle = "#FFFFFF";
-	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , this.nBases * this.cw, this.ch);
+	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , this.nBases * this.cw - (3 *this.cw), this.ch);
         seqContext.fillStyle = "#EEEEEE";
 	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , tWidth, this.ch);
 	    seqContext.fillStyle = "#000000";

@@ -39,12 +39,17 @@ public:
 		dispMap(&ssv::rootName,this, "rootName");
 		dispMap(&ssv::colorsData,this, "baseColors");
 		dispMap_1arg(&ssv::getColors,this, "getColors", "(\\d+)");
+		dispMap_1arg(&ssv::sort,this, "sort", "(\\w+)");
 		mapper().root(rootName_);
+		//read in data and set to the json
 		readObjectIOOptions options(config["ioOptions"]);
 		readObjectIO reader;
 		reader.read(options);
-
+		reads_ = reader.reads;
+		readsJson_ = seqsToJson(reads_);
+		needsUpdate_= false;
 		std::cout << "Finished set up" << std::endl;
+		std::cout << "Go to " << "localhost:" << config["port"] << config["name"] << std::endl;
 	}
 
 	static VecStr requiredOptions(){
@@ -69,6 +74,11 @@ public:
 		response().out() << r;
 	}
 
+	void sort(std::string sortBy){
+		readVecSorter::sortReadVector(reads_, sortBy);
+		needsUpdate_ = true;
+		response().out() << mainPageHtml_.get("/ssv", rootName_);
+	}
 
 
 

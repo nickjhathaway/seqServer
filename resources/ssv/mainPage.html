@@ -3,13 +3,7 @@
 <html>
   <head>
 	<title>Sequence Viewer</title>
-	<style>
-		#qualChart, #popTable, #popChart {
-			position: relative;
-			clear: both;
-			top: 80px;
-		}
-	</style>
+
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -17,6 +11,19 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
+	<style>
+		#qualChart, #popTable, #popChart{
+			clear: both;
+			top: 0px;
+			margin: 10px;
+			
+		}
+		.SeqView {
+			clear: both;
+			top: 0px;
+			margin: 10px;
+		}
+	</style>
   </head>
   <body>
 
@@ -50,7 +57,37 @@
 		});
 		
     </script>
-
+<div class="bs-example">
+    <nav id="myNavbar" class="navbar navbar-default" role="navigation">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="container">
+			<div class="navbar-header">
+				<ul class="nav navbar-nav">
+					<li class="dropdown">
+						<a href="#" data-toggle="dropdown" class="dropdown-toggle">Sort<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="/ssv/sort/seq">seq</a>
+							</li>
+							<li>
+								<a href="/ssv/sort/seqCondensed">seqCondensed</a>
+							</li>
+							<li>
+								<a href="/ssv/sort/totalCount">total</a>
+							</li>
+							<li>
+								<a href="/ssv/sort/size">length</a>
+							</li>
+							<li>
+								<a href="/ssv/sort/name">name</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+        </div>
+    </nav>
+</div>
     <div id="canvasDiv1" class = "SeqView">
     	<div id="rightSlider"></div>
 	    <canvas id="canvas"></canvas>

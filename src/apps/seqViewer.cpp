@@ -28,11 +28,9 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
   //
   std::map<std::string, std::string> appConfig;
   appConfig["name"] = name;
+  appConfig["port"] = estd::to_string(port);
   auto optsJson = setUp.ioOptions_.toJson();
   appConfig["ioOptions"] = optsJson.toStyledString();
-  auto optsStyled = optsJson.toStyledString();
-  std::cout << optsStyled << std::endl;
-  std::cout << std::endl << optsJson << std::endl;
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
