@@ -149,6 +149,7 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config)
 		dispMap_2arg(&miv::oneSampInitSeqData,this, "oneSampInitSeqData", "(\\w+)/(\\w+)");
 		dispMap_2arg(&miv::oneSampFinalSeqData,this, "oneSampFinalSeqData", "(\\w+)/(\\w+)");
 		dispMap_2arg(&miv::oneSampTabData,this, "oneSampTabData", "(\\w+)/(\\w+)");
+		dispMap_2arg(&miv::getBarcodeInfoPerSamplePerMip,this, "barcodeInfo", "(\\w+)/(\\w+)");
 		//show the minimum spanning tree for one sample info
 		dispMap_2arg(&miv::showMinTree,this, "showMinTree", "(\\w+)/(\\w+)");
 		dispMap_2arg(&miv::minTreeData,this, "minTreeData", "(\\w+)/(\\w+)");
@@ -635,6 +636,95 @@ void miv::oneSampFinalSeqData(std::string mipName, std::string sampName) {
 	}else{
 		std::cout << "oneSampFinalSeqData: " << "couldn't find mipName: " << mipName << std::endl;
 	}
+	response().out() << ret;
+}
+
+
+void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampName){
+	ret_json();
+	std::cout << "getBarcodeInfoPerSamplePerMip" << std::endl;
+	cppcms::json::value ret;
+	//if reads haven't been read yet, read them in
+	auto search = sampleMipAnalysisFolders_.find(sampName);
+	if(search == sampleMipAnalysisFolders_.end()){
+		std::cout << "getBarcodeInfoPerSamplePerMip: Couldn't find sampName, " << sampName << ", redirecting" << std::endl;
+	}else{
+		auto mSearch = search->second.find(mipName);
+		if(mSearch == search->second.end()){
+			std::cout << "getBarcodeInfoPerSamplePerMip: Couldn't find mipName, " << mipName << std::endl;
+		}else{
+			auto mainMipAnalysisDir = appendSlashRet(mSearch->second.string()) + "/";
+			auto barcodeDir = mainMipAnalysisDir + "barcodeInfo/";
+			auto barcodeCoverageDir = barcodeDir + "barcodeCoverageInfo/";
+			//final cluster info
+			{
+				auto fileName = mainMipAnalysisDir + "info.tab.txt";
+				if(bfs::exists(bfs::path(fileName))){
+					ret ["clusterBarInfo"] = tableToJsonRowWise(table(fileName, "\t", true));
+				}else{
+					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
+				}
+			}
+
+			//barcode coverage after
+			{
+				auto fileName = barcodeCoverageDir + "coverageAfterFiltering.tab.txt";
+				if(bfs::exists(bfs::path(fileName))){
+					ret ["coverageAfter"] = tableToJsonRowWise(table(fileName, "\t", true));
+				}else{
+					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
+				}
+			}
+			//barcode performance
+			{
+				auto fileName = barcodeCoverageDir + "barcodePerformance.tab.txt";
+				if(bfs::exists(bfs::path(fileName))){
+					ret ["performance"] = tableToJsonRowWise(table(fileName, "\t", true));
+				}else{
+					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
+				}
+			}
+			//barcode coverage before
+			{
+				auto fileName = barcodeCoverageDir + "coverageBeforeFiltering.tab.txt";
+				if(bfs::exists(bfs::path(fileName))){
+					ret ["coverageBefore"] = tableToJsonRowWise(table(fileName, "\t", true));
+				}else{
+					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
+				}
+			}
+			//barcode afterIden
+			{
+				auto fileName = barcodeCoverageDir + "uniqueSeqsAfterIden.tab.txt";
+				if(bfs::exists(bfs::path(fileName))){
+					auto idenTab = table(fileName, "\t", true);
+					if(!idenTab.content_.empty()){
+						ret ["uniqueIdentical"] = tableToJsonRowWise(idenTab);
+					}else{
+						std::cout << "idenTab is empty" << std::endl;
+					}
+
+				}else{
+					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
+				}
+			}
+			//barcode afterClus
+			{
+				auto fileName = barcodeCoverageDir + "uniqueSeqsAfterClus.tab.txt";
+				if(bfs::exists(bfs::path(fileName))){
+					auto clusTab = table(fileName, "\t", true);
+					if(!clusTab.content_.empty()){
+						ret ["uniqueCluster"] = tableToJsonRowWise(clusTab);
+					}else{
+						std::cout << "idenTab is empty" << std::endl;
+					}
+				}else{
+					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
+				}
+			}
+		}
+	}
+	std::cout << ret << std::endl;
 	response().out() << ret;
 }
 

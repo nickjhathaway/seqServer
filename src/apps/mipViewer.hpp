@@ -129,6 +129,9 @@ public:
 	void getInitialReadStats();
 	void showInitialReadStats();
 
+	// barcode information per sample per mip
+	void getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampName);
+
 };
 
 int mipViewer(std::map<std::string, std::string> inputCommands);

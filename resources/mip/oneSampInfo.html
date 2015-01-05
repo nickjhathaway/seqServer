@@ -3,13 +3,7 @@
 <html>
   <head>
 	<title>Sample Info</title>
-	<style>
-		#qualChart, #qualChartFinal, h1, #popTable, #chart {
-			position: relative;
-			clear: both;
-			top: 80px;
-		}
-	</style>
+
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -21,6 +15,15 @@
   <body>
     <script>
     	$(document).ready(function(){
+    		/*
+    		 * 	<style>
+		#qualChart, #qualChartFinal, h1, #popTable, #chart {
+			position: relative;
+			clear: both;
+			top: 80px;
+		}
+	</style>
+    		 */
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			var currentSampName = locSplit.pop();
@@ -56,15 +59,12 @@
 
 			//console.log(svg);
 			var mainPopInfoTab;
-
 			ajax('/' + rName + '/oneSampTabData/'+currentPopName + "/" + currentSampName, function(tab){ mainPopInfoTab = tab; });
-
 			var tab = createTable("#popTable");
 			var columnNames = mainPopInfoTab["columnNames"];
 			var popInfoTab = mainPopInfoTab["tab"];
 			var numericCols = mainPopInfoTab["numericColNames"];
 			updateTable(tab,popInfoTab,  columnNames);
-			console.log(popInfoTab[0]);
 			function updateTableOnClick() {         
 			     var allVals = [];
 			     $('#popTableMenu :checked').each(function() {
@@ -88,9 +88,9 @@
 					;
 				 ;
 			 $( '#popTableMenu input' ).click( updateTableOnClick );
+			 
 			var xLabs = [];
 			for(obj in popInfoTab){
-				//console.log(popInfoTab[obj]["popUID"]);
 				xLabs.push(popInfoTab[obj]["popUID"]);
 			}
 			 chart = c3.generate({
@@ -123,8 +123,51 @@
 		$("#minTree")
 			.attr("href", "/" + rName + "/showMinTree/" + currentPopName + "/" + currentSampName)
 			.html("Show Tree");
+		
+		
+		var allBarcodeInfo;
+		console.log(rName);
+		ajax('/' + rName + '/barcodeInfo/' +currentPopName + "/" + currentSampName, function(tab){ allBarcodeInfo = tab; });
+		console.log(allBarcodeInfo);
+		
+		//final cluster info
+		var clusBarInfoTabMaster = allBarcodeInfo["clusterBarInfo"];
+		var clusBarTabElement = createTable("#clusBarTab");
+		var clusBarColumnNames = clusBarInfoTabMaster["columnNames"];
+		var clusBarTab = clusBarInfoTabMaster["tab"];
+		updateTable(clusBarTabElement, clusBarTab,  clusBarColumnNames);
+		//barcode coverage after
+		var covAfterInfoTabMaster = allBarcodeInfo["coverageAfter"];
+		var covAfterTabElement = createTable("#covAfterTab");
+		var covAfterColumnNames = covAfterInfoTabMaster["columnNames"];
+		var covAfterTab = covAfterInfoTabMaster["tab"];
+		updateTable(covAfterTabElement, covAfterTab,  covAfterColumnNames);
+		
+		//barcode performance
+		var barPerInfoTabMaster = allBarcodeInfo["performance"];
+		var barPerTabElement = createTable("#barPerTab");
+		var barPerColumnNames = barPerInfoTabMaster["columnNames"];
+		var barPerTab = barPerInfoTabMaster["tab"];
+		updateTable(barPerTabElement, barPerTab,  barPerColumnNames);
+		//barcode coverage before  coverageBefore
+		var covBeforeInfoTabMaster = allBarcodeInfo["coverageBefore"];
+		var covBeforeTabElement = createTable("#covBeforeTab");
+		var covBeforeColumnNames = covBeforeInfoTabMaster["columnNames"];
+		var covBeforeTab = covBeforeInfoTabMaster["tab"];
+		updateTable(covBeforeTabElement, covBeforeTab,  covBeforeColumnNames);
+		//barcode afterIden uniqueIdentical
+		var uniIdenInfoTabMaster = allBarcodeInfo["uniqueIdentical"];
+		var uniIdenTabElement = createTable("#uniIdenTab");
+		var uniIdenColumnNames = uniIdenInfoTabMaster["columnNames"];
+		var uniIdenTab = uniIdenInfoTabMaster["tab"];
+		updateTable(uniIdenTabElement, uniIdenTab,  uniIdenColumnNames);		
+		//barcode afterClus uniqueCluster
+		var uniClusInfoTabMaster = allBarcodeInfo["uniqueCluster"];
+		var uniClusTabElement = createTable("#uniClusTab");
+		var uniClusColumnNames = uniClusInfoTabMaster["columnNames"];
+		var uniClusTab = uniClusInfoTabMaster["tab"];
+		updateTable(uniClusTabElement, uniClusTab,  uniClusColumnNames);
 		});
-
     </script>
     <a id = "minTree"> </a>
 	<h1>Initial Clustering</h1>
@@ -160,6 +203,47 @@
     <div id = "chart">
     	
     </div>
+    
+    <p></p>
+    <div class="container theme-showcase" role="main">
+    <div class = "panel panel-info" id = "clusBarInfo">
+    	<div class = "panel-heading"><h1>Barcode Info Per Cluster</h1></div>
+    	<div class = "panel-body" id = "clusBarTab">
+    		<div id = "clusBarTabMenu"></div>
+    	</div>
+    </div>
+    <div class = "panel panel-info" id = "covAfterInfo">
+    	<div class = "panel-heading"><h1>Barcode Coverage After Filtering</h1></div>
+    	<div class = "panel-body" id = "covAfterTab">
+    		<div id = "covAfterTabMenu"></div>
+    	</div>
+    </div>
+    
+    <div class = "panel panel-info" id = "barPerInfo">
+    	<div class = "panel-heading"><h1>Barcode Performance</h1></div>
+    	<div class = "panel-body" id = "barPerTab">
+    		<div id = "barPerTabMenu"></div>
+    	</div>
+    </div>
+    <div class = "panel panel-info" id = "covBeforeInfo">
+    	<div class = "panel-heading"><h1>Barcode Coverage Before Filtering</h1></div>
+    	<div class = "panel-body" id = "covBeforeTab">
+    		<div id = "covBeforeTabMenu"></div>
+    	</div>
+    </div>
+    <div class = "panel panel-info" id = "uniIdenInfo">
+    	<div class = "panel-heading"><h1>Unique Seqs, Perfect match</h1></div>
+    	<div class = "panel-body" id = "uniIdenTab">
+    		<div id = "uniIdenTabMenu"></div>
+    	</div>
+    </div>
+    <div class = "panel panel-info" id = "uniClusInfo">
+    	<div class = "panel-heading"><h1>Unique Seqs, After Clustering</h1></div>
+    	<div class = "panel-body" id = "uniClusTab">
+    		<div id = "uniClusTabMenu"></div>
+    	</div>
+    </div>
+	</div>
 
   </body>
 </html>
