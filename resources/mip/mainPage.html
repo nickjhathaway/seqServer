@@ -46,6 +46,10 @@
 			$("#sPanel").append("<div class=\"panel-body\"><div id=\"sampLinks\"></div></div>");
 			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
 			
+			$(".container.theme-showcase").append("<div class=\"panel panel-info\" id=\"statsPanel\"></div>");
+			$("#statsPanel").append("<div class=\"panel-heading\"><h3>Intial Sample Read Amount Stats</h3></div>");
+			$("#statsPanel").append("<div class=\"panel-body\"><a href=" + rName + "/showInitialReadStats>Intial Sample Read Amount Stats</a></div>");
+			
 		});
 	</script>
 		<div class="container theme-showcase" role="main">
