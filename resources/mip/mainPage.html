@@ -48,8 +48,10 @@
 			
 			$(".container.theme-showcase").append("<div class=\"panel panel-info\" id=\"statsPanel\"></div>");
 			$("#statsPanel").append("<div class=\"panel-heading\"><h3>Intial Sample Read Amount Stats</h3></div>");
-			$("#statsPanel").append("<div class=\"panel-body\"><a href=" + rName + "/showInitialReadStats>Intial Sample Read Amount Stats</a></div>");
-			
+			$("#statsPanel").append("<div class=\"panel-body\"><a href=" + rName + "/showInitialReadStats>OverView of all Samples</a><p></p><div id=\"sampStatsLinks\"></div></div>");
+			var linkPreSampStats = "/" + rName + "/showInitialReadStatsPerSample/";
+			var addToSampStats = "#sampStatsLinks";
+			createLinksTable(addToSampStats, linkPreSampStats, sampNames,cols, mouseOverC, mouseLeaveC);
 		});
 	</script>
 		<div class="container theme-showcase" role="main">

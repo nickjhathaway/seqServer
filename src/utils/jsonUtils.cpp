@@ -88,11 +88,14 @@ cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 	bibseq::VecStr numericCols;
 	for(const auto & colPos : iter::range(tab.columnNames_.size())){
 		numCheck[colPos] = bibseq::vectorOfNumberStringsDouble(tab.getColumn(colPos));
+		if(numCheck[colPos]){
+			numericCols.emplace_back(tab.columnNames_[colPos]);
+		}
 	}
+
 	for(const auto & rowPos : iter::range(tab.content_.size())){
 		for(const auto & colPos : iter::range(tab.columnNames_.size())){
 			if(numCheck[colPos]){
-				numericCols.emplace_back(tab.columnNames_[colPos]);
 				outTab[rowPos][tab.columnNames_[colPos]] = bib::lexical_cast<double>(tab.content_[rowPos][colPos]);
 			}else{
 				outTab[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];

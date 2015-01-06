@@ -40,6 +40,7 @@ private:
 	bib::FileCache minTreeViewHtml_;
 	//bib::FileCache popInfoHtml_;
 	bib::FileCache initialSamplereadAmountStatsHtml_;
+	bib::FileCache initialSamplereadAmountStatsPerSampleHtml_;
 	bib::FileCache redirectPageHtml_;
 
 	//by mip target
@@ -60,6 +61,7 @@ private:
 	std::unordered_map<std::string, bfs::path> mipAnalysisWithOutBarcodesFolders_;
 	//by mip name, all sample names for a given mip
 	std::unordered_map<std::string, VecStr> sampNamesForMip_;
+	std::unordered_map<std::string, VecStr> mipNamesForSamp_;
 
 	table stats_;
 
@@ -86,6 +88,8 @@ public:
 	void rootName() ;
 
 	void mipNames(std::string geneName);
+
+	void mipNamesForSample(std::string sampleName);
 
 	void geneNames();
 
@@ -126,8 +130,11 @@ public:
 
 	void mainPage();
 
-	void getInitialReadStats();
+	void getInitialReadStats(std::string sampleNames);
 	void showInitialReadStats();
+
+	void getInitialReadStatsPerSample(std::string sampName, std::string mipNames);
+	void showInitialReadStatsPerSample(std::string sampName);
 
 	// barcode information per sample per mip
 	void getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampName);

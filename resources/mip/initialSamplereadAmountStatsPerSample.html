@@ -29,20 +29,21 @@
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
+			var currentSampName = locSplit.pop();
 			//change title to current name
 			$("title", "head").html("Initial Read Stats");
 			//get sample names and the table with the sample names
 			var mainSampStatsInfoTab;
-			var sampNames;
-			ajax("/" + rName + "/allSampNames", function(mn) {
-				sampNames = mn;
-			});
-			ajax('/' + rName + '/getInitialReadStats/' + sampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			var allMipNames;
+			ajax("/" + rName + "/mipNamesForSample/" + currentSampName, function(mn){ allMipNames = mn; });
+			
+			ajax('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName + "/" + allMipNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
 
 			//create sample table 
 			var sampTab = createTable("#sampStatsTable");
 			updateTable(sampTab, mainSampStatsInfoTab["tab"],  mainSampStatsInfoTab["columnNames"]);
 			//create update click function 
+			//console.log(mainSampStatsInfoTab["numericColNames"]);
 			function updateTableOnClick() {         
 			     var allVals = [];
 			     $(':checked', "#sampStatsTableMenu").each(function() {
@@ -50,6 +51,18 @@
 			     });
 			     var currentColumnNames = _.intersection(mainSampStatsInfoTab["columnNames"], allVals);
 			     updateTable(sampTab, mainSampStatsInfoTab["tab"], currentColumnNames );;
+			     var hideThese = [];
+			     for(var col in mainSampStatsInfoTab["numericColNames"]){
+			     	//console.log(col);
+			     	if(currentColumnNames.indexOf(mainSampStatsInfoTab["numericColNames"][col]) > -1){
+			     	}else{
+			     		hideThese.push(mainSampStatsInfoTab["numericColNames"][col]);
+			     	}
+			     }
+			     console.log(currentColumnNames);
+			     console.log(hideThese);
+			     chart.show(currentColumnNames);
+			     chart.hide(hideThese);
 			};
 			//add column name checkboxes as needed
 			var inputs = d3.select("#sampStatsTableMenu").selectAll("input")
@@ -93,10 +106,95 @@
 			var xLabs = [];
 			for(obj in mainSampStatsInfoTab["tab"]){
 				//console.log(popInfoTab[obj]["popUID"]);
-				console.log(mainSampStatsInfoTab["tab"][obj]);
-				console.log(obj);
-				xLabs.push(mainSampStatsInfoTab["tab"][obj]["sampleName"]);
+				//console.log(mainSampStatsInfoTab["tab"][obj]);
+				//console.log(obj);
+				xLabs.push(mainSampStatsInfoTab["tab"][obj]["mipName"]);
 			}
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#mipNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentMipNames = _.intersection(allMipNames, allVals);
+			    console.log("currentMipName" + currentMipNames);
+			    if(currentMipNames.length == 0){
+			    	mainSampStatsInfoTab = {};
+			    }else{
+			    	ajax('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName + "/" + currentMipNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			    }
+					var xLabsNew = [];
+					for(obj in mainSampStatsInfoTab["tab"]){
+						//console.log(popInfoTab[obj]["popUID"]);
+						//console.log(mainSampStatsInfoTab["tab"][obj]);
+						//console.log(obj);
+						xLabsNew.push(mainSampStatsInfoTab["tab"][obj]["mipName"]);
+					}
+			    chart = c3.generate({
+		        data: {
+		            json: mainSampStatsInfoTab["tab"],
+		            keys: {
+		                value: mainSampStatsInfoTab["numericColNames"],
+		            }, 
+		            axes: {
+		            	readNumber :'y'
+		            }, 
+		            type: 'bar'
+		        },
+		        axis: {
+		            x: {
+		                type: 'category',
+						categories: xLabsNew ,
+			            tick: {
+			                rotate: 75
+			            },
+			            height: 130
+		            }
+		        },
+		        bindto: "#chart"
+			});
+			 	updateTableOnClick();
+			 	
+			 	//updateChart();
+			};
+			//create the inputs checkboxes for the sample name 
+			var inputs = d3.select("#mipNameMenu").selectAll("input")
+				.data(allMipNames)
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("style", "border:2px solid black; padding: 2;")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("checked", true)
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;});
+			//Add check all and uncheck all buttons on their own lines
+			$('<br>').appendTo('#mipNameMenu');
+			$('<a>',{
+			    text: 'Check All',
+			    href: "javascript:void(0);",
+			    id: "check-all"
+			}).appendTo('#mipNameMenu');
+			$('<br>').appendTo('#mipNameMenu');
+			$('<a>',{
+			    text: 'Uncheck All',
+			    href: "javascript:void(0);",
+			    id: "uncheck-all"
+			}).appendTo('#mipNameMenu');
+			//add the uncheckall and check all functions
+			$('#check-all', "#mipNameMenu").click(function(){
+			    $("input:checkbox", "#mipNameMenu").prop('checked', true);
+			    updateChartOnClick();
+			  });
+			  $('#uncheck-all', "#mipNameMenu").click(function(){
+			    $("input:checkbox", "#mipNameMenu").prop('checked', false);
+			    updateChartOnClick();
+			});
+			//add update function to the checkboxes
+			$( '#mipNameMenu input' ).click( updateChartOnClick );
+			
 			console.log(xLabs);
 		    var chart = c3.generate({
 		        data: {
@@ -105,7 +203,7 @@
 		                value: mainSampStatsInfoTab["numericColNames"],
 		            }, 
 		            axes: {
-		            	totalInitial :'y'
+		            	readNumber :'y'
 		            }, 
 		            type: 'bar'
 		        },
@@ -128,6 +226,9 @@
     
     <div id = "sampStatsTable">
     	<div id = "sampStatsTableMenu"></div>
+    </div>
+     <div id = "mipNameMenu">
+    	
     </div>
     <div id = "chart">
     	
