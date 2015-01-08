@@ -645,7 +645,7 @@ void miv::oneSampTabData(std::string mipName, std::string sampname) {
 	auto search = mipAnalysisFolders_.find(mipName);
 	if(search != mipAnalysisFolders_.end()){
 		auto tab = bibseq::table(search->second.string() + "/selectedClustersInfo.tab.txt", "\t", true);
-		auto outTab = tab.getRows("sName", sampname);
+		auto outTab = tab.getRows("s_sName", sampname);
 		ret = tableToJsonRowWise(outTab);
 	}else{
 		std::cout << "oneSampTabData: " << "couldn't find mipName: " << mipName << std::endl;
