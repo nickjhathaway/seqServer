@@ -135,7 +135,7 @@
 			var sampleSum = {};
 			var samplePopNames = {};
 			var color = d3.scale.ordinal()
-			    .domain(mainSampInfoTab["tab"].map(function(d) { return d.clusterID; }))
+			    .domain(mainSampInfoTab["tab"].map(function(d) { return d.c_clusterID; }))
 			    .range(mainSampInfoTab["popColors"]);
 			for(pos in mainSampInfoTab["tab"]){
 				sampleSum[mainSampInfoTab["tab"][pos].mipName] = 0;
@@ -145,10 +145,10 @@
 				var actualPos = mainSampInfoTab["tab"].length - 1 - pos;
 				samplePopNames[mainSampInfoTab["tab"][actualPos].mipName].push({
 					mipName: mainSampInfoTab["tab"][actualPos].mipName,
-					popUID: mainSampInfoTab["tab"][actualPos].popUID,
-					clusterID: mainSampInfoTab["tab"][actualPos].clusterID,
-					barcodeFrac: mainSampInfoTab["tab"][actualPos].barcodeFrac,
-					color: color(mainSampInfoTab["tab"][actualPos].clusterID)});
+					h_popUID: mainSampInfoTab["tab"][actualPos].h_popUID,
+					c_clusterID: mainSampInfoTab["tab"][actualPos].c_clusterID,
+					c_barcodeFrac: mainSampInfoTab["tab"][actualPos].c_barcodeFrac,
+					color: color(mainSampInfoTab["tab"][actualPos].c_clusterID)});
 			}
 			//set up the x domain for the current sample names 
 			x.domain(mainSampInfoTab["tab"].map(function(d) { return d.mipName; }));
@@ -187,16 +187,16 @@
 			      .attr("class", "bar")
 			      .attr("x", function(d) { return x(d.mipName); })
 			      .attr("y", function(d) { 
-			      		var ret = y(sampleSum[d.mipName] + d.barcodeFrac);
-			      		sampleSum[d.mipName] = sampleSum[d.mipName] + d.barcodeFrac;
+			      		var ret = y(sampleSum[d.mipName] + d.c_barcodeFrac);
+			      		sampleSum[d.mipName] = sampleSum[d.mipName] + d.c_barcodeFrac;
 			      		return ret; 
 			      		})
-			      .attr("height", function(d) { return height - y(d.barcodeFrac); })
+			      .attr("height", function(d) { return height - y(d.c_barcodeFrac); })
 			      .attr("width", x.rangeBand())
-			      .attr("fill", function(d){ return color(d.clusterID);})
+			      .attr("fill", function(d){ return color(d.c_clusterID);})
 			      .style("stroke", "#000")
-			      .attr("data-legend",function(d) { return d.clusterID;})
-			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.mipName], ["mipName", "popUID", "clusterID","barcodeFrac"]); return tooltip.style("visibility", "visible");})
+			      .attr("data-legend",function(d) { return d.c_clusterID;})
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.mipName], ["mipName", "h_popUID", "c_clusterID","c_barcodeFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			bars.exit()
@@ -216,7 +216,7 @@
 				sampleSum = {};
 				samplePopNames = {};
 				color = d3.scale.ordinal()
-				    .domain(mainSampInfoTab["tab"].map(function(d) { return d.popUID; }))
+				    .domain(mainSampInfoTab["tab"].map(function(d) { return d.h_popUID; }))
 				    .range(mainSampInfoTab["popColors"]);
 				for(pos in mainSampInfoTab["tab"]){
 					sampleSum[mainSampInfoTab["tab"][pos].mipName] = 0;
@@ -226,10 +226,10 @@
 					var actualPos = mainSampInfoTab["tab"].length - 1 - pos;
 					samplePopNames[mainSampInfoTab["tab"][actualPos].mipName].push({
 						mipName: mainSampInfoTab["tab"][actualPos].mipName,
-						popUID: mainSampInfoTab["tab"][actualPos].popUID,
-						clusterID:mainSampInfoTab["tab"][actualPos].clusterID,
-						barcodeFrac: mainSampInfoTab["tab"][actualPos].barcodeFrac,
-						color: color(mainSampInfoTab["tab"][actualPos].clusterID) });
+						h_popUID: mainSampInfoTab["tab"][actualPos].h_popUID,
+						c_clusterID:mainSampInfoTab["tab"][actualPos].c_clusterID,
+						c_barcodeFrac: mainSampInfoTab["tab"][actualPos].c_barcodeFrac,
+						color: color(mainSampInfoTab["tab"][actualPos].c_clusterID) });
 				}
 				//update the x axis
 				chart.select("g.x.axis")
@@ -250,16 +250,16 @@
 				//update the bars already there with new info
 				bars.attr("x", function(d) { return x(d.mipName); })
 				      .attr("y", function(d) { 
-				      		var ret = y(sampleSum[d.mipName] + d.barcodeFrac);
-				      		sampleSum[d.mipName] = sampleSum[d.mipName] + d.barcodeFrac;
+				      		var ret = y(sampleSum[d.mipName] + d.c_barcodeFrac);
+				      		sampleSum[d.mipName] = sampleSum[d.mipName] + d.c_barcodeFrac;
 				      		return ret; 
 				      		})
-				      .attr("height", function(d) { return height - y(d.barcodeFrac); })
+				      .attr("height", function(d) { return height - y(d.c_barcodeFrac); })
 				      .attr("width", x.rangeBand())
-				      .attr("fill", function(d){ return color(d.clusterID);})
+				      .attr("fill", function(d){ return color(d.c_clusterID);})
 				      .style("stroke", "#000")
-				      .attr("data-legend",function(d) { return d.clusterID;})
-				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.mipName], ["mipName", "popUID", "clusterID","barcodeFrac"]); return tooltip.style("visibility", "visible");})
+				      .attr("data-legend",function(d) { return d.c_clusterID;})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.mipName], ["mipName",  "h_popUID", "c_clusterID","c_barcodeFrac"]); return tooltip.style("visibility", "visible");})
 					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 				//create new bars as needed
@@ -267,16 +267,16 @@
 				      .attr("class", "bar")
 				      .attr("x", function(d) { return x(d.mipName); })
 				      .attr("y", function(d) { 
-				      		var ret = y(sampleSum[d.mipName] + d.barcodeFrac);
-				      		sampleSum[d.mipName] = sampleSum[d.mipName] + d.barcodeFrac;
+				      		var ret = y(sampleSum[d.mipName] + d.c_barcodeFrac);
+				      		sampleSum[d.mipName] = sampleSum[d.mipName] + d.c_barcodeFrac;
 				      		return ret; 
 				      		})
-				      .attr("height", function(d) { return height - y(d.barcodeFrac); })
+				      .attr("height", function(d) { return height - y(d.c_barcodeFrac); })
 				      .attr("width", x.rangeBand())
-				      .attr("fill", function(d){ return color(d.clusterID);})
+				      .attr("fill", function(d){ return color(d.c_clusterID);})
 				      .style("stroke", "#000")
-				      .attr("data-legend",function(d) { return d.clusterID;})
-				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.mipName], ["mipName", "popUID", "clusterID","barcodeFrac"]); return tooltip.style("visibility", "visible");})
+				      .attr("data-legend",function(d) { return d.c_clusterID;})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.mipName], ["mipName", "h_popUID", "c_clusterID","c_barcodeFrac"]); return tooltip.style("visibility", "visible");})
 					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			    //remove the bars no longer needed

@@ -243,7 +243,7 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config)
 				continue;
 			}
 			auto tab = bibseq::table(mipAnalysis.second.string() + "/selectedClustersInfo.tab.txt", "\t", true );
-			auto expNames = tab.getColumn("popUID");
+			auto expNames = tab.getColumn("h_popUID");
 			if(expNames.empty()) {
 				continue;
 			}
@@ -258,7 +258,7 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config)
 				row.insert(row.begin(), expName);
 				row.insert(row.begin(), targetName);
 			}
-			auto split = tab.splitTableOnColumn("sName");
+			auto split = tab.splitTableOnColumn("s_sName");
 			sampNamesForMip_[mipAnalysis.first] = getVectorOfMapKeys(split);
 			//std::cout << bib::conToStr(tab.columnNames_, ",") << std::endl;
 			for(const auto & s : split) {
@@ -450,7 +450,7 @@ void miv::oneSampAllMipData(std::string sampName, std::string mipNames) {
 		genInfo[g] = bibseq::getTargetsAtPositions(singleMipNames, bibseq::getPositionsOfTargetStartsWith(singleMipNames, g));
 	}
 	std::unordered_map<std::string,uint32_t> mipClusIdCounts;
-	for(const auto & m : trimedTab.getColumn("clusterID")) {
+	for(const auto & m : trimedTab.getColumn("c_clusterID")) {
 		++mipClusIdCounts[m];
 	}
 	auto outColors = bib::njhColors(mipClusIdCounts.size());
@@ -549,9 +549,9 @@ void miv::allSampsInfoData(std::string mipName, std::string sampNames) {
 		auto containsSampName = [&sampToks](const std::string & str) {
 			return bibseq::in(str, sampToks);
 		};
-		auto trimedTab = sampTab.extractByComp("sName", containsSampName);
+		auto trimedTab = sampTab.extractByComp("s_sName", containsSampName);
 		ret = tableToJsonRowWise(trimedTab);
-		auto popCounts = bibseq::countVec(trimedTab.getColumn("popUID"));
+		auto popCounts = bibseq::countVec(trimedTab.getColumn("h_popUID"));
 		auto popColors = bib::njhColors(popCounts.size());
 		bibseq::VecStr popColorsStrs(popColors.size());
 		uint32_t count = 0;

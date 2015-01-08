@@ -127,22 +127,22 @@
 			var sampleSum = {};
 			var samplePopNames = {};
 			var color = d3.scale.ordinal()
-			    .domain(mainPopInfoTab["tab"].map(function(d) { return d.popUID; }))
+			    .domain(mainPopInfoTab["tab"].map(function(d) { return d.h_popUID; }))
 			    .range(mainPopInfoTab["popColors"]);
 			for(pos in mainPopInfoTab["tab"]){
-				sampleSum[mainPopInfoTab["tab"][pos].Sample] = 0;
-				samplePopNames[mainPopInfoTab["tab"][pos].Sample] = [];
+				sampleSum[mainPopInfoTab["tab"][pos].s_Sample] = 0;
+				samplePopNames[mainPopInfoTab["tab"][pos].s_Sample] = [];
 			}
 			for(pos in mainPopInfoTab["tab"]){
 				var actualPos = mainPopInfoTab["tab"].length - 1 - pos;
-				samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({
-					Sample: mainPopInfoTab["tab"][actualPos].Sample,
-					popUID: mainPopInfoTab["tab"][actualPos].popUID,
-					barcodeFrac: mainPopInfoTab["tab"][actualPos].barcodeFrac,
-					color: color(mainPopInfoTab["tab"][actualPos].popUID) });
+				samplePopNames[mainPopInfoTab["tab"][actualPos].s_Sample].push({
+					s_Sample: mainPopInfoTab["tab"][actualPos].s_Sample,
+					h_popUID: mainPopInfoTab["tab"][actualPos].h_popUID,
+					c_barcodeFrac: mainPopInfoTab["tab"][actualPos].c_barcodeFrac,
+					color: color(mainPopInfoTab["tab"][actualPos].h_popUID) });
 			}
 			//set up the x domain for the current sample names 
-			x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
+			x.domain(mainPopInfoTab["tab"].map(function(d) { return d.s_Sample; }));
 			y.domain([0,1]);
 			//add the axes to the chart
 			chart.append("g")
@@ -176,18 +176,18 @@
 			      
 			bars.enter().append("rect")
 			      .attr("class", "bar")
-			      .attr("x", function(d) { return x(d.Sample); })
+			      .attr("x", function(d) { return x(d.s_Sample); })
 			      .attr("y", function(d) { 
-			      		var ret = y(sampleSum[d.Sample] + d.barcodeFrac);
-			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.barcodeFrac;
+			      		var ret = y(sampleSum[d.s_Sample] + d.c_barcodeFrac);
+			      		sampleSum[d.s_Sample] = sampleSum[d.s_Sample] + d.c_barcodeFrac;
 			      		return ret; 
 			      		})
-			      .attr("height", function(d) { return height - y(d.barcodeFrac); })
+			      .attr("height", function(d) { return height - y(d.c_barcodeFrac); })
 			      .attr("width", x.rangeBand())
-			      .attr("fill", function(d){ return color(d.popUID);})
+			      .attr("fill", function(d){ return color(d.h_popUID);})
 			      .style("stroke", "#000")
-			      .attr("data-legend",function(d) { return d.popUID;})
-			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "barcodeFrac"]); return tooltip.style("visibility", "visible");})
+			      .attr("data-legend",function(d) { return d.h_popUID;})
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.s_Sample], ["s_Sample", "h_popUID","c_clusterID", "c_barcodeFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			bars.exit()
@@ -203,23 +203,23 @@
 			d3.select(".legend-items").style("fill", "#000");
 			//create update chart function to update as sample check boxes are modified 
 			function updateChart(){
-				x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
+				x.domain(mainPopInfoTab["tab"].map(function(d) { return d.s_Sample; }));
 				sampleSum = {};
 				samplePopNames = {};
 				color = d3.scale.ordinal()
-				    .domain(mainPopInfoTab["tab"].map(function(d) { return d.popUID; }))
+				    .domain(mainPopInfoTab["tab"].map(function(d) { return d.h_popUID; }))
 				    .range(mainPopInfoTab["popColors"]);
 				for(pos in mainPopInfoTab["tab"]){
-					sampleSum[mainPopInfoTab["tab"][pos].Sample] = 0;
-					samplePopNames[mainPopInfoTab["tab"][pos].Sample] = [];
+					sampleSum[mainPopInfoTab["tab"][pos].s_Sample] = 0;
+					samplePopNames[mainPopInfoTab["tab"][pos].s_Sample] = [];
 				}
 				for(pos in mainPopInfoTab["tab"]){
 					var actualPos = mainPopInfoTab["tab"].length - 1 - pos;
-					samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({
-						Sample: mainPopInfoTab["tab"][actualPos].Sample,
-						popUID: mainPopInfoTab["tab"][actualPos].popUID,
-						barcodeFrac: mainPopInfoTab["tab"][actualPos].barcodeFrac,
-						color: color(mainPopInfoTab["tab"][actualPos].popUID) });
+					samplePopNames[mainPopInfoTab["tab"][actualPos].s_Sample].push({
+						s_Sample: mainPopInfoTab["tab"][actualPos].s_Sample,
+						h_popUID: mainPopInfoTab["tab"][actualPos].h_popUID,
+						c_barcodeFrac: mainPopInfoTab["tab"][actualPos].c_barcodeFrac,
+						color: color(mainPopInfoTab["tab"][actualPos].h_popUID) });
 				}
 				//update the x axis
 				chart.select("g.x.axis")
@@ -238,35 +238,35 @@
 				//get all the bars
 				var bars = chart.selectAll(".bar").data(mainPopInfoTab["tab"]);
 				//update the bars already there with new info
-				bars.attr("x", function(d) { return x(d.Sample); })
+				bars.attr("x", function(d) { return x(d.s_Sample); })
 				      .attr("y", function(d) { 
-				      		var ret = y(sampleSum[d.Sample] + d.barcodeFrac);
-				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.barcodeFrac;
+				      		var ret = y(sampleSum[d.s_Sample] + d.c_barcodeFrac);
+				      		sampleSum[d.s_Sample] = sampleSum[d.s_Sample] + d.c_barcodeFrac;
 				      		return ret; 
 				      		})
-				      .attr("height", function(d) { return height - y(d.barcodeFrac); })
+				      .attr("height", function(d) { return height - y(d.c_barcodeFrac); })
 				      .attr("width", x.rangeBand())
-				      .attr("fill", function(d){ return color(d.popUID);})
+				      .attr("fill", function(d){ return color(d.h_popUID);})
 				      .style("stroke", "#000")
-				      .attr("data-legend",function(d) { return d.popUID;})
-				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "barcodeFrac"]); return tooltip.style("visibility", "visible");})
+				      .attr("data-legend",function(d) { return d.h_popUID;})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.s_Sample], ["s_Sample", "h_popUID","c_clusterID", "c_barcodeFrac"]); return tooltip.style("visibility", "visible");})
 					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 				//create new bars as needed
 				bars.enter().append("rect")
 				      .attr("class", "bar")
-				      .attr("x", function(d) { return x(d.Sample); })
+				      .attr("x", function(d) { return x(d.s_Sample); })
 				      .attr("y", function(d) { 
-				      		var ret = y(sampleSum[d.Sample] + d.barcodeFrac);
-				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.barcodeFrac;
+				      		var ret = y(sampleSum[d.s_Sample] + d.c_barcodeFrac);
+				      		sampleSum[d.s_Sample] = sampleSum[d.s_Sample] + d.c_barcodeFrac;
 				      		return ret; 
 				      		})
-				      .attr("height", function(d) { return height - y(d.barcodeFrac); })
+				      .attr("height", function(d) { return height - y(d.c_barcodeFrac); })
 				      .attr("width", x.rangeBand())
-				      .attr("fill", function(d){ return color(d.popUID);})
+				      .attr("fill", function(d){ return color(d.h_popUID);})
 				      .style("stroke", "#000")
-				      .attr("data-legend",function(d) { return d.popUID;})
-				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "barcodeFrac"]); return tooltip.style("visibility", "visible");})
+				      .attr("data-legend",function(d) { return d.h_popUID;})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.s_Sample], ["s_Sample", "h_popUID","c_clusterID", "c_barcodeFrac"]); return tooltip.style("visibility", "visible");})
 					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			    //remove the bars no longer needed
@@ -387,7 +387,7 @@
 			//get the x labels for the pop chart
 			var xLabs = [];
 			for(obj in popInfoTab["tab"]){
-				xLabs.push(popInfoTab["tab"][obj]["popUID"]);
+				xLabs.push(popInfoTab["tab"][obj]["h_popUID"]);
 			}
 			//create pop chart
 			popChart = c3.generate({
