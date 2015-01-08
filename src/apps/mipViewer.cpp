@@ -258,7 +258,7 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config)
 				row.insert(row.begin(), expName);
 				row.insert(row.begin(), targetName);
 			}
-			auto split = tab.splitTableOnColumn("Sample");
+			auto split = tab.splitTableOnColumn("sName");
 			sampNamesForMip_[mipAnalysis.first] = getVectorOfMapKeys(split);
 			//std::cout << bib::conToStr(tab.columnNames_, ",") << std::endl;
 			for(const auto & s : split) {
@@ -549,7 +549,7 @@ void miv::allSampsInfoData(std::string mipName, std::string sampNames) {
 		auto containsSampName = [&sampToks](const std::string & str) {
 			return bibseq::in(str, sampToks);
 		};
-		auto trimedTab = sampTab.extractByComp("Sample", containsSampName);
+		auto trimedTab = sampTab.extractByComp("sName", containsSampName);
 		ret = tableToJsonRowWise(trimedTab);
 		auto popCounts = bibseq::countVec(trimedTab.getColumn("popUID"));
 		auto popColors = bib::njhColors(popCounts.size());
@@ -789,7 +789,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 			}
 		}
 	}
-	std::cout << ret << std::endl;
+	//std::cout << ret << std::endl;
 	response().out() << ret;
 }
 

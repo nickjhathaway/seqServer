@@ -138,7 +138,7 @@
 				samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({
 					Sample: mainPopInfoTab["tab"][actualPos].Sample,
 					popUID: mainPopInfoTab["tab"][actualPos].popUID,
-					cAveragedFrac: mainPopInfoTab["tab"][actualPos].cAveragedFrac,
+					barcodeFrac: mainPopInfoTab["tab"][actualPos].barcodeFrac,
 					color: color(mainPopInfoTab["tab"][actualPos].popUID) });
 			}
 			//set up the x domain for the current sample names 
@@ -178,16 +178,16 @@
 			      .attr("class", "bar")
 			      .attr("x", function(d) { return x(d.Sample); })
 			      .attr("y", function(d) { 
-			      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
-			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+			      		var ret = y(sampleSum[d.Sample] + d.barcodeFrac);
+			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.barcodeFrac;
 			      		return ret; 
 			      		})
-			      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+			      .attr("height", function(d) { return height - y(d.barcodeFrac); })
 			      .attr("width", x.rangeBand())
 			      .attr("fill", function(d){ return color(d.popUID);})
 			      .style("stroke", "#000")
 			      .attr("data-legend",function(d) { return d.popUID;})
-			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "barcodeFrac"]); return tooltip.style("visibility", "visible");})
 				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			bars.exit()
@@ -218,7 +218,7 @@
 					samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({
 						Sample: mainPopInfoTab["tab"][actualPos].Sample,
 						popUID: mainPopInfoTab["tab"][actualPos].popUID,
-						cAveragedFrac: mainPopInfoTab["tab"][actualPos].cAveragedFrac,
+						barcodeFrac: mainPopInfoTab["tab"][actualPos].barcodeFrac,
 						color: color(mainPopInfoTab["tab"][actualPos].popUID) });
 				}
 				//update the x axis
@@ -240,16 +240,16 @@
 				//update the bars already there with new info
 				bars.attr("x", function(d) { return x(d.Sample); })
 				      .attr("y", function(d) { 
-				      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
-				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+				      		var ret = y(sampleSum[d.Sample] + d.barcodeFrac);
+				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.barcodeFrac;
 				      		return ret; 
 				      		})
-				      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+				      .attr("height", function(d) { return height - y(d.barcodeFrac); })
 				      .attr("width", x.rangeBand())
 				      .attr("fill", function(d){ return color(d.popUID);})
 				      .style("stroke", "#000")
 				      .attr("data-legend",function(d) { return d.popUID;})
-				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "barcodeFrac"]); return tooltip.style("visibility", "visible");})
 					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 				//create new bars as needed
@@ -257,16 +257,16 @@
 				      .attr("class", "bar")
 				      .attr("x", function(d) { return x(d.Sample); })
 				      .attr("y", function(d) { 
-				      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
-				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+				      		var ret = y(sampleSum[d.Sample] + d.barcodeFrac);
+				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.barcodeFrac;
 				      		return ret; 
 				      		})
-				      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+				      .attr("height", function(d) { return height - y(d.barcodeFrac); })
 				      .attr("width", x.rangeBand())
 				      .attr("fill", function(d){ return color(d.popUID);})
 				      .style("stroke", "#000")
 				      .attr("data-legend",function(d) { return d.popUID;})
-				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "barcodeFrac"]); return tooltip.style("visibility", "visible");})
 					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			    //remove the bars no longer needed
