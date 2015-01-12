@@ -61,6 +61,7 @@ private:
 	std::unordered_map<std::string, bfs::path> mipAnalysisWithOutBarcodesFolders_;
 	//by mip name, all sample names for a given mip
 	std::unordered_map<std::string, VecStr> sampNamesForMip_;
+	std::unordered_map<std::string, VecStr> sampNamesForGene_;
 	std::unordered_map<std::string, VecStr> mipNamesForSamp_;
 
 	table stats_;
@@ -69,6 +70,7 @@ private:
 
 	std::string rootName_;
 	std::string clusteringDir_;
+	std::string genomeDir_;
 
 
 	static bfs::path make_path(const bfs::path fn) {
@@ -79,7 +81,7 @@ public:
 	miv(cppcms::service& srv, std::map<std::string, std::string> config);
 
 	virtual VecStr requiredOptions() const{
-		return VecStr{"clusDir", "resources"};
+		return VecStr{"clusDir", "resources", "genomeDir"};
 	}
 
 	void getAllSampleNames() ;
@@ -138,6 +140,10 @@ public:
 	// barcode information per sample per mip
 	void getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampName);
 
+	//one gene, one sample data
+	void showOneGeneOneSamp(std::string geneName, std::string sampName);
+	void oneGeneOneSampAlnData(std::string geneName, std::string sampName);
+	void sampNamesForGene(std::string geneName);
 };
 
 int mipViewer(std::map<std::string, std::string> inputCommands);

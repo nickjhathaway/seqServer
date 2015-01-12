@@ -105,6 +105,7 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 	bool pass = configTest(config, requiredOptions(), "miv");
 	rootName_ = config["name"];
 	clusteringDir_ = config["clusDir"];
+	genomeDir_ = config["genomeDir"];
 	pages_.emplace("mainPageHtml",
 			make_path(config["resources"] + "mip/mainPage.html"));
 	pages_.emplace("oneGeneInfoHtml",
@@ -125,6 +126,8 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 			make_path(
 					config["resources"]
 							+ "mip/initialSamplereadAmountStatsPerSample.html"));
+	pages_.emplace("viewOneGeneOneSamp",
+			make_path(config["resources"] + "mip/viewOneGeneOneSamp.html"));
 	pages_.emplace("redirectPageHtml",
 			make_path(config["resources"] + "html/redirectPage.html"));
 
@@ -157,6 +160,10 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 	//show one mip target info and sample names
 	dispMap_1arg(&miv::showMipInfo, this, "mipInfo", "(\\w+)");
 	dispMap_1arg(&miv::mipSampleNames, this, "mipSampleNames", "(\\w+)");
+	//show info on one gene (all it's mip targets) for one sample
+	dispMap_1arg(&miv::sampNamesForGene, this, "sampNamesForGene", "(\\w+)");
+	dispMap_2arg(&miv::showOneGeneOneSamp, this, "showOneGeneOneSamp", "(\\w+)/(\\w+)");
+	dispMap_2arg(&miv::oneGeneOneSampAlnData, this, "oneGeneOneSampAlnData", "(\\w+)/(\\w+)");
 	//show the data table with all sample information
 	dispMap_1arg(&miv::showAllSampInfo, this, "allSamps", "(\\w+)");
 	dispMap_2arg(&miv::allSampsInfoData, this, "allSampsInfo", "(\\w+)/(\\w+)");
@@ -261,6 +268,7 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 			}
 		}
 	}
+	std::unordered_map<std::string, std::set<std::string>> sampNamesForGeneSet;
 	for (const auto & mipAnalysis : mipAnalysisFolders_) {
 		if (!bfs::exists(
 				bfs::path(
@@ -287,6 +295,10 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 		}
 		auto split = tab.splitTableOnColumn("s_sName");
 		sampNamesForMip_[mipAnalysis.first] = getVectorOfMapKeys(split);
+		std::string geneName = mipAnalysis.first.substr(0, mipAnalysis.first.rfind("_"));
+		for(const auto & s : sampNamesForMip_[mipAnalysis.first]){
+			sampNamesForGeneSet[geneName].emplace(s);
+		}
 		//std::cout << bib::conToStr(tab.columnNames_, ",") << std::endl;
 		for (const auto & s : split) {
 			auto search = allInfoBySample_.find(s.first);
@@ -297,9 +309,26 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 			}
 		}
 	}
+
+	for(const auto & s : sampNamesForGeneSet){
+		sampNamesForGene_[s.first] = VecStr{s.second.begin(), s.second.end()};
+	}
+
 	std::cout << "Finished set up" << std::endl;
 }
 
+void miv::sampNamesForGene(std::string geneName){
+	std::cout << "sampNamesForGene: geneName: " << geneName << std::endl;
+	ret_json();
+	cppcms::json::value ret;
+	auto search = sampNamesForGene_.find(geneName);
+	if(search == sampNamesForGene_.end()){
+		std::cout << "sampNamesForGene: Couldn't find sampName : " << geneName << std::endl;
+	}else{
+		ret = search->second;
+	}
+	response().out() << ret;
+}
 
 void miv::mipNamesForSample(std::string sampName){
 	std::cout << "mipNamesForSample: sampName: " << sampName << std::endl;
@@ -806,12 +835,94 @@ void miv::mainPage() {
 	response().out() << search->second.get("/ssv", rootName_);
 }
 
+void miv::showOneGeneOneSamp(std::string geneName, std::string sampName){
+	auto gSearch = sampNamesForGene_.find(geneName);
+	if(gSearch == sampNamesForGene_.end()){
+		std::cout << "showOneGeneOneSamp: couldn't find gene: " << geneName << " redirecting" << std::endl;
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
+	}else{
+		if(!bib::in(sampName, gSearch->second)){
+			std::cout << "showOneGeneOneSamp: couldn't find samp: " << sampName << " for gene name " << geneName << " redirecting" << std::endl;
+			auto search = pages_.find("redirectPageHtml");
+			response().out() << search->second.get("/ssv", rootName_);
+		}else {
+			auto search = pages_.find("viewOneGeneOneSamp");
+			response().out() << search->second.get("/ssv", rootName_);
+		}
+	}
+}
+
+std::vector<readObject> alignTargets(const std::vector<readObject> & reads,
+		const readObject & ref, aligner & alignerObj) {
+	std::vector<readObject> ret;
+	ret.reserve(reads.size() + 1);
+	ret.emplace_back(ref);
+	for(const auto & read : reads){
+		alignerObj.alignVec(ref, read, false);
+		auto firstAlign = alignerObj.alignObjectB_;
+		int32_t bestScore = alignerObj.parts_.score_;
+		auto readComp = read;
+		readComp.seqBase_.reverseComplementRead(true);
+		alignerObj.alignVec(ref, readComp, false);
+		if(alignerObj.parts_.score_ > bestScore){
+			ret.emplace_back(alignerObj.alignObjectB_.seqBase_);
+		}else{
+			ret.emplace_back(firstAlign.seqBase_);
+		}
+	}
+	return ret;
+}
+
+void miv::oneGeneOneSampAlnData(std::string geneName, std::string sampName){
+	ret_json();
+	cppcms::json::value ret;
+	auto gSearch = sampNamesForGene_.find(geneName);
+	if(gSearch == sampNamesForGene_.end()){
+		std::cout << "showOneGeneOneSamp: couldn't find gene: " << geneName << " redirecting" << std::endl;
+	}else{
+		if(!bib::in(sampName, gSearch->second)){
+			std::cout << "showOneGeneOneSamp: couldn't find samp: " << sampName << " for gene name " << geneName << " redirecting" << std::endl;
+		}else {
+			uint64_t maxLen = 0;
+			//find genome data
+			std::string refName = genomeDir_ + geneName + "_genomic.fasta";
+			if(!fexists(refName)){
+				std::cout << "showOneGeneOneSamp: couldn't find genomic seq for " << geneName << " at " << refName << std::endl;
+			}else{
+				auto ref = readObjectIO::getReferenceSeq(refName, "fasta", false, maxLen);
+				std::vector<readObject> allReads;
+				//find all mip target data
+				for(const auto & mipAnalysis : mipAnalysisFolders_){
+					if(beginsWith(mipAnalysis.first, geneName)){
+						std::string seqFilename = mipAnalysis.second.string() + "/final/" + sampName + ".fastq";
+						if(fexists(seqFilename)){
+							addOtherVec(allReads, readObjectIO::getReferenceSeq(seqFilename, "fastq", true, maxLen));
+						}
+					}
+				}
+				if(allReads.empty()){
+					std::cout << "showOneGeneOneSamp: " << "couldn't find any reads for samp: " << sampName << " for geneName: " << geneName << std::endl;
+				}else{
+					//align and return
+					readVecSorter::sortReadVector(allReads, "name", false);
+					aligner alignerObj(maxLen,gapScoringParameters(5,1,0,0,0,0), substituteMatrix::createDegenScoreMatrixCaseInsensitive(2,-2));
+					auto alns = alignTargets(allReads, ref.front(), alignerObj);
+					ret = seqsToJson(alns);
+				}
+			}
+		}
+	}
+	response().out() << ret;
+}
+
 int mipViewer(std::map<std::string, std::string> inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	std::string name = "miv";
 	std::string resourceDirName = "";
+	std::string genomeDir = "";
 	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
 	if(resourceDirName.back() != '/'){
 		resourceDirName.append("/");
@@ -819,6 +930,7 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
 	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
+	setUp.setOption(genomeDir, "-genomeDir", "Name of the locatio of where the genomic data is");
 	setUp.finishSetUp(std::cout);
 	name = "/" + name;
   auto config = server_config(name, port);
@@ -829,7 +941,7 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
-
+  appConfig["genomeDir"] = appendSlashRet(genomeDir);
 	try {
 		cppcms::service app(config);
 		app.applications_pool().mount(

@@ -36,6 +36,18 @@
 			$("#tPanel").append("<div class=\"panel-body\"><div id=\"mipLinks\"></div></div>");
 			createLinksTable(addTo, linkPre, mNames,cols, mouseOverC, mouseLeaveC);
 			
+			var sampNames;
+			ajax("/" + rName + "/sampNamesForGene/" + currentGeneName, function(sNames) {
+				sampNames = sNames;
+			});
+			
+			var linkPreSamp = "/" + rName + "/showOneGeneOneSamp/" + currentGeneName + "/";
+			var addToSamp = "#sampLinks";
+			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"sPanel\"></div>");
+			$("#sPanel").append("<div class=\"panel-heading\"><h1>Samples</h1></div>");
+			$("#sPanel").append("<div class=\"panel-body\"><div id=\"sampLinks\"></div></div>");
+			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
+			
 		});
 	</script>
 		<div class="container theme-showcase" role="main">
