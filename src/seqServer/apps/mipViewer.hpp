@@ -6,8 +6,8 @@
  *      Author: nickhathaway
  */
 
-#include "apps/seqApp.hpp"
-#include "utils.h"
+#include "seqServer/apps/seqApp.hpp"
+#include "seqServer/utils.h"
 #include <bibcpp.h>
 
 namespace bibseq {
@@ -31,17 +31,17 @@ table getSampleStats(const std::string & dirName, bool verbose);
 class miv: public bibseq::seqApp {
 private:
 
-	bib::FileCache mainPageHtml_;
-	bib::FileCache oneGeneInfoHtml_;
-	bib::FileCache oneSampAllMipInfoHtml_;
-	bib::FileCache oneMipInfoHtml_;
-	bib::FileCache allSampsInfoHtml_;
-	bib::FileCache oneSampInfoHtml_;
-	bib::FileCache minTreeViewHtml_;
+	//bib::FileCache mainPageHtml_;
+	//bib::FileCache oneGeneInfoHtml_;
+	//bib::FileCache oneSampAllMipInfoHtml_;
+	//bib::FileCache oneMipInfoHtml_;
+	//bib::FileCache allSampsInfoHtml_;
+	//bib::FileCache oneSampInfoHtml_;
+	//bib::FileCache minTreeViewHtml_;
 	//bib::FileCache popInfoHtml_;
-	bib::FileCache initialSamplereadAmountStatsHtml_;
-	bib::FileCache initialSamplereadAmountStatsPerSampleHtml_;
-	bib::FileCache redirectPageHtml_;
+	//bib::FileCache initialSamplereadAmountStatsHtml_;
+	//bib::FileCache initialSamplereadAmountStatsPerSampleHtml_;
+	//bib::FileCache redirectPageHtml_;
 
 	//by mip target
 	std::unordered_map<std::string, std::vector<bibseq::readObject>> popReads_;
@@ -78,8 +78,8 @@ private:
 public:
 	miv(cppcms::service& srv, std::map<std::string, std::string> config);
 
-	static VecStr requiredOptions(){
-		return VecStr{"name", "clusDir", "resources", "js", "css"};
+	virtual VecStr requiredOptions() const{
+		return VecStr{"clusDir", "resources"};
 	}
 
 	void getAllSampleNames() ;
@@ -111,12 +111,11 @@ public:
 
 	void popInfoData(std::string mipName) ;
 
-	void getColors(std::string num);
 
 	void allSampsInfoData(std::string mipName, std::string sampNames) ;
 	void mipSampleNames(std::string mipName) ;
 
-	void colorsData() ;
+
 
 	void popSeqData(std::string mipName) ;
 

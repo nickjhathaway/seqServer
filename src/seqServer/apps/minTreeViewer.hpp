@@ -6,8 +6,8 @@
  *      Author: nickhathaway
  */
 
-#include "apps/seqApp.hpp"
-#include "utils.h"
+#include "seqServer/apps/seqApp.hpp"
+#include "seqServer/utils.h"
 
 namespace bibseq {
 namespace bfs = boost::filesystem;

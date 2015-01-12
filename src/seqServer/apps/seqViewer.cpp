@@ -34,10 +34,6 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
-  auto pass = configTest(appConfig, ssv::requiredOptions());
-  if(!pass){
-  	exit(1);
-  }
 	try {
 		cppcms::service app(config);
 		app.applications_pool().mount(
@@ -48,5 +44,8 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
 	}
 	return 0;
 }
+
+
+
 
 } /* namespace bibseq */

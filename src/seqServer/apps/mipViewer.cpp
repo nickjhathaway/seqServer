@@ -15,7 +15,8 @@ uint64_t countFastqSeqs(const std::string & filename, bool processed, bool verbo
 		readObject read;
 		std::ifstream inFile(filename);
 		while(reader.readNextFastqStream(inFile,reader.SangerQualOffset, read, processed)){
-			ret += std::round(read.seqBase_.cnt_);
+			ret += ::round(read.seqBase_.cnt_);
+
 		}
 	}else if(verbose){
 		std::cout << "File: " << filename << "doesn't exist, returning 0" << std::endl;
@@ -99,179 +100,205 @@ table getSampleStats(const std::string & dirName, bool verbose){
 	return finalInfo;
 }
 
-miv::miv(cppcms::service& srv, std::map<std::string, std::string> config)
-	: bibseq::seqApp(srv, config)
-	, mainPageHtml_(make_path(config["resources"] + "mip/mainPage.html"))
-	, oneGeneInfoHtml_(make_path(config["resources"] + "mip/oneGeneView.html"))
-	, oneSampAllMipInfoHtml_(make_path(config["resources"] + "mip/oneSampAllMipInfo.html"))
-	, oneMipInfoHtml_(make_path(config["resources"] + "mip/oneMipInfo.html"))
-	, allSampsInfoHtml_(make_path(config["resources"] + "mip/allSampsInfo.html"))
-	, oneSampInfoHtml_(make_path(config["resources"] + "mip/oneSampInfo.html"))
-	, minTreeViewHtml_(make_path(config["resources"] + "mip/minTreeView.html"))
-	, initialSamplereadAmountStatsHtml_(make_path(config["resources"] + "mip/initialSamplereadAmountStats.html"))
-	, initialSamplereadAmountStatsPerSampleHtml_(make_path(config["resources"] + "mip/initialSamplereadAmountStatsPerSample.html"))
-	, redirectPageHtml_(make_path(config["resources"] + "html/redirectPage.html"))
-	, rootName_(config["name"])
-	, clusteringDir_(config["clusDir"])
-	{
-		mainPageHtml_.replaceStr("/ssv", rootName_);
-		oneGeneInfoHtml_.replaceStr("/ssv", rootName_);
-		oneSampAllMipInfoHtml_.replaceStr("/ssv", rootName_);
-		oneMipInfoHtml_.replaceStr("/ssv", rootName_);
-		allSampsInfoHtml_.replaceStr("/ssv", rootName_);
-		oneSampInfoHtml_.replaceStr("/ssv", rootName_);
-		minTreeViewHtml_.replaceStr("/ssv", rootName_);
-		//popInfoHtml_.replaceStr("/ssv", rootName_);
-		initialSamplereadAmountStatsHtml_.replaceStr("/ssv", rootName_);
-		initialSamplereadAmountStatsPerSampleHtml_.replaceStr("/ssv", rootName_);
-		redirectPageHtml_.replaceStr("/ssv", rootName_);
-		//main page
-		dispMapRoot(&miv::mainPage, this);
-		dispMap(&miv::geneNames, this, "geneNames");
-		dispMap(&miv::getAllSampleNames, this,"allSampNames");
-		//displaying sample extraction stats
-		dispMap(&miv::showInitialReadStats, this, "showInitialReadStats");
-		dispMap_1arg(&miv::getInitialReadStats, this,"getInitialReadStats", "(\\w+)");
+miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
+		bibseq::seqApp(srv, config){
+	bool pass = configTest(config, requiredOptions(), "miv");
+	rootName_ = config["name"];
+	clusteringDir_ = config["clusDir"];
+	pages_.emplace("mainPageHtml",
+			make_path(config["resources"] + "mip/mainPage.html"));
+	pages_.emplace("oneGeneInfoHtml",
+			make_path(config["resources"] + "mip/oneGeneView.html"));
+	pages_.emplace("oneSampAllMipInfoHtml",
+			make_path(config["resources"] + "mip/oneSampAllMipInfo.html"));
+	pages_.emplace("oneMipInfoHtml",
+			make_path(config["resources"] + "mip/oneMipInfo.html"));
+	pages_.emplace("allSampsInfoHtml",
+			make_path(config["resources"] + "mip/allSampsInfo.html"));
+	pages_.emplace("oneSampInfoHtml",
+			make_path(config["resources"] + "mip/oneSampInfo.html"));
+	pages_.emplace("minTreeViewHtml",
+			make_path(config["resources"] + "mip/minTreeView.html"));
+	pages_.emplace("initialSamplereadAmountStatsHtml",
+			make_path(config["resources"] + "mip/initialSamplereadAmountStats.html"));
+	pages_.emplace("initialSamplereadAmountStatsPerSampleHtml",
+			make_path(
+					config["resources"]
+							+ "mip/initialSamplereadAmountStatsPerSample.html"));
+	pages_.emplace("redirectPageHtml",
+			make_path(config["resources"] + "html/redirectPage.html"));
 
-		dispMap_1arg(&miv::showInitialReadStatsPerSample, this, "showInitialReadStatsPerSample","(\\w+)");
-		dispMap_2arg(&miv::getInitialReadStatsPerSample, this,"getInitialReadStatsPerSample", "(\\w+)/(\\w+)");
-		dispMap_1arg(&miv::mipNamesForSample,this, "mipNamesForSample", "(\\w+)");
-
-		//gene page
-		dispMap_1arg(&miv::showGeneInfo,this, "geneInfo", "(\\w+)");
-		dispMap_1arg(&miv::mipNames,this, "mipNames", "(\\w+)");
-		//one samp all mips page
-		dispMap_1arg(&miv::showOneSampAllMip,this, "oneSampAllMipInfo", "(\\w+)");
-		dispMap_2arg(&miv::oneSampAllMipData,this, "oneSampAllMipData", "(\\w+)/(\\w+)");
-		dispMap_1arg(&miv::sampMipNamesData,this, "sampMipNames", "(\\w+)");
-		//show one mip target info and sample names
-		dispMap_1arg(&miv::showMipInfo,this, "mipInfo", "(\\w+)");
-		dispMap_1arg(&miv::mipSampleNames,this, "mipSampleNames", "(\\w+)");
-		//show the data table with all sample information
-		dispMap_1arg(&miv::showAllSampInfo,this, "allSamps", "(\\w+)");
-		dispMap_2arg(&miv::allSampsInfoData,this, "allSampsInfo", "(\\w+)/(\\w+)");
-		//show the mip target info for one sample
-		dispMap_2arg(&miv::showOneSampleInfo,this, "oneSampInfo", "(\\w+)/(\\w+)");
-		dispMap_2arg(&miv::oneSampInitSeqData,this, "oneSampInitSeqData", "(\\w+)/(\\w+)");
-		dispMap_2arg(&miv::oneSampFinalSeqData,this, "oneSampFinalSeqData", "(\\w+)/(\\w+)");
-		dispMap_2arg(&miv::oneSampTabData,this, "oneSampTabData", "(\\w+)/(\\w+)");
-		dispMap_2arg(&miv::getBarcodeInfoPerSamplePerMip,this, "barcodeInfo", "(\\w+)/(\\w+)");
-		//show the minimum spanning tree for one sample info
-		dispMap_2arg(&miv::showMinTree,this, "showMinTree", "(\\w+)/(\\w+)");
-		dispMap_2arg(&miv::minTreeData,this, "minTreeData", "(\\w+)/(\\w+)");
-		//show the Population information for one mip target
-		dispMap_1arg(&miv::popInfoData,this, "popInfo", "(\\w+)");
-		dispMap_1arg(&miv::popSeqData,this, "popSeqData", "(\\w+)");
-
-		//general information
-
-		dispMap(&miv::rootName,this, "rootName");
-		dispMap(&miv::colorsData,this, "baseColors");
-		dispMap_1arg(&miv::getColors,this, "getColors", "(\\d+)");
-		mapper().root(rootName_);
-		appendSlash(clusteringDir_);
-		std::regex analysisPat {".*Analysis\\b"};
-		auto files = bib::files::listAllFiles(clusteringDir_, false, {analysisPat} );
-		printOutMapContents(files, "\t", std::cout );
-		bfs::path analysisFolder = "";
-
-		if(files.empty()){
-			std::cout << "Error, need a folder that ends with Analysis that contains the analysis folders"  << std::endl;
-			exit(1);
-		}else{
-			analysisFolder = files.begin()->first;
-		}
-		std::regex mipFolderPat{".*_\\d+\\b"};
-		std::cout << "analysis folder: " << analysisFolder << std::endl;
-		auto mipFinalAnalysisFolders = bib::files::listAllFiles(analysisFolder.string(), false, {mipFolderPat});
-		for(const auto & mip : mipFinalAnalysisFolders){
-			if(mip.second){
-				//load analysis
-				if(bfs::is_directory(appendSlashRet(mip.first.string()) + "analysis")){
-					mipAnalysisFolders_[mip.first.filename().string()] = bfs::path(appendSlashRet(mip.first.string()) + "analysis");
-				}else{
-					std::cerr << "Error, did not find a folder called analysis under "
-							<< appendSlashRet(mip.first.string()) << " for mip target "
-							<< mip.first.filename().string()<<std::endl;
-					exit(1);
-				}
-				//load analysis without barcdoes
-				if(bfs::is_directory(appendSlashRet(mip.first.string()) + "withoutBarcodes")){
-					mipAnalysisWithOutBarcodesFolders_[mip.first.filename().string()] = bfs::path(appendSlashRet(mip.first.string()) + "withoutBarcodes");
-				}else{
-					std::cerr << "Error, did not find a folder called withoutBarcodes under "
-							<< appendSlashRet(mip.first.string()) << " for mip target "
-							<< mip.first.filename().string()<<std::endl;
-					exit(1);
-				}
-			}
-		}
-		stats_ = getSampleStats(clusteringDir_, false);
-		auto readsUsed = stats_.getColumn("readsUsed");
-		auto sampNames = stats_.getColumn("sampleName");
-		for(const auto & e : iter::enumerate(readsUsed) ){
-			if(bib::lexical_cast<uint32_t>(e.element) > 0){
-				std::string sampName = sampNames[e.index];
-				auto extractionDirs = bib::files::listAllFiles(clusteringDir_ + sampName, false, VecStr{sampName + ".assembled_mip"});
-				std::map<bfs::path, bool, std::greater<bfs::path>> eDirs;
-				for(const auto & ed : extractionDirs){
-					if(ed.second){
-						eDirs.emplace(ed);
-					}
-				}
-				if (!eDirs.empty()) {
-					auto resultsDir = appendSlashRet(eDirs.begin()->first.string());
-					sampAnalysisFolders_[sampName] = (eDirs.begin()->first);
-					auto fileName = eDirs.begin()->first.string() + "/info.txt";
-					auto tab = bibseq::table(fileName, "\t", true);
-					auto counts = countVec(tab.getColumn("mipName"));
-					auto mipNames = getVectorOfMapKeys(counts);
-					mipNamesForSamp_[sampName] = mipNames;
-					auto mipFolders = bib::files::listAllFiles(eDirs.begin()->first.string(), false, {mipFolderPat});
-					for(const auto & m : mipFolders){
-						if(m.second){
-							sampleMipAnalysisFolders_[sampName][m.first.filename().string()] = m.first;
-						}
-					}
-				}else{
-					std::cout << "Couldn't find latest analysis file for sample " << sampName << std::endl;
-				}
-			}
-		}
-		for(const auto & mipAnalysis : mipAnalysisFolders_) {
-			if(!bfs::exists(bfs::path(mipAnalysis.second.string() + "/selectedClustersInfo.tab.txt"))){
-				continue;
-			}
-			auto tab = bibseq::table(mipAnalysis.second.string() + "/selectedClustersInfo.tab.txt", "\t", true );
-			auto expNames = tab.getColumn("h_popUID");
-			if(expNames.empty()) {
-				continue;
-			}
-			//std::cout << bib::bashCT::red << "expnames " << std::endl;
-			//std::cout << bib::conToStr(expNames) << std::endl;
-			//std::cout << bib::bashCT::reset;
-			auto expName = expNames.front().substr(0,expNames.front().find("_"));
-			auto targetName = expNames.front().substr(0,expNames.front().find("."));
-			tab.columnNames_.insert(tab.columnNames_.begin(), "geneName");
-			tab.columnNames_.insert(tab.columnNames_.begin(), "mipName");
-			for(auto & row : tab.content_) {
-				row.insert(row.begin(), expName);
-				row.insert(row.begin(), targetName);
-			}
-			auto split = tab.splitTableOnColumn("s_sName");
-			sampNamesForMip_[mipAnalysis.first] = getVectorOfMapKeys(split);
-			//std::cout << bib::conToStr(tab.columnNames_, ",") << std::endl;
-			for(const auto & s : split) {
-				auto search = allInfoBySample_.find(s.first);
-				if(search == allInfoBySample_.end()) {
-					allInfoBySample_[s.first] = s.second;
-				} else {
-					allInfoBySample_[s.first].rbind(s.second);
-				}
-			}
-		}
-		std::cout << "Finished set up" << std::endl;
+	for (auto & fCache : pages_) {
+		fCache.second.replaceStr("/ssv", rootName_);
 	}
+	//main page
+	dispMapRoot(&miv::mainPage, this);
+	dispMap(&miv::geneNames, this, "geneNames");
+	dispMap(&miv::getAllSampleNames, this, "allSampNames");
+	//displaying sample extraction stats
+	dispMap(&miv::showInitialReadStats, this, "showInitialReadStats");
+	dispMap_1arg(&miv::getInitialReadStats, this, "getInitialReadStats",
+			"(\\w+)");
+
+	dispMap_1arg(&miv::showInitialReadStatsPerSample, this,
+			"showInitialReadStatsPerSample", "(\\w+)");
+	dispMap_2arg(&miv::getInitialReadStatsPerSample, this,
+			"getInitialReadStatsPerSample", "(\\w+)/(\\w+)");
+	dispMap_1arg(&miv::mipNamesForSample, this, "mipNamesForSample", "(\\w+)");
+
+	//gene page
+	dispMap_1arg(&miv::showGeneInfo, this, "geneInfo", "(\\w+)");
+	dispMap_1arg(&miv::mipNames, this, "mipNames", "(\\w+)");
+	//one samp all mips page
+	dispMap_1arg(&miv::showOneSampAllMip, this, "oneSampAllMipInfo", "(\\w+)");
+	dispMap_2arg(&miv::oneSampAllMipData, this, "oneSampAllMipData",
+			"(\\w+)/(\\w+)");
+	dispMap_1arg(&miv::sampMipNamesData, this, "sampMipNames", "(\\w+)");
+	//show one mip target info and sample names
+	dispMap_1arg(&miv::showMipInfo, this, "mipInfo", "(\\w+)");
+	dispMap_1arg(&miv::mipSampleNames, this, "mipSampleNames", "(\\w+)");
+	//show the data table with all sample information
+	dispMap_1arg(&miv::showAllSampInfo, this, "allSamps", "(\\w+)");
+	dispMap_2arg(&miv::allSampsInfoData, this, "allSampsInfo", "(\\w+)/(\\w+)");
+	//show the mip target info for one sample
+	dispMap_2arg(&miv::showOneSampleInfo, this, "oneSampInfo", "(\\w+)/(\\w+)");
+	dispMap_2arg(&miv::oneSampInitSeqData, this, "oneSampInitSeqData",
+			"(\\w+)/(\\w+)");
+	dispMap_2arg(&miv::oneSampFinalSeqData, this, "oneSampFinalSeqData",
+			"(\\w+)/(\\w+)");
+	dispMap_2arg(&miv::oneSampTabData, this, "oneSampTabData", "(\\w+)/(\\w+)");
+	dispMap_2arg(&miv::getBarcodeInfoPerSamplePerMip, this, "barcodeInfo",
+			"(\\w+)/(\\w+)");
+	//show the minimum spanning tree for one sample info
+	dispMap_2arg(&miv::showMinTree, this, "showMinTree", "(\\w+)/(\\w+)");
+	dispMap_2arg(&miv::minTreeData, this, "minTreeData", "(\\w+)/(\\w+)");
+	//show the Population information for one mip target
+	dispMap_1arg(&miv::popInfoData, this, "popInfo", "(\\w+)");
+	dispMap_1arg(&miv::popSeqData, this, "popSeqData", "(\\w+)");
+
+	//general information
+
+	dispMap(&miv::rootName, this, "rootName");
+
+	mapper().root(rootName_);
+	appendSlash(clusteringDir_);
+	std::regex analysisPat { ".*Analysis\\b" };
+	auto files = bib::files::listAllFiles(clusteringDir_, false, { analysisPat });
+	printOutMapContents(files, "\t", std::cout);
+	bfs::path analysisFolder = "";
+
+	if (files.empty()) {
+		std::cout
+				<< "Error, need a folder that ends with Analysis that contains the analysis folders"
+				<< std::endl;
+		exit(1);
+	} else {
+		analysisFolder = files.begin()->first;
+	}
+	std::regex mipFolderPat { ".*_\\d+\\b" };
+	std::cout << "analysis folder: " << analysisFolder << std::endl;
+	auto mipFinalAnalysisFolders = bib::files::listAllFiles(
+			analysisFolder.string(), false, { mipFolderPat });
+	for (const auto & mip : mipFinalAnalysisFolders) {
+		if (mip.second) {
+			//load analysis
+			if (bfs::is_directory(appendSlashRet(mip.first.string()) + "analysis")) {
+				mipAnalysisFolders_[mip.first.filename().string()] = bfs::path(
+						appendSlashRet(mip.first.string()) + "analysis");
+			} else {
+				std::cerr << "Error, did not find a folder called analysis under "
+						<< appendSlashRet(mip.first.string()) << " for mip target "
+						<< mip.first.filename().string() << std::endl;
+				exit(1);
+			}
+			//load analysis without barcdoes
+			if (bfs::is_directory(
+					appendSlashRet(mip.first.string()) + "withoutBarcodes")) {
+				mipAnalysisWithOutBarcodesFolders_[mip.first.filename().string()] =
+						bfs::path(appendSlashRet(mip.first.string()) + "withoutBarcodes");
+			} else {
+				std::cerr
+						<< "Error, did not find a folder called withoutBarcodes under "
+						<< appendSlashRet(mip.first.string()) << " for mip target "
+						<< mip.first.filename().string() << std::endl;
+				exit(1);
+			}
+		}
+	}
+	stats_ = getSampleStats(clusteringDir_, false);
+	auto readsUsed = stats_.getColumn("readsUsed");
+	auto sampNames = stats_.getColumn("sampleName");
+	for (const auto & e : iter::enumerate(readsUsed)) {
+		if (bib::lexical_cast<uint32_t>(e.element) > 0) {
+			std::string sampName = sampNames[e.index];
+			auto extractionDirs = bib::files::listAllFiles(clusteringDir_ + sampName,
+					false, VecStr { sampName + ".assembled_mip" });
+			std::map<bfs::path, bool, std::greater<bfs::path>> eDirs;
+			for (const auto & ed : extractionDirs) {
+				if (ed.second) {
+					eDirs.emplace(ed);
+				}
+			}
+			if (!eDirs.empty()) {
+				auto resultsDir = appendSlashRet(eDirs.begin()->first.string());
+				sampAnalysisFolders_[sampName] = (eDirs.begin()->first);
+				auto fileName = eDirs.begin()->first.string() + "/info.txt";
+				auto tab = bibseq::table(fileName, "\t", true);
+				auto counts = countVec(tab.getColumn("mipName"));
+				auto mipNames = getVectorOfMapKeys(counts);
+				mipNamesForSamp_[sampName] = mipNames;
+				auto mipFolders = bib::files::listAllFiles(
+						eDirs.begin()->first.string(), false, { mipFolderPat });
+				for (const auto & m : mipFolders) {
+					if (m.second) {
+						sampleMipAnalysisFolders_[sampName][m.first.filename().string()] =
+								m.first;
+					}
+				}
+			} else {
+				std::cout << "Couldn't find latest analysis file for sample "
+						<< sampName << std::endl;
+			}
+		}
+	}
+	for (const auto & mipAnalysis : mipAnalysisFolders_) {
+		if (!bfs::exists(
+				bfs::path(
+						mipAnalysis.second.string() + "/selectedClustersInfo.tab.txt"))) {
+			continue;
+		}
+		auto tab = bibseq::table(
+				mipAnalysis.second.string() + "/selectedClustersInfo.tab.txt", "\t",
+				true);
+		auto expNames = tab.getColumn("h_popUID");
+		if (expNames.empty()) {
+			continue;
+		}
+		//std::cout << bib::bashCT::red << "expnames " << std::endl;
+		//std::cout << bib::conToStr(expNames) << std::endl;
+		//std::cout << bib::bashCT::reset;
+		auto expName = expNames.front().substr(0, expNames.front().find("_"));
+		auto targetName = expNames.front().substr(0, expNames.front().find("."));
+		tab.columnNames_.insert(tab.columnNames_.begin(), "geneName");
+		tab.columnNames_.insert(tab.columnNames_.begin(), "mipName");
+		for (auto & row : tab.content_) {
+			row.insert(row.begin(), expName);
+			row.insert(row.begin(), targetName);
+		}
+		auto split = tab.splitTableOnColumn("s_sName");
+		sampNamesForMip_[mipAnalysis.first] = getVectorOfMapKeys(split);
+		//std::cout << bib::conToStr(tab.columnNames_, ",") << std::endl;
+		for (const auto & s : split) {
+			auto search = allInfoBySample_.find(s.first);
+			if (search == allInfoBySample_.end()) {
+				allInfoBySample_[s.first] = s.second;
+			} else {
+				allInfoBySample_[s.first].rbind(s.second);
+			}
+		}
+	}
+	std::cout << "Finished set up" << std::endl;
+}
 
 
 void miv::mipNamesForSample(std::string sampName){
@@ -288,14 +315,15 @@ void miv::mipNamesForSample(std::string sampName){
 }
 
 void miv::showInitialReadStats(){
-	response().out() << initialSamplereadAmountStatsHtml_.get("/ssv", rootName_);
+	auto search = pages_.find("initialSamplereadAmountStatsHtml");
+	response().out() << search->second.get("/ssv", rootName_);
 }
 
 void miv::getInitialReadStats(std::string sampleNames){
 	ret_json();
 	auto sampToks = bibseq::tokenizeString(sampleNames, "DELIM");
 	auto containsSampName = [&sampToks](const std::string & str) {
-		return bibseq::in(str, sampToks);
+		return bib::in(str, sampToks);
 	};
 	auto tab = stats_.extractByComp("sampleName", containsSampName);
 	response().out() << tableToJsonRowWise(stats_);
@@ -305,10 +333,12 @@ void miv::getInitialReadStats(std::string sampleNames){
 void miv::showInitialReadStatsPerSample(std::string sampName){
 	auto search = sampAnalysisFolders_.find(sampName);
 	if(search != sampAnalysisFolders_.end()){
-		response().out() << initialSamplereadAmountStatsPerSampleHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("initialSamplereadAmountStatsPerSampleHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}else{
 		std::cout << "getInitialReadStatsPerSample: " << "couldn't find sampName: " << sampName << std::endl;
-		response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
 
 }
@@ -321,7 +351,7 @@ void miv::getInitialReadStatsPerSample(std::string sampName, std::string mipName
 	if(search != sampAnalysisFolders_.end()){
 		auto mipToks = bibseq::tokenizeString(mipNames, "DELIM");
 		auto containsMipName = [&mipToks](const std::string & str) {
-			return bibseq::in(str, mipToks);
+			return bib::in(str, mipToks);
 		};
 		auto fileName = search->second.string() + "/info.txt";
 		auto tab = bibseq::table(fileName, "\t", true);
@@ -340,7 +370,7 @@ void miv::getAllSampleNames() {
 	ret_json();
 	cppcms::json::value r;
 	auto samps = bib::getVecOfMapKeys(allInfoBySample_);
-	bibseq::sort(samps);
+	bib::sort(samps);
 	//std::cout <<bib::conToStr( samps , ",")<< std::endl;
 	r = samps;
 	//std::cout << "before resposne out" << std::endl;
@@ -360,7 +390,7 @@ void miv::mipNames(std::string geneName) {
 	ret_json();
 	cppcms::json::value ret;
 	auto mipNames = bibseq::getVectorOfMapKeys(mipAnalysisFolders_);
-	bibseq::sort(mipNames);
+	bib::sort(mipNames);
 	uint32_t count = 0;
 	for(const auto & mPos : iter::range(mipNames.size())) {
 		if(bibseq::beginsWith(mipNames[mPos], geneName)) {
@@ -376,7 +406,7 @@ void miv::geneNames() {
 	ret_json();
 	cppcms::json::value ret;
 	auto mipNames = bibseq::getVectorOfMapKeys(mipAnalysisFolders_);
-	bibseq::sort(mipNames);
+	bib::sort(mipNames);
 	std::set<std::string> geneNames;
 	for(const auto & mPos : iter::range(mipNames.size())) {
 		geneNames.emplace(mipNames[mPos].substr(0,mipNames[mPos].find_last_of("_")));
@@ -389,7 +419,7 @@ void miv::geneNames() {
 
 void miv::showGeneInfo(std::string geneName) {
 	auto mipNames = bibseq::getVectorOfMapKeys(mipAnalysisFolders_);
-	bibseq::sort(mipNames);
+	bib::sort(mipNames);
 	uint32_t count = 0;
 	for(const auto & mPos : iter::range(mipNames.size())) {
 		if(bibseq::beginsWith(mipNames[mPos], geneName)) {
@@ -398,18 +428,22 @@ void miv::showGeneInfo(std::string geneName) {
 	}
 	if(0 == count){
 		std::cout << "Gene name wasn't found :" << geneName << std::endl;
-		response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}else{
-		response().out() << oneGeneInfoHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("oneGeneInfoHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
 }
 
 void miv::showOneSampAllMip(std::string sampName) {
 	if(allInfoBySample_.find(sampName) == allInfoBySample_.end()){
 		std::cout << "Sample Name wasn't found: " << sampName << std::endl;
-		response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}else{
-		response().out() << oneSampAllMipInfoHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("oneSampAllMipInfoHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
 }
 
@@ -419,7 +453,7 @@ void miv::sampMipNamesData(std::string sampName) {
 	auto mipNames = allInfoBySample_[sampName].getColumn("mipName");
 	auto mipCounts = bibseq::countVec(mipNames);
 	auto singleMipNames = bib::getVecOfMapKeys(mipCounts);
-	bibseq::sort(singleMipNames);
+	bib::sort(singleMipNames);
 	ret["mipNames"] = singleMipNames;
 	response().out() << ret;
 }
@@ -430,7 +464,7 @@ void miv::oneSampAllMipData(std::string sampName, std::string mipNames) {
 	auto mipTab = allInfoBySample_[sampName];
 	auto mipToks = bibseq::tokenizeString(mipNames, "DELIM");
 	auto containsMipName = [&mipToks](const std::string & str) {
-		return bibseq::in(str, mipToks);
+		return bib::in(str, mipToks);
 	};
 	//std::cout << bibseq::vectorToString(sampToks,",")<< std::endl;
 	auto trimedTab = mipTab.extractByComp("mipName", containsMipName);
@@ -466,11 +500,12 @@ void miv::oneSampAllMipData(std::string sampName, std::string mipNames) {
 void miv::showMipInfo(std::string mipName) {
 	if(mipAnalysisFolders_.find(mipName) == mipAnalysisFolders_.end()){
 		std::cout << "Could not find " << mipName << std::endl;
-		response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}else{
-		response().out() << oneMipInfoHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("oneMipInfoHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
-
 }
 
 void miv::showOneSampleInfo(std::string mipName ,std::string sampName) {
@@ -492,25 +527,28 @@ void miv::showOneSampleInfo(std::string mipName ,std::string sampName) {
 	}
 	if(redirect){
 		std::cout << "couldn't find data" << std::endl;
-		response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}else{
-		response().out() << oneSampInfoHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("oneSampInfoHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
 }
 
 void miv::showAllSampInfo(std::string mipName) {
 	if(mipAnalysisFolders_.find(mipName) == mipAnalysisFolders_.end()){
 		std::cout << "Could not find mipname " << mipName << std::endl;
-		response().out() << redirectPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("redirectPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}else{
-		response().out() << allSampsInfoHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("allSampsInfoHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
-
 }
 
 void miv::showMinTree(std::string mipName, std::string sampname) {
-
-	response().out() << minTreeViewHtml_.get("/ssv", rootName_);
+	auto search = pages_.find("minTreeViewHtml");
+	response().out() << search->second.get("/ssv", rootName_);
 }
 
 void miv::popInfoData(std::string mipName) {
@@ -525,18 +563,6 @@ void miv::popInfoData(std::string mipName) {
 	response().out() << ret;
 }
 
-void miv::getColors(std::string num) {
-	ret_json();
-	cppcms::json::value ret;
-	auto outColors = bib::njhColors(std::stoi(num));
-	bibseq::VecStr outColorsStrs;
-	outColorsStrs.reserve(outColors.size());
-	for(const auto & c : outColors) {
-		outColorsStrs.emplace_back("#" + c.hexStr_);
-	}
-	ret["colors"] = outColorsStrs;
-	response().out() << ret;
-}
 
 void miv::allSampsInfoData(std::string mipName, std::string sampNames) {
 	std::cout << "allSampsInfoData - mipName: " << mipName << " sampNames: " << sampNames << std::endl;
@@ -547,7 +573,7 @@ void miv::allSampsInfoData(std::string mipName, std::string sampNames) {
 		auto sampTab = bibseq::table(search->second.string() + "/selectedClustersInfo.tab.txt", "\t", true);
 		auto sampToks = bibseq::tokenizeString(sampNames, "DELIM");
 		auto containsSampName = [&sampToks](const std::string & str) {
-			return bibseq::in(str, sampToks);
+			return bib::in(str, sampToks);
 		};
 		auto trimedTab = sampTab.extractByComp("s_sName", containsSampName);
 		ret = tableToJsonRowWise(trimedTab);
@@ -578,30 +604,12 @@ void miv::mipSampleNames(std::string mipName) {
 	ret_json();
 	cppcms::json::value ret;
 	auto sampNames = sampNamesForMip_[mipName];
-	bibseq::sort(sampNames);
+	bib::sort(sampNames);
 	ret = sampNames;
 	response().out() << ret;
 }
 
-void miv::colorsData() {
-	ret_json();
-	cppcms::json::value r;
-	r["A"] = "#ff8787";
-	r["a"] = "#ff8787";
 
-	r["C"] = "#afffaf";
-	r["c"] = "#afffaf";
-
-	r["G"] = "#ffffaf";
-	r["g"] = "#ffffaf";
-
-	r["T"] = "#87afff";
-	r["t"] = "#87afff";
-
-	r["-"] = "e6e6e6";
-
-	response().out() << r;
-}
 
 void miv::popSeqData(std::string mipName) {
 	ret_json();
@@ -794,7 +802,8 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 }
 
 void miv::mainPage() {
-	response().out() << mainPageHtml_.get("/ssv", rootName_);
+	auto search = pages_.find("mainPageHtml");
+	response().out() << search->second.get("/ssv", rootName_);
 }
 
 int mipViewer(std::map<std::string, std::string> inputCommands){
@@ -820,10 +829,7 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
-  auto pass = configTest(appConfig, miv::requiredOptions());
-  if(!pass){
-  	exit(1);
-  }
+
 	try {
 		cppcms::service app(config);
 		app.applications_pool().mount(

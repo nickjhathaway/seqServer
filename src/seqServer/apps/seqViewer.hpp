@@ -6,7 +6,7 @@
  *      Author: nickhathaway
  */
 
-#include "apps/seqApp.hpp"
+#include "seqServer/apps/seqApp.hpp"
 
 
 namespace bibseq {
@@ -14,7 +14,8 @@ namespace bibseq {
 class ssv: public bibseq::seqApp {
 private:
 
-	bib::FileCache mainPageHtml_;
+	typedef bibseq::seqApp super;
+
 	std::vector<bibseq::readObject> reads_;
 	cppcms::json::value readsJson_;
 	std::string rootName_;
@@ -26,10 +27,13 @@ private:
 public:
 	ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	: bibseq::seqApp(srv, config)
-	, mainPageHtml_(make_path(config["resources"] + "ssv/mainPage.html"))
-	, rootName_(config["name"])
 	{
-		mainPageHtml_.replaceStr("/ssv", rootName_);
+		bool pass = configTest(config, requiredOptions(), "ssv");
+		pages_.emplace("mainPageHtml",make_path(config["resources"] + "ssv/mainPage.html") );
+		rootName_ = config["name"];
+		for(auto & fCache : pages_){
+			fCache.second.replaceStr("/ssv", rootName_);
+		}
 
 		//main page
 		dispMapRoot(&ssv::mainPage, this);
@@ -37,8 +41,6 @@ public:
 
 		//general information
 		dispMap(&ssv::rootName,this, "rootName");
-		dispMap(&ssv::colorsData,this, "baseColors");
-		dispMap_1arg(&ssv::getColors,this, "getColors", "(\\d+)");
 		dispMap_1arg(&ssv::sort,this, "sort", "(\\w+)");
 		mapper().root(rootName_);
 		//read in data and set to the json
@@ -52,8 +54,8 @@ public:
 		std::cout << "Go to " << "localhost:" << config["port"] << config["name"] << std::endl;
 	}
 
-	static VecStr requiredOptions(){
-		return VecStr{"name", "resources", "ioOptions", "js", "css"};
+	virtual VecStr requiredOptions() const {
+		return VecStr{"resources", "ioOptions"};
 	}
 
 	void seqData() {
@@ -77,7 +79,8 @@ public:
 	void sort(std::string sortBy){
 		readVecSorter::sortReadVector(reads_, sortBy);
 		needsUpdate_ = true;
-		response().out() << mainPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("mainPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
 
 
@@ -86,47 +89,12 @@ public:
 
 	}
 
-
-	void getColors(std::string num) {
-		ret_json();
-		cppcms::json::value ret;
-		auto outColors = bib::njhColors(std::stoi(num));
-		bibseq::VecStr outColorsStrs;
-		outColorsStrs.reserve(outColors.size());
-		for(const auto & c : outColors) {
-			outColorsStrs.emplace_back("#" + c.hexStr_);
-		}
-		ret["colors"] = outColorsStrs;
-		response().out() << ret;
-	}
-
-
-	void colorsData() {
-		ret_json();
-		cppcms::json::value r;
-		r["A"] = "#ff8787";
-		r["a"] = "#ff8787";
-
-		r["C"] = "#afffaf";
-		r["c"] = "#afffaf";
-
-		r["G"] = "#ffffaf";
-		r["g"] = "#ffffaf";
-
-		r["T"] = "#87afff";
-		r["t"] = "#87afff";
-
-		r["-"] = "e6e6e6";
-
-		response().out() << r;
-	}
-
-
 	void minTreeData() {
 	}
 
 	void mainPage() {
-		response().out() << mainPageHtml_.get("/ssv", rootName_);
+		auto search = pages_.find("mainPageHtml");
+		response().out() << search->second.get("/ssv", rootName_);
 	}
 
 

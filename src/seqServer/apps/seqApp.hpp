@@ -14,17 +14,11 @@
 #include <bibseq.h>
 #include <bibcpp.h>
 #include <cppitertools/range.hpp>
-#include "utils.h"
+#include "seqServer/utils.h"
 
 namespace bibseq {
 
-/**@b Test config map, should contain at least name, js, and css and additonal checks can be added
- *
- * @param config The config map to test
- * @param additionalChecks Any additional checks that need to be search for
- * @return Whether config passes
- */
-bool configTest(const MapStrStr & config, const VecStr & additionalChecks);
+
 
 class seqApp: public cppcms::application {
 protected:
@@ -84,17 +78,34 @@ protected:
 		response().content_type("text/css");
 	}
 
-	bib::FilesCache jsLibs_;
-	bib::FilesCache jsOwn_;
+	void colorsData();
 
-	bib::FilesCache cssLibs_;
-	bib::FilesCache cssOwn_;
+	void getColors(std::string num);
+
+	std::map<std::string, bib::FileCache> pages_;
+	std::map<std::string, bib::FilesCache> jsAndCss_;
+	//bib::FilesCache jsLibs_;
+	//bib::FilesCache jsOwn_;
+
+	//bib::FilesCache cssLibs_;
+	//bib::FilesCache cssOwn_;
 
 
 public:
 	seqApp(cppcms::service& srv, std::map<std::string, std::string> config);
 
 	virtual ~seqApp();
+
+	virtual VecStr requiredOptions()const;
+
+	/**@b Test config map, should contain at least name, js, and css and additonal checks can be added
+	 *
+	 * @param config The config map to test
+	 * @param additionalChecks Any additional checks that need to be search for
+	 * @return Whether config passes
+	 */
+	static bool configTest(const MapStrStr & config,
+			const VecStr & checks, const std::string nameOfClass);
 
 	void jsLibs();
 	void jsOwn();
