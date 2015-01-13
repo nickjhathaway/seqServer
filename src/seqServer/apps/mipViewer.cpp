@@ -930,7 +930,7 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
 	setUp.setOption(clusDir, "-clusDir", "Name of the Master Result Directory", true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
-	setUp.setOption(genomeDir, "-genomeDir", "Name of the locatio of where the genomic data is");
+	setUp.setOption(genomeDir, "-genomeDir", "Name of the locatio of where the genomic data is", true);
 	setUp.finishSetUp(std::cout);
 	name = "/" + name;
   auto config = server_config(name, port);
