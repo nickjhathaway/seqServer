@@ -222,7 +222,7 @@
 			      .style("stroke", "#000")
 			      .attr("data-legend",function(d) { return d.popUID;})
 			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
-				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+				  .on("mousemove", function(){return tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			bars.exit()
 				    .remove();
@@ -285,7 +285,7 @@
 				      .style("stroke", "#000")
 				      .attr("data-legend",function(d) { return d.popUID;})
 				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
-					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+					  .on("mousemove", function(){return tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 				//create new bars as needed
 				bars.enter().append("rect")
@@ -302,7 +302,7 @@
 				      .style("stroke", "#000")
 				      .attr("data-legend",function(d) { return d.popUID;})
 				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
-					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+					  .on("mousemove", function(){return tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
 			    //remove the bars no longer needed
 				bars.exit().remove();
