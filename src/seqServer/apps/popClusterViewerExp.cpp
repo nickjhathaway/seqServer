@@ -51,7 +51,7 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	//read samp table
 	VecStr delFromPop { "popInputClusterCnt", "hapPopFrac", "hapSumSampPopFrac",
-			"hapMeanSampFrac" };
+			"hapMeanSampFrac", "hapClusterCNT" };
 	VecStr delFromSamp = catenateVectors(delFromPop, VecStr { "popReadCntTot",
 			"hapReadFrac", "hapConsesus", "cConsensus", "sInputCluster", "cReadFrac",
 			"ReadCnt", "cChiReadCnt", "cChiClusCnt", "cChiRepCnt", "cInputNames",
