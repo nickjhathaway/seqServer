@@ -1,0 +1,612 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Population Info</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs"></script>
+	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+  </head>
+  <body>
+    <script>
+    	$(document).ready(function(){
+    		//get current name from window location
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			//get sample names and the table with the sample names
+			var sampNames;
+			ajax("/" + rName + "/sampleNames", function(mn){ sampNames = mn; });
+			ajax('/' + rName + '/sampInfo' + "/" + sampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			//get the seq and color data for the sequence view of the population sequences 
+			var mainData;
+	        var baseColors = {};
+			ajax('/' + rName + '/popSeqData', function(md){ mainData = md; });
+			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			//get info on protein
+			var proteinMainData;
+	        var proteinColors = {};
+			ajax('/' + rName + '/popProteinData', function(md){ proteinMainData = md; });
+			ajax('/' + rName + '/proteinColors', function(bc){ proteinColors = bc; });
+						//get the population information table from server
+			var popInfoTab;
+			ajax('/' + rName + '/popInfo', function(tab){ popInfoTab = tab; });
+			//change title to current name
+			var projectName;
+			ajax('/' + rName + '/projectName', function(proj){ projectName = proj; });
+			$("title", "head").html(projectName);
+			$("#projName").html(projectName);
+			//create sample table 
+			var sampTab = createTable("#sampTable");
+			updateTable(sampTab, mainPopInfoTab["tab"],  mainPopInfoTab["columnNames"]);
+			//create update click function 
+			function updateTableOnClick() {         
+			     var allVals = [];
+			     $(':checked', "#sampTableMenu").each(function() {
+			       allVals.push($(this).val());
+			     });
+			     var currentColumnNames = _.intersection(mainPopInfoTab["columnNames"], allVals);
+			     updateTable(sampTab, mainPopInfoTab["tab"], currentColumnNames );;
+			};
+			//add column name checkboxes as needed
+			var inputs = d3.select("#sampTableMenu").selectAll("input")
+				.data(mainPopInfoTab["columnNames"])
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("style", "border:2px solid black; padding: 2px;margin: 1px")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("checked", true)
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;});
+			//add click function to the sample table menu inputs 
+			$('input', "#sampTableMenu" ).click( updateTableOnClick );
+			//Add check all and uncheck all to the menu on their own line for easy viewing 
+			$('<br>').appendTo('#sampTableMenu');
+			$('<a>',{
+			    text: 'Check All',
+			    href: "javascript:void(0);",
+			    id: "check-all"
+			}).appendTo('#sampTableMenu');
+			$('<br>').appendTo('#sampTableMenu');
+			$('<a>',{
+			    text: 'Uncheck All',
+			    href: "javascript:void(0);",
+			    id: "uncheck-all"
+			}).appendTo('#sampTableMenu');
+			//add check all and uncheck all actions to the buttons
+			$('#check-all', "#sampTableMenu").click(function(){
+			    $("input:checkbox", "#sampTableMenu").prop('checked', true);
+			    updateTableOnClick();
+			  });
+			  $('#uncheck-all', "#sampTableMenu").click(function(){
+			    $("input:checkbox", "#sampTableMenu").prop('checked', false);
+			    updateTableOnClick();
+			});
+			/////////
+			$('<br>').appendTo('#sampTableMenu');
+			$('<button>',{
+			    text: 'Download Table',
+			    id: "tabSave"
+			}).appendTo('#sampTableMenu');
+			d3.select("#tabSave").append("a").attr("id", "tabDownLink");
+			d3.select("#tabSave").on("click", function(){
+			  	//var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+			  	var allVals = [];
+			    $(':checked', "#sampTableMenu").each(function() {
+			       allVals.push($(this).val());
+			    });
+			    var currentColumnNames = _.intersection(mainPopInfoTab["columnNames"], allVals);
+			    
+			    var mainTable = [];
+			    mainTable.push(currentColumnNames);
+			    //
+			    for (i = 0; i <mainPopInfoTab["tab"].length ; i++) { 
+			    	var currentRow = [];
+				   	for(colNum in currentColumnNames){
+				   		currentRow.push(mainPopInfoTab["tab"][i][currentColumnNames[colNum]]);
+						//console.log(mainPopInfoTab["tab"][i][currentColumnNames[colNum]]);
+					}
+					mainTable.push(currentRow);
+				}
+			    //console.log(mainTable);
+			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
+			  	var imgsrc = 'data:text/csv;base64,'+ btoa(d3.csv.format(mainTable));
+			  	d3.select("#tabDownLink").attr("download", projectName + "_mainTable.csv");
+			  	d3.select("#tabDownLink").attr("href", imgsrc);
+			  	var a = $("#tabDownLink")[0];
+			  	a.click();
+			});
+			//////////
+			//create tootip for sample chart 
+			var tooltip = d3.select("body")
+				.append("div")
+				.style("position", "absolute")
+				.style("visibility", "hidden")
+				.style("background-color", "#88aaaa")
+				.attr("id", "popHover");
+			//create the table for the tootip
+			var hoverTab = createTable("#popHover");
+			//Create the margins and set the width and height for the sample chart
+			var margin = {top: 20, right: 30, bottom: 80, left: 40},
+			    width = $(window).width() -100 - margin.left - margin.right,
+			    height = 500 - margin.top - margin.bottom;
+			//Select the chart and update with width and height
+			var chart = d3.select("#sampChart")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			  .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			//create the x and y axes 
+			var x = d3.scale.ordinal()
+			    .rangeRoundBands([0, width - 100], .1);
+			
+			var y = d3.scale.linear()
+			    .range([height, 0]);
+			    
+			var xAxis = d3.svg.axis()
+			    .scale(x)
+			    .orient("bottom");
+			
+			var yAxis = d3.svg.axis()
+			    .scale(y)
+			    .orient("left");
+			//set up the colors and create the info needed for hover tooltip
+			var sampleSum = {};
+			var samplePopNames = {};
+			var color = d3.scale.ordinal()
+			    .domain(mainPopInfoTab["tab"].map(function(d) { return d.popUID; }))
+			    .range(mainPopInfoTab["popColors"]);
+			for(pos in mainPopInfoTab["tab"]){
+				sampleSum[mainPopInfoTab["tab"][pos].Sample] = 0;
+				samplePopNames[mainPopInfoTab["tab"][pos].Sample] = [];
+			}
+			for(pos in mainPopInfoTab["tab"]){
+				var actualPos = mainPopInfoTab["tab"].length - 1 - pos;
+				samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({
+					Sample: mainPopInfoTab["tab"][actualPos].Sample,
+					popUID: mainPopInfoTab["tab"][actualPos].popUID,
+					clusterID: mainPopInfoTab["tab"][actualPos].clusterID,
+					cAveragedFrac: mainPopInfoTab["tab"][actualPos].cAveragedFrac,
+					color: color(mainPopInfoTab["tab"][actualPos].popUID) });
+			}
+			//set up the x domain for the current sample names 
+			x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
+			y.domain([0,1]);
+			//add the axes to the chart
+			chart.append("g")
+			      .attr("class", "x axis")
+			      .attr("transform", "translate(0," + height + ")")
+			      .call(xAxis)
+			      .selectAll("text")
+				    .attr("y", 0)
+				    .attr("x", 9)
+				    .attr("dy", ".35em")
+				    .attr("transform", "rotate(90)")
+				    .style("text-anchor", "start")
+				    .style("font", "12px sans-serif");
+			chart.selectAll(".x.axis path").style("display", "none");
+			chart.append("g")
+			      .attr("class", "y axis")
+			      .call(yAxis)
+			      .selectAll("text")
+				    .style("font", "12px sans-serif");
+			chart.selectAll(".axis path")
+				.style("fill", "none")
+				.style("stroke", "#000")
+				.style("shape-rendering", "crispEdges");
+			chart.selectAll(".axis line")
+				.style("fill", "none")
+				.style("stroke", "#000")
+				.style("shape-rendering", "crispEdges");
+			
+			var bars = chart.selectAll(".bar")
+			      .data(mainPopInfoTab["tab"]);
+			      
+			bars.enter().append("rect")
+			      .attr("class", "bar")
+			      .attr("x", function(d) { return x(d.Sample); })
+			      .attr("y", function(d) { 
+			      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
+			      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+			      		return ret; 
+			      		})
+			      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+			      .attr("width", x.rangeBand())
+			      .attr("fill", function(d){ return color(d.popUID);})
+			      .style("stroke", "#000")
+			      .attr("data-legend",function(d) { return d.popUID;})
+			      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+				  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+				  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+			bars.exit()
+				    .remove();
+			  //add legend
+			var legend = chart.append("g")
+				  .attr("class","legend")
+				  .attr("transform","translate(" + (width - 90) + ",10)")
+				  .style("font-size","12px")
+				  .call(d3.legend);
+			//add legend style directly so download will download it as well
+			d3.select(".legend-box").style("fill", "#fff");
+			d3.select(".legend-items").style("fill", "#000");
+			//create update chart function to update as sample check boxes are modified 
+			function updateChart(){
+				x.domain(mainPopInfoTab["tab"].map(function(d) { return d.Sample; }));
+				sampleSum = {};
+				samplePopNames = {};
+				color = d3.scale.ordinal()
+				    .domain(mainPopInfoTab["tab"].map(function(d) { return d.popUID; }))
+				    .range(mainPopInfoTab["popColors"]);
+				for(pos in mainPopInfoTab["tab"]){
+					sampleSum[mainPopInfoTab["tab"][pos].Sample] = 0;
+					samplePopNames[mainPopInfoTab["tab"][pos].Sample] = [];
+				}
+				for(pos in mainPopInfoTab["tab"]){
+					var actualPos = mainPopInfoTab["tab"].length - 1 - pos;
+					samplePopNames[mainPopInfoTab["tab"][actualPos].Sample].push({
+						Sample: mainPopInfoTab["tab"][actualPos].Sample,
+						popUID: mainPopInfoTab["tab"][actualPos].popUID,
+						clusterID: mainPopInfoTab["tab"][actualPos].clusterID,
+						cAveragedFrac: mainPopInfoTab["tab"][actualPos].cAveragedFrac,
+						color: color(mainPopInfoTab["tab"][actualPos].popUID) });
+				}
+				//update the x axis
+				chart.select("g.x.axis")
+				      .call(xAxis)
+				      .selectAll("text")
+					    .attr("y", 0)
+					    .attr("x", 9)
+					    .attr("dy", ".35em")
+					    .attr("transform", "rotate(90)")
+					    .style("text-anchor", "start")
+					    .style("font", "12px sans-serif");
+				chart.selectAll(".axis line")
+					.style("fill", "none")
+					.style("stroke", "#000")
+					.style("shape-rendering", "crispEdges");
+				//get all the bars
+				var bars = chart.selectAll(".bar").data(mainPopInfoTab["tab"]);
+				//update the bars already there with new info
+				bars.attr("x", function(d) { return x(d.Sample); })
+				      .attr("y", function(d) { 
+				      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
+				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+				      		return ret; 
+				      		})
+				      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+				      .attr("width", x.rangeBand())
+				      .attr("fill", function(d){ return color(d.popUID);})
+				      .style("stroke", "#000")
+				      .attr("data-legend",function(d) { return d.popUID;})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+				//create new bars as needed
+				bars.enter().append("rect")
+				      .attr("class", "bar")
+				      .attr("x", function(d) { return x(d.Sample); })
+				      .attr("y", function(d) { 
+				      		var ret = y(sampleSum[d.Sample] + d.cAveragedFrac);
+				      		sampleSum[d.Sample] = sampleSum[d.Sample] + d.cAveragedFrac;
+				      		return ret; 
+				      		})
+				      .attr("height", function(d) { return height - y(d.cAveragedFrac); })
+				      .attr("width", x.rangeBand())
+				      .attr("fill", function(d){ return color(d.popUID);})
+				      .style("stroke", "#000")
+				      .attr("data-legend",function(d) { return d.popUID;})
+				      .on("mouseover", function(d){updateTableWithColors(hoverTab,samplePopNames[d.Sample], ["Sample", "popUID","clusterID", "cAveragedFrac"]); return tooltip.style("visibility", "visible");})
+					  .on("mousemove", function(){return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");})
+					  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+			    //remove the bars no longer needed
+				bars.exit().remove();
+				//update legend
+				legend.call(d3.legend);
+			}
+			//update the chart and table on click of the sample checkboxes
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#sampNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentSampNames = _.intersection(sampNames, allVals);
+			    if(currentSampNames.length == 0){
+			    	mainPopInfoTab = {};
+			    }else{
+			    	ajax('/' + rName + '/sampInfo' + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	//ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    }
+			 	updateTableOnClick();
+			 	updateChart();
+			};
+			//create the inputs checkboxes for the sample name 
+			var inputs = d3.select("#sampNameMenu").selectAll("input")
+				.data(sampNames)
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("style", "border:2px solid black; padding: 2px;margin: 1px")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("checked", true)
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;});
+			//Add check all and uncheck all buttons on their own lines
+			$('<br>').appendTo('#sampNameMenu');
+			$('<a>',{
+			    text: 'Check All',
+			    href: "javascript:void(0);",
+			    id: "check-all"
+			}).appendTo('#sampNameMenu');
+			$('<br>').appendTo('#sampNameMenu');
+			$('<a>',{
+			    text: 'Uncheck All',
+			    href: "javascript:void(0);",
+			    id: "uncheck-all"
+			}).appendTo('#sampNameMenu');
+			//add the uncheckall and check all functions
+			$('#check-all', "#sampNameMenu").click(function(){
+			    $("input:checkbox", "#sampNameMenu").prop('checked', true);
+			    updateChartOnClick();
+			  });
+			  $('#uncheck-all', "#sampNameMenu").click(function(){
+			    $("input:checkbox", "#sampNameMenu").prop('checked', false);
+			    updateChartOnClick();
+			});
+			//add update function to the checkboxes
+			$( '#sampNameMenu input' ).click( updateChartOnClick );
+			//added a save svg button for the sample chart
+			d3.select("#save").append("a").attr("id", "imgDownload");
+			d3.select("#save").on("click", function(){
+			  	var html = d3.select("#sampChart")
+			        .attr("version", 1.1)
+			        .attr("xmlns", "http://www.w3.org/2000/svg")
+			        .node().parentNode.innerHTML;
+			  	//add the svg information to a and then click it to trigger the download
+			  	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+			  	d3.select("#imgDownload").attr("download", projectName);
+			  	d3.select("#imgDownload").attr("href", imgsrc);
+			  	var a = $("#imgDownload")[0];
+			  	a.click();
+			});
+			//create SeqViewer for the population final sequences 
+			var cellWidth = 20;
+			var cellHeight = 25;
+			var SeqViewer = new SeqView("canvasDiv1",  mainData, cellWidth, cellHeight, baseColors, "#qualChart");
+			//var proteinMainData;
+	        //var proteinColors = {};
+	        var SeqViewerProtein = new SeqView("canvasDiv2",  proteinMainData, cellWidth, cellHeight, proteinColors);
+			function init(){
+				$(window).bind("resize", function(){
+					SeqViewer.updateCanvas();
+					SeqViewer.setUpSliders();
+					SeqViewer.paint();
+					SeqViewerProtein.updateCanvas();
+					SeqViewerProtein.setUpSliders();
+					SeqViewerProtein.paint();
+					//updateChart();
+				});
+				SeqViewer.setUp();
+				SeqViewer.paint();
+				SeqViewerProtein.setUp();
+				SeqViewerProtein.paint();
+			}
+			init();
+			//create the population table and populate it 
+			var popTab = createTable("#popTable");
+			var numericCols = popInfoTab["numericColNames"];
+			updateTable(popTab,popInfoTab["tab"],  popInfoTab["columnNames"]);
+			//update function for the population table 
+			function updatePopTableOnClick() {         
+			     var allVals = [];
+			     $('#popTableMenu :checked').each(function() {
+			       allVals.push($(this).val());
+			     });
+			     var currentColumnNames = _.intersection(popInfoTab["columnNames"], allVals);
+			     updateTable(popTab,popInfoTab["tab"], currentColumnNames );;
+			};
+			//add the check boxes for the pop menu
+			var inputs = d3.select("#popTableMenu").selectAll("input")
+				.data(popInfoTab["columnNames"])
+				.enter()
+				.append("label")
+					.html(function(d){return d;})
+					.attr("style", "border:2px solid black;  padding: 2px;margin: 1px")
+				.append("input")
+					.attr("type","checkbox")
+					.attr("name", "check")
+					.attr("checked", true)
+					.attr("value",function(d){return d;})
+					.attr("id", function(d){return d;});
+			$( '#popTableMenu input' ).click( updatePopTableOnClick );
+			$('<br>').appendTo('#popTableMenu');
+			$('<button>',{
+			    text: 'Download Table',
+			    id: "popTabSave"
+			}).appendTo('#popTableMenu');
+			d3.select("#popTabSave").append("a").attr("id", "popTabDownLink");
+			d3.select("#popTabSave").on("click", function(){
+			  	//var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+			  	var allVals = [];
+			    $(':checked', "#popTableMenu").each(function() {
+			       allVals.push($(this).val());
+			    });
+			    var currentColumnNames = _.intersection(popInfoTab["columnNames"], allVals);
+			    
+			    var mainTable = [];
+			    mainTable.push(currentColumnNames);
+			    //
+			    for (i = 0; i <popInfoTab["tab"].length ; i++) { 
+			    	var currentRow = [];
+				   	for(colNum in currentColumnNames){
+				   		currentRow.push(popInfoTab["tab"][i][currentColumnNames[colNum]]);
+						//console.log(mainPopInfoTab["tab"][i][currentColumnNames[colNum]]);
+					}
+					mainTable.push(currentRow);
+				}
+			    //console.log(mainTable);
+			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
+			  	var imgsrc = 'data:text/csv;base64,'+ btoa(d3.csv.format(mainTable));
+			  	d3.select("#popTabDownLink").attr("download", projectName + "_popTable.csv");
+			  	d3.select("#popTabDownLink").attr("href", imgsrc);
+			  	var a = $("#popTabDownLink")[0];
+			  	a.click();
+			});
+			$('<button>',{
+			    text: 'Download Fasta',
+			    id: "popFastaSave"
+			}).appendTo('#donwPopFasta');
+			d3.select("#popFastaSave").append("a").attr("id", "popFastaDownLink");
+			d3.select("#popFastaSave").on("click", function(){
+			    var mainTable = [];
+			    //
+			    for (i = 0; i <mainData["seqs"].length ; i++) { 
+					mainTable.push([">" + mainData["seqs"][i]["name"]]);
+					mainTable.push([mainData["seqs"][i]["seq"]]);
+				}
+			    //console.log(mainTable);
+			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
+			  	var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainTable));
+			  	d3.select("#popFastaDownLink").attr("download", projectName + ".fasta");
+			  	d3.select("#popFastaDownLink").attr("href", imgsrc);
+			  	var a = $("#popFastaDownLink")[0];
+			  	a.click();
+			});
+			$('<button>',{
+			    text: 'Download Fasta',
+			    id: "proteinFastaSave"
+			}).appendTo('#downProteinFasta');
+			d3.select("#proteinFastaSave").append("a").attr("id", "proteinFastaDownLink");
+			d3.select("#proteinFastaSave").on("click", function(){
+			    var mainTable = [];
+			    //
+			    for (i = 0; i <proteinMainData["seqs"].length ; i++) { 
+					mainTable.push([">" + proteinMainData["seqs"][i]["name"]]);
+					mainTable.push([proteinMainData["seqs"][i]["seq"]]);
+				}
+			    //console.log(mainTable);
+			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
+			  	var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainTable));
+			  	d3.select("#proteinFastaDownLink").attr("download", projectName + "_protein.fasta");
+			  	d3.select("#proteinFastaDownLink").attr("href", imgsrc);
+			  	var a = $("#proteinFastaDownLink")[0];
+			  	a.click();
+			});
+			//get the x labels for the pop chart
+			var xLabs = [];
+			for(obj in popInfoTab["tab"]){
+				xLabs.push(popInfoTab["tab"][obj]["popUID"]);
+			}
+			//create pop chart
+			popChart = c3.generate({
+		        data: {
+		            json: popInfoTab["tab"],
+		            keys: {
+		                value: numericCols,
+		            }, 
+		            axes: {
+		            	hapSampCNT :'y'
+		            }, 
+		            type: 'bar'
+		        },
+		        axis: {
+		            x: {
+		                type: 'category',
+						categories: xLabs ,
+			            tick: {
+			                rotate: 75
+			            },
+			            height: 130
+		            }
+		        },
+		        bindto: "#popChart"
+		    });
+		    popChart.hide(["popReadCntTot", "hapReadCNT"]);
+		    $("<a href = " + rName + "/showMinTree >Show Minimum Spanning Tree</a>").appendTo("#minTreeDiv");
+		});
+		
+    </script>
+    <div class="container theme-showcase" role="main">
+		<div class="jumbotron">
+			<h1 id="projName"></h1>
+		</div>
+		<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h1>Sample Info Table</h1>
+				</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	    <div id = "sampTable">
+	    	<div id = "sampTableMenu"></div>
+	    </div>
+	    <div class="panel panel-primary">
+				<div class="panel-heading">
+					<h1>Haplotypes Across Samples</h1>
+				</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	    <div id = "sampNameMenu">
+	    	
+	    </div>
+	    <button id="save" style="margin: 2px;">Save as Svg</button>
+	    <div id = "chartSvg">
+	    	 <svg id = "sampChart"></svg>
+	    </div>
+	    <div class="panel panel-primary">
+				<div class="panel-heading">
+					<h1>Haplotypes Sequences</h1>
+				</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	    <div id= "minTreeDiv" style="border:2px solid black;  padding: 2px;margin: 5px;width: 100px"> </div>
+	    <div id= "donwPopFasta" style="border:2px solid black;  padding: 2px;margin: 5px;width: 100px" ></div>
+	    <div id="canvasDiv1" class = "SeqView">
+	    	<div id="rightSlider"></div>
+		    <canvas id="canvas"></canvas>
+		    <div id="bottomSlider"></div>
+		    <div id="pop-up"><p id="info"></p></div>
+	      	<div id="select"></div>
+	    </div>
+	    <div id = "qualChart"></div>
+	    <div class="panel panel-primary">
+				<div class="panel-heading">
+					<h1>Haplotypes Protein Sequences</h1>
+				</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	    <div id= "downProteinFasta" style="border:2px solid black;  padding: 2px;margin: 5px;width: 100px" ></div>
+	   	<div id="canvasDiv2" class = "SeqView">
+	    	<div id="rightSlider"></div>
+		    <canvas id="canvas"></canvas>
+		    <div id="bottomSlider"></div>
+		    <div id="pop-up"><p id="info"></p></div>
+	      	<div id="select"></div>
+	    </div>
+	    <div class="panel panel-primary">
+				<div class="panel-heading">
+					<h1>Haplotype Infomation Table</h1>
+				</div>
+			<div class="panel-body">
+			</div>
+		</div>
+	    <div id = "popTable">
+	    	<div id = "popTableMenu"></div>
+	    </div>
+	    <div id = "popChart">
+	    	
+	    </div>
+    </div>
+  </body>
+</html>

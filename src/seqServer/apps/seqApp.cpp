@@ -104,7 +104,7 @@ void seqApp::colorsData() {
 	r["T"] = "#87afff";
 	r["t"] = "#6e96e6";
 
-	r["-"] = "e6e6e6";
+	r["-"] = "#e6e6e6";
 
 	response().out() << r;
 }

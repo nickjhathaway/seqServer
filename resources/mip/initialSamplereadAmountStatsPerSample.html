@@ -102,6 +102,21 @@
 			    $("input:checkbox", "#sampStatsTableMenu").prop('checked', false);
 			    updateTableOnClick();
 			});
+			$('<br>').appendTo('#sampStatsTableMenu');
+			$('<button>',{
+			    text: 'Download Table',
+			    id: "tabSave"
+			}).appendTo('#sampStatsTableMenu');
+			d3.select("#tabSave").append("a").attr("id", "tabDownLink");
+			d3.select("#tabSave").on("click", function(){
+			  	//var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
+			  	var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainSampStatsInfoTab["tab"]));
+			  	d3.select("#tabDownLink").attr("download", currentSampName + "_stats.tab.txt");
+			  	d3.select("#tabDownLink").attr("href", imgsrc);
+			  	var a = $("#tabDownLink")[0];
+			  	a.click();
+			});
+			console.log(d3.csv.format(mainSampStatsInfoTab["tab"]));
 			//console.log(mainSampStatsInfoTab);
 			var xLabs = [];
 			for(obj in mainSampStatsInfoTab["tab"]){
@@ -110,6 +125,7 @@
 				//console.log(obj);
 				xLabs.push(mainSampStatsInfoTab["tab"][obj]["mipName"]);
 			}
+			
 			function updateChartOnClick() { 
 				//get all currently checked sample boxes and then update the current samples  
 			    var allVals = [];

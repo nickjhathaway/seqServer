@@ -13,7 +13,9 @@ serverRunner::serverRunner()
     : bib::progutils::programRunner(
           {addFunc("mipViewer", bibseq::mipViewer, false),
 					 addFunc("minTreeViewer", bibseq::minTreeViewer, false),
-					 addFunc("seqViewer", bibseq::seqViewer, false)
+					 addFunc("seqViewer", bibseq::seqViewer, false),
+					 addFunc("popClusteringViewer", bibseq::popClusteringViewer, false),
+					 addFunc("popClusteringViewerExp", bibseq::popClusteringViewerExp, false)
            },
           "serverRunner") {}
 
