@@ -20,82 +20,33 @@ private:
 	cppcms::json::value readsJson_;
 	std::string rootName_;
 	bool needsUpdate_ = false;
+	bool debug_ = true;
 	static bfs::path make_path(const bfs::path fn) {
 		return fn;
 	}
 
 public:
-	ssv(cppcms::service& srv, std::map<std::string, std::string> config)
-	: bibseq::seqApp(srv, config)
-	{
-		bool pass = configTest(config, requiredOptions(), "ssv");
-		pages_.emplace("mainPageHtml",make_path(config["resources"] + "ssv/mainPage.html") );
-		rootName_ = config["name"];
-		for(auto & fCache : pages_){
-			fCache.second.replaceStr("/ssv", rootName_);
-		}
+	ssv(cppcms::service& srv, std::map<std::string, std::string> config);
 
-		//main page
-		dispMapRoot(&ssv::mainPage, this);
-		dispMap(&ssv::seqData,this, "seqData");
+	virtual VecStr requiredOptions() const ;
 
-		//general information
-		dispMap(&ssv::rootName,this, "rootName");
-		dispMap_1arg(&ssv::sort,this, "sort", "(\\w+)");
-		mapper().root(rootName_);
-		//read in data and set to the json
-		readObjectIOOptions options(config["ioOptions"]);
-		readObjectIO reader;
-		reader.read(options);
-		reads_ = reader.reads;
-		readsJson_ = seqsToJson(reads_);
-		needsUpdate_= false;
-		std::cout << "Finished set up" << std::endl;
-		std::cout << "Go to " << "localhost:" << config["port"] << config["name"] << std::endl;
-	}
-
-	virtual VecStr requiredOptions() const {
-		return VecStr{"resources", "ioOptions"};
-	}
-
-	void seqData() {
-		//std::cout << "getAllSampleNames" << std::endl;
-		ret_json();
-		if(needsUpdate_){
-			readsJson_ = seqsToJson(reads_);
-		}
-		response().out() << readsJson_;
-	}
+	void seqData();
 
 
-	void rootName() {
-		//std::cout << "rootName" << std::endl;
-		ret_json();
-		cppcms::json::value r;
-		r = rootName_;
-		response().out() << r;
-	}
+	void rootName();
 
-	void sort(std::string sortBy){
-		readVecSorter::sortReadVector(reads_, sortBy);
-		needsUpdate_ = true;
-		auto search = pages_.find("mainPageHtml");
-		response().out() << search->second.get("/ssv", rootName_);
-	}
+	void sort(std::string sortBy);
+
+	void muscleAln();
+	void removeGaps();
+	void complementSeqs();
 
 
+	void showMinTree();
 
-	void showMinTree() {
+	void minTreeData();
 
-	}
-
-	void minTreeData() {
-	}
-
-	void mainPage() {
-		auto search = pages_.find("mainPageHtml");
-		response().out() << search->second.get("/ssv", rootName_);
-	}
+	void mainPage();
 
 
 

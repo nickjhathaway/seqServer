@@ -104,9 +104,8 @@
 	    seqContext.fillStyle = "#000000";
 	    //console.log(tWidth);
 	    seqContext.fillText(logInfo,this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2  + this.ch/2 );
-	    
    };
-	
+
 	function SeqView(viewName, seqData, cellWidth, cellHeight, baseColors, qualChartName){
 		//need to add style and html, currently just there
 		//retrieve html elements 
@@ -151,12 +150,25 @@
 		});
 		//
 	};
-	
+	SeqView.prototype.updateData = function(inputSeqData){
+		this.seqData = inputSeqData;
+		this.seqStart = 0;
+		this.baseStart = 0;
+		this.currentSeq = 0;
+		this.currentBase = 0;
+		this.painter.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch), this.seqData["seqs"].length);
+		this.painter.needToPaint = true;
+		this.needToPaint = true;
+		this.updateCanvas();
+		this.setUpSliders();
+		this.paint();
+	};
 	SeqView.prototype.setUp = function(){
 		this.setUpCanvas();
 		this.setUpSliders();
 		this.setUpListeners();
 		this.setSelector();
+		
 	};
 	
 	SeqView.prototype.setUpCanvas = function(){
@@ -321,21 +333,23 @@
         //console.log(currentBaseHover);
         //console.log(currentSeqHover);
         
-        if(currentPoint[0] > this.painter.nameOffSet){
-        	//console.log($("#info", popUpWindow)[0]);
-        	$("#info", popUpWindow)[0].innerHTML = "name: " + 
-        	this.seqData["seqs"][currentSeqHover]["name"]
-        	+ "<br>base: "  + this.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover] 
-        	+ "<br>qual: " +  this.seqData["seqs"][currentSeqHover]["qual"][currentBaseHover]
-        	+ "<br>pos: " + currentBaseHover;
-        }else{
-        	$("#info", popUpWindow)[0].innerHTML = "name: " + 
-        	this.seqData["seqs"][currentSeqHover]["name"];
-        }
+
 
 		if(currentPoint[1] < (this.painter.nSeqs * this.painter.ch) && 
 			currentPoint[0] < ((this.painter.nBases * this.painter.cw) + this.painter.nameOffSet)){
-			$(popUpWindow).fadeIn(500);
+			        if(currentPoint[0] > this.painter.nameOffSet){
+	        	//console.log($("#info", popUpWindow)[0]);
+	        $("#info", popUpWindow)[0].innerHTML = "name: " + 
+	        	this.seqData["seqs"][currentSeqHover]["name"]
+	        	+ "<br>base: "  + this.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover] 
+	        	+ "<br>qual: " +  this.seqData["seqs"][currentSeqHover]["qual"][currentBaseHover]
+	        	+ "<br>pos: " + currentBaseHover;
+	        }else{
+	        	$("#info", popUpWindow)[0].innerHTML = "name: " + 
+	        	this.seqData["seqs"][currentSeqHover]["name"];
+	        }
+			//$(popUpWindow).fadeIn(500);
+			$(popUpWindow).show();
 		}else{
 			$(popUpWindow).hide();
 		}

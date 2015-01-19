@@ -91,10 +91,10 @@
 			$('#check-all', "#sampTableMenu").click(function(){
 			    $("input:checkbox", "#sampTableMenu").prop('checked', true);
 			    updateTableOnClick();
-			  });
-			  $('#uncheck-all', "#sampTableMenu").click(function(){
-			    $("input:checkbox", "#sampTableMenu").prop('checked', false);
-			    updateTableOnClick();
+			 });
+			$('#uncheck-all', "#sampTableMenu").click(function(){
+			   $("input:checkbox", "#sampTableMenu").prop('checked', false);
+			   updateTableOnClick();
 			});
 			console.log(mainSampInfoTab);
 			var mipNames = mainSampInfoTab["mipNames"];

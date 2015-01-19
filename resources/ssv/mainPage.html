@@ -53,33 +53,83 @@
 			}
 			init();
 
-
+			$('#sortSeq').click(function(){
+			    ajax('/' + rName + '/sort/seq', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#sortSeqCondensed').click(function(){
+			    ajax('/' + rName + '/sort/seqCondensed', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#sortTotalCount').click(function(){
+			    ajax('/' + rName + '/sort/totalCount', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#sortSize').click(function(){
+			    ajax('/' + rName + '/sort/size', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#sortName').click(function(){
+			    ajax('/' + rName + '/sort/name', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#muscle').click(function(){
+			    ajax('/' + rName + '/muscle', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#removeGaps').click(function(){
+			    ajax('/' + rName + '/removeGaps', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
+			$('#complement').click(function(){
+			    ajax('/' + rName + '/complement', function(md){ mainData = md; });
+			    SeqViewer.updateData(mainData);
+			});
 		});
 		
     </script>
-<div class="bs-example">
+    <div class="seqMaster">
+    	<div id="seqMenu">
     <nav id="myNavbar" class="navbar navbar-default" role="navigation">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="container">
+        <div class="container" style="margin-left: 0">
 			<div class="navbar-header">
 				<ul class="nav navbar-nav">
 					<li class="dropdown">
 						<a href="#" data-toggle="dropdown" class="dropdown-toggle">Sort<b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							<li>
-								<a href="/ssv/sort/seq">seq</a>
+								<a href="javascript:void(0);" id="sortSeq">seq</a>
 							</li>
 							<li>
-								<a href="/ssv/sort/seqCondensed">seqCondensed</a>
+								<a href="javascript:void(0);" id="sortSeqCondensed">seqCondensed</a>
 							</li>
 							<li>
-								<a href="/ssv/sort/totalCount">total</a>
+								<a href="javascript:void(0);" id="sortTotalCount">total</a>
 							</li>
 							<li>
-								<a href="/ssv/sort/size">length</a>
+								<a href="javascript:void(0);" id = "sortSize">length</a>
 							</li>
 							<li>
-								<a href="/ssv/sort/name">name</a>
+								<a href="javascript:void(0);" id = "sortName">name</a>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a href="#" data-toggle="dropdown" class="dropdown-toggle">Aln<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="javascript:void(0);" id = "muscle">muscle</a>
+							</li>
+							<li>
+								<a href="javascript:void(0);" id = "removeGaps">remove gaps</a>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a href="#" data-toggle="dropdown" class="dropdown-toggle">Edit<b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li>
+								<a href="javascript:void(0);" id = "complement">complement</a>
 							</li>
 						</ul>
 					</li>
@@ -88,6 +138,7 @@
         </div>
     </nav>
 </div>
+
     <div id="canvasDiv1" class = "SeqView">
     	<div id="rightSlider"></div>
 	    <canvas id="canvas"></canvas>
@@ -96,6 +147,6 @@
       	<div id="select"></div>
     </div>
     <div id = "qualChart"></div>
-
+    </div>
   </body>
 </html>
