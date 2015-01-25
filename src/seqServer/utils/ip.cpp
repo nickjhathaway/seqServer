@@ -36,7 +36,7 @@ void GetIFaddrs::find_ips(){
 
 GetIFaddrs::GetIFaddrs(){
     if (getifaddrs(&ifaddr) == -1){
-        throw bib::err::str("could not getifaddrs");
+        throw bib::err::Exception("could not getifaddrs");
     }
 
     find_ips();
@@ -53,7 +53,7 @@ std::string GetIFaddrs::get_host_ip() const {
             return it->second;
         }
     }
-    throw bib::err::str("could not determine host ip");
+    throw bib::err::Exception("could not determine host ip");
 }
 
 std::ostream& operator<< (std::ostream& s, const GetIFaddrs& e) {

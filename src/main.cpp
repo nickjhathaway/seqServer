@@ -15,7 +15,8 @@ serverRunner::serverRunner()
 					 addFunc("minTreeViewer", bibseq::minTreeViewer, false),
 					 addFunc("seqViewer", bibseq::seqViewer, false),
 					 addFunc("popClusteringViewer", bibseq::popClusteringViewer, false),
-					 addFunc("popClusteringViewerExp", bibseq::popClusteringViewerExp, false)
+					 addFunc("popClusteringViewerExp", bibseq::popClusteringViewerExp, false),
+					 addFunc("mipPreViewer", bibseq::mipPreViewer, false)
            },
           "serverRunner") {}
 
