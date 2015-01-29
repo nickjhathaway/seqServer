@@ -39,11 +39,12 @@ public:
 	pcvExp(cppcms::service& srv, std::map<std::string, std::string> config);
 
 	virtual VecStr requiredOptions() const{
-		return VecStr{"dir", "resources", "projectName"};
+		return VecStr{"mainDir", "resources", "projectName"};
 	}
 	//html
 	//main page
 	void mainPage();
+	void individualSamplePage(std::string sampName);
 
 	//json
 	void getProjectName();
@@ -58,11 +59,15 @@ public:
 	void showMinTree();
 	void getMinTreeData();
 
+	void getSeqData(std::string sampName);
+	void getProteinData(std::string sampName);
+
+	void showMinTreeForSample(std::string sampName);
+	void getMinTreeDataForSample(std::string sampName);
+
 };
 
 int popClusteringViewerExp(std::map<std::string, std::string> inputCommands);
 
 
 } /* namespace bibseq */
-
-

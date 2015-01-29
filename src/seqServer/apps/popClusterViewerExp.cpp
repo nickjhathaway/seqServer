@@ -29,6 +29,10 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	projectName_ = config["projectName"];
 	pages_.emplace("mainPageHtml",
 			make_path(config["resources"] + "pcvExp/mainPage.html"));
+	pages_.emplace("redirectPage",
+			make_path(config["resources"] + "html/redirectPage.html"));
+	pages_.emplace("individualSample",
+			make_path(config["resources"] + "pcvExp/individualSample.html"));
 	for (auto & fCache : pages_) {
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
@@ -46,6 +50,13 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	dispMap(&pcvExp::showMinTree, this, "showMinTree");
 	dispMap(&pcvExp::getMinTreeData, this, "minTreeData");
+
+	dispMap_1arg(&pcvExp::individualSamplePage, this, "individualSamplePage", "(\\w+)");
+	dispMap_1arg(&pcvExp::getSeqData, this, "seqData", "(\\w+)");
+	dispMap_1arg(&pcvExp::getProteinData, this, "proteinData", "(\\w+)");
+	dispMap_1arg(&pcvExp::showMinTreeForSample, this, "showMinTreeForSample", "(\\w+)");
+	dispMap_1arg(&pcvExp::getMinTreeDataForSample, this, "minTreeDataForSample", "(\\w+)");
+
 
 	mapper().root(rootName_);
 
@@ -230,6 +241,116 @@ void pcvExp::showMinTree(){
 	response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeData");
 }
 
+void pcvExp::individualSamplePage(std::string sampName){
+	scopedMessage mess(bib::err::F() << "individualSamplePage; " << "sampName: " << sampName, std::cout, true);
+	if(bib::in(sampName, sampleNames_)){
+		auto search = pages_.find("individualSample");
+		response().out() << search->second.get("/ssv", rootName_);
+	}else{
+		auto search = pages_.find("redirectPage");
+		std::cout << "SampName: " << sampName << " not found, redirecting" << std::endl;
+		response().out() << search->second.get("/ssv", rootName_);
+	}
+}
+
+void pcvExp::getSeqData(std::string sampName){
+	scopedMessage mess(bib::err::F()<< "getSeqData; " << "sampName: " << sampName, std::cout, true);
+	if(bib::in(sampName, sampleNames_)){
+		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "originals/" + sampName + ".fastq";
+		if(fexists(fileName)){
+			ret_json();
+			readObjectIO reader;
+			reader.read("fastq", fileName, true);
+			response().out() << seqsToJson(reader.reads);
+		}else{
+			std::cout << "File " << fileName << " does not exist" << std::endl;
+		}
+	}else{
+		std::cout << "SampName: " << sampName << " not found" << std::endl;
+	}
+}
+
+void pcvExp::getProteinData(std::string sampName){
+  bool forceStartM = false;
+  bool transcribeToRNAFirst = false;
+  uint64_t start = 0;
+	scopedMessage mess(bib::err::F()<< "getProteinData; " << "sampName: " << sampName, std::cout, true);
+	if(bib::in(sampName, sampleNames_)){
+		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "originals/" + sampName + ".fastq";
+		if(fexists(fileName)){
+			ret_json();
+			readObjectIO reader;
+			reader.read("fastq", fileName, true);
+			readVec::convertReadsToProteinFromcDNA(reader.reads, transcribeToRNAFirst,
+			                                           start, forceStartM);
+			response().out() << seqsToJson(reader.reads);
+		}else{
+			std::cout << "File " << fileName << " does not exist" << std::endl;
+		}
+	}else{
+		std::cout << "SampName: " << sampName << " not found" << std::endl;
+	}
+}
+
+void pcvExp::getMinTreeDataForSample(std::string sampName){
+	scopedMessage mess(bib::err::F()<< "getMinTreeDataForSample; " << "sampName: " << sampName, std::cout, true);
+	if(bib::in(sampName, sampleNames_)){
+		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "originals/" + sampName + ".fastq";
+		if(fexists(fileName)){
+			ret_json();
+			readObjectIO reader;
+			reader.read("fastq", fileName, true);
+			uint64_t maxLength = 0;
+			readVec::getMaxLength(reader.reads, maxLength);
+			aligner alignerObj(maxLength, gapScoringParameters(5,1), substituteMatrix::createDegenScoreMatrix(2, -2));
+		  std::function<uint32_t(const readObject & ,
+		  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
+			auto misDistances = getDistanceCopy(reader.reads, 2, misFun,
+					alignerObj, true);
+		  readDistGraph<uint32_t> graphMis(misDistances, reader.reads);
+			std::vector<std::string> popNames;
+		  for(const auto & n : graphMis.nodes_){
+		  	popNames.emplace_back(n->name_);
+		  }
+			auto popColors = bib::njhColors(reader.reads.size());
+			bibseq::VecStr popColorsStrs(popColors.size());
+			uint32_t count = 0;
+			uint32_t halfCount = 0;
+			for(const auto & cPos : iter::range(popColors.size())) {
+				uint32_t pos = 0;
+				if(cPos %2 == 0) {
+					pos = popColors.size()/2 + halfCount;
+					++halfCount;
+				} else {
+					pos = count;
+					++count;
+				}
+				popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
+			}
+			std::unordered_map<std::string,bib::color> nameColors;
+			for(auto pos : iter::range(popNames.size())){
+				nameColors[popNames[pos]] = popColorsStrs[pos];
+			}
+			response().out() << graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
+		}else{
+			std::cout << "File " << fileName << " does not exist" << std::endl;
+		}
+	}else{
+		std::cout << "SampName: " << sampName << " not found" << std::endl;
+	}
+}
+//
+void pcvExp::showMinTreeForSample(std::string sampName){
+	std::cout << "showMinTreeForSample; " << "sampName: " << sampName << std::endl;
+	if(bib::in(sampName, sampleNames_)){
+		response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeDataForSample/" + sampName);
+	}else{
+		auto search = pages_.find("redirectPage");
+		std::cout << "SampName: " << sampName << " not found, redirecting" << std::endl;
+		response().out() << search->second.get("/ssv", rootName_);
+	}
+}
+
 int popClusteringViewerExp(std::map<std::string, std::string> inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string mainDir = "";
@@ -254,7 +375,7 @@ int popClusteringViewerExp(std::map<std::string, std::string> inputCommands){
   //
   std::map<std::string, std::string> appConfig;
   appConfig["name"] = name;
-  appConfig["dir"] = mainDir;
+  appConfig["mainDir"] = mainDir;
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
