@@ -75,8 +75,12 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 			}
 		}
 	} else {
-		std::cerr << bib::bashCT::bold << bib::bashCT::red << "Error in opening "
-				<< dotFilename << bib::bashCT::reset << std::endl;
+		std::stringstream ss;
+		ss << bib::bashCT::bold
+				<< bib::bashCT::red
+				<< "Error in opening " << dotFilename <<
+				bib::bashCT::reset << std::endl;
+		throw std::runtime_error{ss.str()};
 	}
 	return graph;
 }
