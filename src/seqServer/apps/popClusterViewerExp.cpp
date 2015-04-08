@@ -14,7 +14,7 @@ uint32_t getMismatches(const T & read1,
 				aligner alignerObj, bool weightHomopolymers){
 	alignerObj.alignVec(read1.seqBase_,read2.seqBase_, false);
 	alignerObj.profilePrimerAlignment(read1.seqBase_, read2.seqBase_, weightHomopolymers);
-	return alignerObj.errors_.hqMismatches_;
+	return alignerObj.comp_.hqMismatches_;
 };
 pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) :
 		bibseq::seqApp(srv, config){
