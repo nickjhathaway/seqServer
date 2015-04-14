@@ -29,7 +29,7 @@ private:
 	std::string mainDir_;
 
 	Json::Value minTreeData_;
-
+	bool calculatedTreeData_ = false;
 
 	static bfs::path make_path(const bfs::path fn) {
 		return fn;

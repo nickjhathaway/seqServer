@@ -61,26 +61,26 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	mapper().root(rootName_);
 
 	//read samp table
-	VecStr delFromPop { "popInputClusterCnt", "hapPopFrac", "hapSumSampPopFrac",
+	/*VecStr delFromPop { "popInputClusterCnt", "hapPopFrac", "hapSumSampPopFrac",
 			"hapMeanSampFrac", "hapClusterCNT" };
 	VecStr delFromSamp = catenateVectors(delFromPop, VecStr { "popReadCntTot",
 			"hapReadFrac", "hapConsesus", "cConsensus", "sInputCluster", "cReadFrac",
 			"ReadCnt", "cChiReadCnt", "cChiClusCnt", "cChiRepCnt", "cInputNames",
-			"R1totalCntExcluded", "R1totalFracExcluded", "R1.ClusCnt" });
+			"R1totalCntExcluded", "R1totalFracExcluded", "R1.ClusCnt" });*/
 	sampTable_ = table(mainDir_ + "selectedClustersInfo.tab.txt", "\t", true);
-	for(const auto & d : delFromSamp){
+	/*for(const auto & d : delFromSamp){
 		sampTable_.deleteColumn(d);
-	}
+	}*/
 	//get samp names
-	auto sampCounts = countVec(sampTable_.getColumn("sName"));
+	auto sampCounts = countVec(sampTable_.getColumn("s_Name"));
 	sampleNames_ = getVectorOfMapKeys(sampCounts);
 	//read pop table
 
 
 	popTable_ = table(mainDir_ + "population/populationCluster.tab.txt", "\t", true);
-	for(const auto & d : delFromPop){
+	/*for(const auto & d : delFromPop){
 		popTable_.deleteColumn(d);
-	}
+	}*/
 	popTable_.sortTable("popUID", false);
 	auto names = popTable_.getColumn("popUID");
 	auto proteins = popTable_.getColumn("protein");
@@ -104,39 +104,7 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	}
 	/**todo make safter for non fastq pop clustering */
 
-	//get min tree data
-	uint64_t maxLength = 0;
-	readVec::getMaxLength(popReads_, maxLength);
-	aligner alignerObj(maxLength, gapScoringParameters(5,1), substituteMatrix::createDegenScoreMatrix(2, -2));
-  std::function<uint32_t(const readObject & ,
-  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
-	auto misDistances = getDistanceCopy(reader.reads, 2, misFun,
-			alignerObj, true);
-  readDistGraph<uint32_t> graphMis(misDistances, popReads_);
-	std::vector<std::string> popNames;
-  for(const auto & n : graphMis.nodes_){
-  	popNames.emplace_back(n->name_);
-  }
-	auto popColors = bib::njhColors(popReads_.size());
-	bibseq::VecStr popColorsStrs(popColors.size());
-	uint32_t count = 0;
-	uint32_t halfCount = 0;
-	for(const auto & cPos : iter::range(popColors.size())) {
-		uint32_t pos = 0;
-		if(cPos %2 == 0) {
-			pos = popColors.size()/2 + halfCount;
-			++halfCount;
-		} else {
-			pos = count;
-			++count;
-		}
-		popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
-	}
-	std::unordered_map<std::string,bib::color> nameColors;
-	for(auto pos : iter::range(popNames.size())){
-		nameColors[popNames[pos]] = popColorsStrs[pos];
-	}
-	minTreeData_ = graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
+
 
 	std::cout << "Finished set up" << std::endl;
 }
@@ -165,9 +133,9 @@ void pcvExp::getSampInfo(std::string sampNames){
 	auto containsSampName = [&sampToks](const std::string & str) {
 		return bib::in(str, sampToks);
 	};
-	auto trimedTab = sampTable_.extractByComp("sName", containsSampName);
+	auto trimedTab = sampTable_.extractByComp("s_Name", containsSampName);
 	ret = tableToJsonRowWise(trimedTab);
-	auto popCounts = bibseq::countVec(trimedTab.getColumn("popUID"));
+	auto popCounts = bibseq::countVec(trimedTab.getColumn("h_popUID"));
 	auto popColors = bib::njhColors(popCounts.size());
 	bibseq::VecStr popColorsStrs(popColors.size());
 	uint32_t count = 0;
@@ -233,7 +201,42 @@ void pcvExp::getPopProtenData(){
 }
 
 void pcvExp::getMinTreeData(){
-	ret_json();;
+	ret_json();
+	if(!calculatedTreeData_){
+		//get min tree data
+		uint64_t maxLength = 0;
+		readVec::getMaxLength(popReads_, maxLength);
+		aligner alignerObj(maxLength, gapScoringParameters(5,1), substituteMatrix::createDegenScoreMatrix(2, -2));
+	  std::function<uint32_t(const readObject & ,
+	  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
+		auto misDistances = getDistanceCopy(popReads_, 2, misFun,
+				alignerObj, true);
+	  readDistGraph<uint32_t> graphMis(misDistances, popReads_);
+		std::vector<std::string> popNames;
+	  for(const auto & n : graphMis.nodes_){
+	  	popNames.emplace_back(n->name_);
+	  }
+		auto popColors = bib::njhColors(popReads_.size());
+		bibseq::VecStr popColorsStrs(popColors.size());
+		uint32_t count = 0;
+		uint32_t halfCount = 0;
+		for(const auto & cPos : iter::range(popColors.size())) {
+			uint32_t pos = 0;
+			if(cPos %2 == 0) {
+				pos = popColors.size()/2 + halfCount;
+				++halfCount;
+			} else {
+				pos = count;
+				++count;
+			}
+			popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
+		}
+		std::unordered_map<std::string,bib::color> nameColors;
+		for(auto pos : iter::range(popNames.size())){
+			nameColors[popNames[pos]] = popColorsStrs[pos];
+		}
+		minTreeData_ = graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
+	}
 	response().out() << minTreeData_;
 }
 
