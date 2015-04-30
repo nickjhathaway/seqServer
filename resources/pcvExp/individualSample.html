@@ -25,7 +25,14 @@
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
-			var sampName = locSplit.pop();
+			var sampNameEncoded = locSplit.pop();
+			var sampName = sampNameEncoded;
+			var sampNameEncoding;
+			var codeToSampName;
+			ajax('/' + rName + '/sampleNamesEncoding', function(sne){ sampNameEncoding = sne; });
+			ajax('/' + rName + '/encodingForSampleNames', function(efsn){ codeToSampName = efsn; });
+			var realSampName = codeToSampName[sampNameEncoded];
+			console.log(realSampName);
 			ajax('/' + rName + '/sampInfo' + "/" + sampName, function(tab){ mainPopInfoTab = tab; });
 			var sampNames = [sampName];
 			//get the seq and color data for the sequence view of the population sequences 
@@ -38,8 +45,8 @@
 	        var proteinColors = {};
 			ajax('/' + rName + '/proteinData/' + sampName, function(md){ proteinMainData = md; });
 			ajax('/' + rName + '/proteinColors', function(bc){ proteinColors = bc; });
-			$("title", "head").html(sampName);
-			$("#projName").html(sampName);
+			$("title", "head").html(realSampName);
+			$("#projName").html(realSampName);
 			//create sample table 
 			var sampTab = createTable("#sampTable");
 			updateTable(sampTab, mainPopInfoTab["tab"],  mainPopInfoTab["columnNames"]);
@@ -318,11 +325,17 @@
 			      allVals.push($(this).val());
 			    });
 			    var currentSampNames = _.intersection(sampNames, allVals);
+			    
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/sampInfo' + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
-			    	//ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	var encodedCurrentSampNames =[];
+			    	for (sampN in currentSampNames){
+			    		encodedCurrentSampNames.push(sampNameEncoding[currentSampNames[sampN]]);
+			    	}
+			    	//console.log(encodedCurrentSampNames);
+			    	ajax('/' + rName + '/sampInfo' + "/" + encodedCurrentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	//ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + encodedCurrentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			    }
 			 	updateTableOnClick();
 			 	updateChart();

@@ -200,3 +200,36 @@
 		  				.html(function(d){return d.text;});
 		  		return tab;
 			}
+			
+			function createLinksTableDifferentLinks(addToSelector,linkPrefix, links, encodedLinks, colNum, mouseOverColor, mouseLeaveColor){
+				var dataset = [],
+				tmpDataset = [],
+				i, j;
+				var rowNum = Math.ceil(links.length/10);
+				for (i = 0; i < rowNum; ++i) {
+				    for (j = 0, tmpDataset = []; j < colNum && i * colNum + j < links.length; ++j) {
+				        tmpDataset.push({text: links[i * colNum + j],link: linkPrefix + encodedLinks[i * colNum + j] });
+				    }
+				    dataset.push(tmpDataset);
+				}
+				var tab = d3.select(addToSelector)
+				    .append("table")
+				    .style("border-collapse", "collapse")
+				    .style("border", "2px black solid")
+				    
+				    .selectAll("addToSelector tr")
+				    .data(dataset)
+				    .enter().append("tr")
+				    
+				    .selectAll("td")
+				    .data(function(d){return d;})
+				    .enter().append("td")
+				    .style("border", "1px black solid")
+				    .style("padding", "10px")
+				    .on("mouseover", function(){d3.select(this).style("background-color", mouseOverColor);}) 
+				    .on("mouseout", function(){d3.select(this).style("background-color", mouseLeaveColor);}) 
+				    .append("a")
+		  				.attr("href", function(d){return d.link;})
+		  				.html(function(d){return d.text;});
+		  		return tab;
+			}

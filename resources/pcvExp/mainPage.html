@@ -27,14 +27,20 @@
 			var rName = locSplit[2];
 			//get sample names and the table with the sample names
 			var sampNames;
+			ajax('/' + rName + '/sampleNamesEncoding', function(sne){ sampNameEncoding = sne; });
 			ajax("/" + rName + "/sampleNames", function(mn){ sampNames = mn; });
-			ajax('/' + rName + '/sampInfo' + "/" + sampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			var sampNameEncoding;
+			var encodedSampNames =[];
+	    	for (sampN in sampNames){
+	    		encodedSampNames.push(sampNameEncoding[sampNames[sampN]]);
+	    	}
+			ajax('/' + rName + '/sampInfo' + "/" + encodedSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			var cols = 10;
 			var linkPre = "/" + rName + "/individualSamplePage/";
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";
 			var addTo = "#sampLinks";
-			createLinksTable(addTo, linkPre, sampNames,cols, mouseOverC, mouseLeaveC);
+			createLinksTableDifferentLinks(addTo, linkPre, sampNames, encodedSampNames,cols, mouseOverC, mouseLeaveC);
 			//get the seq and color data for the sequence view of the population sequences 
 			var mainData;
 	        var baseColors = {};
@@ -334,7 +340,11 @@
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/sampInfo' + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	var encodedCurrentSampNames =[];
+			    	for (sampN in currentSampNames){
+			    		encodedCurrentSampNames.push(sampNameEncoding[currentSampNames[sampN]]);
+			    	}
+			    	ajax('/' + rName + '/sampInfo' + "/" + encodedCurrentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			    	//ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			    }
 			 	updateTableOnClick();
@@ -543,7 +553,7 @@
 		        },
 		        bindto: "#popChart"
 		    });
-		    popChart.hide(["popReadCntTot", "hapReadCNT"]);
+		    popChart.hide(["popReadCntTot","popInputClusterCnt", "hapReadCNT"]);
 		    $("<a href = " + rName + "/showMinTree >Show Minimum Spanning Tree</a>").appendTo("#minTreeDiv");
 		});
 		

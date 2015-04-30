@@ -8,6 +8,7 @@
 #include "popClusterViewerExp.hpp"
 
 namespace bibseq {
+
 template<typename T>
 uint32_t getMismatches(const T & read1,
 				const T & read2,
@@ -16,6 +17,7 @@ uint32_t getMismatches(const T & read1,
 	alignerObj.profilePrimerAlignment(read1.seqBase_, read2.seqBase_, weightHomopolymers);
 	return alignerObj.comp_.hqMismatches_;
 };
+
 pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) :
 		bibseq::seqApp(srv, config){
 	bool pass = configTest(config, requiredOptions(), "pcvExp");
@@ -47,6 +49,9 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	dispMap_1arg(&pcvExp::getSampInfo, this, "sampInfo", "(\\w+)");
 	dispMap(&pcvExp::getSampleNames, this, "sampleNames");
+	dispMap(&pcvExp::getSampleNamesEncoding, this, "sampleNamesEncoding");
+	dispMap(&pcvExp::getEncodingForSampleNames, this, "encodingForSampleNames");
+
 
 	dispMap(&pcvExp::showMinTree, this, "showMinTree");
 	dispMap(&pcvExp::getMinTreeData, this, "minTreeData");
@@ -93,18 +98,22 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	reader.read("fastq", files.begin()->first.string(), true);
 	popReads_ = reader.reads;
 	for(auto & read : popReads_){
-		read.seqBase_.name_ = read.seqBase_.name_.substr(0, read.seqBase_.name_.find("_"));
+		read.seqBase_.name_ = read.seqBase_.name_.substr(0, read.seqBase_.name_.rfind("_"));
 	}
 	std::unordered_map<std::string, std::vector<uint32_t>> proteinCheck;
 	for(const auto & pEnum : iter::enumerate(popReadsTranslated_)){
 		proteinCheck[pEnum.element.seqBase_.seq_].emplace_back(pEnum.index);
 	}
 	for(const auto & pc : proteinCheck){
-		std::cout << pc.first << " : " << vectorToString(pc.second, ",") << std::endl;
+		//std::cout << pc.first << " : " << vectorToString(pc.second, ",") << std::endl;
 	}
 	/**todo make safter for non fastq pop clustering */
 
-
+	//encode sample names
+	for(const auto & pos : iter::range(sampleNames_.size())){
+		codedNumToSampName_[pos] = sampleNames_[pos];
+		sampNameToCodedNum_[sampleNames_[pos]] = pos;
+	}
 
 	std::cout << "Finished set up" << std::endl;
 }
@@ -126,12 +135,32 @@ void pcvExp::getSampleNames(){
 	response().out() << ret;
 }
 
+void pcvExp::getSampleNamesEncoding(){
+	ret_json();
+	cppcms::json::value ret;
+	for(const auto & sampName : sampNameToCodedNum_){
+		ret[sampName.first] = sampName.second;
+	}
+	response().out() << ret;
+}
+
+void pcvExp::getEncodingForSampleNames(){
+	ret_json();
+	cppcms::json::value ret;
+	for(const auto & sampName : sampNameToCodedNum_){
+		ret[sampName.second] = sampName.first;
+	}
+	response().out() << ret;
+}
+
 void pcvExp::getSampInfo(std::string sampNames){
 	ret_json();
 	cppcms::json::value ret;
+
 	auto sampToks = bibseq::tokenizeString(sampNames, "DELIM");
-	auto containsSampName = [&sampToks](const std::string & str) {
-		return bib::in(str, sampToks);
+	auto sampNameToCodedNum = sampNameToCodedNum_;
+	auto containsSampName = [&sampToks, &sampNameToCodedNum](const std::string & str) {
+		return bib::in(estd::to_string(sampNameToCodedNum[str]), sampToks);
 	};
 	auto trimedTab = sampTable_.extractByComp("s_Name", containsSampName);
 	ret = tableToJsonRowWise(trimedTab);
@@ -244,8 +273,13 @@ void pcvExp::showMinTree(){
 	response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeData");
 }
 
+std::string pcvExp::decodeSampEncoding(const std::string& sampName){
+	return codedNumToSampName_[bib::lexical_cast<uint32_t>(sampName)];
+}
+
 void pcvExp::individualSamplePage(std::string sampName){
-	scopedMessage mess(bib::err::F() << "individualSamplePage; " << "sampName: " << sampName, std::cout, true);
+	sampName = decodeSampEncoding(sampName);
+	bib::scopedMessage mess(bib::err::F() << "individualSamplePage; " << "sampName: " << sampName, std::cout, true);
 	if(bib::in(sampName, sampleNames_)){
 		auto search = pages_.find("individualSample");
 		response().out() << search->second.get("/ssv", rootName_);
@@ -257,9 +291,10 @@ void pcvExp::individualSamplePage(std::string sampName){
 }
 
 void pcvExp::getSeqData(std::string sampName){
-	scopedMessage mess(bib::err::F()<< "getSeqData; " << "sampName: " << sampName, std::cout, true);
+	sampName = decodeSampEncoding(sampName);
+	bib::scopedMessage mess(bib::err::F()<< "getSeqData; " << "sampName: " << sampName, std::cout, true);
 	if(bib::in(sampName, sampleNames_)){
-		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "originals/" + sampName + ".fastq";
+		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			ret_json();
 			readObjectIO reader;
@@ -274,12 +309,13 @@ void pcvExp::getSeqData(std::string sampName){
 }
 
 void pcvExp::getProteinData(std::string sampName){
+	sampName = decodeSampEncoding(sampName);
   bool forceStartM = false;
   bool transcribeToRNAFirst = false;
   uint64_t start = 0;
-	scopedMessage mess(bib::err::F()<< "getProteinData; " << "sampName: " << sampName, std::cout, true);
+	bib::scopedMessage mess(bib::err::F()<< "getProteinData; " << "sampName: " << sampName, std::cout, true);
 	if(bib::in(sampName, sampleNames_)){
-		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "originals/" + sampName + ".fastq";
+		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			ret_json();
 			readObjectIO reader;
@@ -296,45 +332,54 @@ void pcvExp::getProteinData(std::string sampName){
 }
 
 void pcvExp::getMinTreeDataForSample(std::string sampName){
-	scopedMessage mess(bib::err::F()<< "getMinTreeDataForSample; " << "sampName: " << sampName, std::cout, true);
+	sampName = decodeSampEncoding(sampName);
+	bib::scopedMessage mess(bib::err::F()<< "getMinTreeDataForSample; " << "sampName: " << sampName, std::cout, true);
 	if(bib::in(sampName, sampleNames_)){
-		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "originals/" + sampName + ".fastq";
+		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
-			ret_json();
-			readObjectIO reader;
-			reader.read("fastq", fileName, true);
-			uint64_t maxLength = 0;
-			readVec::getMaxLength(reader.reads, maxLength);
-			aligner alignerObj(maxLength, gapScoringParameters(5,1), substituteMatrix::createDegenScoreMatrix(2, -2));
-		  std::function<uint32_t(const readObject & ,
-		  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
-			auto misDistances = getDistanceCopy(reader.reads, 2, misFun,
-					alignerObj, true);
-		  readDistGraph<uint32_t> graphMis(misDistances, reader.reads);
-			std::vector<std::string> popNames;
-		  for(const auto & n : graphMis.nodes_){
-		  	popNames.emplace_back(n->name_);
-		  }
-			auto popColors = bib::njhColors(reader.reads.size());
-			bibseq::VecStr popColorsStrs(popColors.size());
-			uint32_t count = 0;
-			uint32_t halfCount = 0;
-			for(const auto & cPos : iter::range(popColors.size())) {
-				uint32_t pos = 0;
-				if(cPos %2 == 0) {
-					pos = popColors.size()/2 + halfCount;
-					++halfCount;
-				} else {
-					pos = count;
-					++count;
+			auto search = sampleMinTreeDataCache_.find(sampName);
+			Json::Value graphJsonData;
+			if(search == sampleMinTreeDataCache_.end()){
+				ret_json();
+				readObjectIO reader;
+				reader.read("fastq", fileName, true);
+				uint64_t maxLength = 0;
+				readVec::getMaxLength(reader.reads, maxLength);
+				aligner alignerObj(maxLength, gapScoringParameters(5,1), substituteMatrix::createDegenScoreMatrix(2, -2));
+			  std::function<uint32_t(const readObject & ,
+			  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
+				auto misDistances = getDistanceCopy(reader.reads, 2, misFun,
+						alignerObj, true);
+			  readDistGraph<uint32_t> graphMis(misDistances, reader.reads);
+				std::vector<std::string> popNames;
+			  for(const auto & n : graphMis.nodes_){
+			  	popNames.emplace_back(n->name_);
+			  }
+				auto popColors = bib::njhColors(reader.reads.size());
+				bibseq::VecStr popColorsStrs(popColors.size());
+				uint32_t count = 0;
+				uint32_t halfCount = 0;
+				for(const auto & cPos : iter::range(popColors.size())) {
+					uint32_t pos = 0;
+					if(cPos %2 == 0) {
+						pos = popColors.size()/2 + halfCount;
+						++halfCount;
+					} else {
+						pos = count;
+						++count;
+					}
+					popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
 				}
-				popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
+				std::unordered_map<std::string,bib::color> nameColors;
+				for(auto pos : iter::range(popNames.size())){
+					nameColors[popNames[pos]] = popColorsStrs[pos];
+				}
+				graphJsonData = graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
+				sampleMinTreeDataCache_[sampName] = graphJsonData;
+			}else{
+				graphJsonData = search->second;
 			}
-			std::unordered_map<std::string,bib::color> nameColors;
-			for(auto pos : iter::range(popNames.size())){
-				nameColors[popNames[pos]] = popColorsStrs[pos];
-			}
-			response().out() << graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
+			response().out() << graphJsonData;
 		}else{
 			std::cout << "File " << fileName << " does not exist" << std::endl;
 		}
@@ -344,6 +389,7 @@ void pcvExp::getMinTreeDataForSample(std::string sampName){
 }
 //
 void pcvExp::showMinTreeForSample(std::string sampName){
+	sampName = decodeSampEncoding(sampName);
 	std::cout << "showMinTreeForSample; " << "sampName: " << sampName << std::endl;
 	if(bib::in(sampName, sampleNames_)){
 		response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeDataForSample/" + sampName);

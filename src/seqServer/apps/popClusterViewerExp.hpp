@@ -28,8 +28,13 @@ private:
 	std::string rootName_;
 	std::string mainDir_;
 
+
+	std::unordered_map<std::string, Json::Value> sampleMinTreeDataCache_;
 	Json::Value minTreeData_;
 	bool calculatedTreeData_ = false;
+
+	std::unordered_map<std::string, uint32_t> sampNameToCodedNum_;
+	std::unordered_map<uint32_t, std::string> codedNumToSampName_;
 
 	static bfs::path make_path(const bfs::path fn) {
 		return fn;
@@ -49,6 +54,11 @@ public:
 	//json
 	void getProjectName();
 	void getSampleNames();
+	void getSampleNamesEncoding();
+
+	void getEncodingForSampleNames();
+
+	std::string decodeSampEncoding(const std::string& sampName);
 	void getSampInfo(std::string sampNames);
 	void getPosSeqData();
 	void getPopInfo();

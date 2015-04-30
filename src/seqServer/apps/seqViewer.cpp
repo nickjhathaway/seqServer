@@ -46,7 +46,7 @@ VecStr ssv::requiredOptions() const {
 }
 
 void ssv::seqData() {
-	scopedMessage run("seqData", std::cout, debug_);
+	bib::scopedMessage run("seqData", std::cout, debug_);
 	ret_json();
 	if(needsUpdate_){
 		readsJson_ = seqsToJson(reads_);
@@ -64,7 +64,7 @@ void ssv::rootName() {
 }
 
 void ssv::sort(std::string sortBy){
-	scopedMessage run("sort", std::cout, debug_);
+	bib::scopedMessage run("sort", std::cout, debug_);
 	std::cout << "sort; sortBy: " << sortBy << std::endl;
 	readVecSorter::sortReadVector(reads_, sortBy);
 	ret_json();
@@ -73,7 +73,7 @@ void ssv::sort(std::string sortBy){
 }
 
 void ssv::muscleAln(){
-	scopedMessage run("muscleAln", std::cout, debug_);
+	bib::scopedMessage run("muscleAln", std::cout, debug_);
 	bib::for_each(reads_, [](readObject & read){ read.seqBase_.removeGaps();});
 	sys::muscleSeqs(reads_);
 	ret_json();
@@ -82,7 +82,7 @@ void ssv::muscleAln(){
 }
 
 void ssv::removeGaps(){
-	scopedMessage run("removeGaps", std::cout, debug_);
+	bib::scopedMessage run("removeGaps", std::cout, debug_);
 	bib::for_each(reads_, [](readObject & read){ read.seqBase_.removeGaps();});
 	ret_json();
 	readsJson_ = seqsToJson(reads_);
@@ -90,7 +90,7 @@ void ssv::removeGaps(){
 }
 
 void ssv::complementSeqs(){
-	scopedMessage run("complementSeqs", std::cout, debug_);
+	bib::scopedMessage run("complementSeqs", std::cout, debug_);
 	readVec::allReverseComplement(reads_, true);
 	ret_json();
 	readsJson_ = seqsToJson(reads_);
