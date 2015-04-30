@@ -389,10 +389,11 @@ void pcvExp::getMinTreeDataForSample(std::string sampName){
 }
 //
 void pcvExp::showMinTreeForSample(std::string sampName){
+	std::string encodedName = sampName;
 	sampName = decodeSampEncoding(sampName);
 	std::cout << "showMinTreeForSample; " << "sampName: " << sampName << std::endl;
 	if(bib::in(sampName, sampleNames_)){
-		response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeDataForSample/" + sampName);
+		response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeDataForSample/" + encodedName);
 	}else{
 		auto search = pages_.find("redirectPage");
 		std::cout << "SampName: " << sampName << " not found, redirecting" << std::endl;
