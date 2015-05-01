@@ -19,7 +19,7 @@ uint32_t getMismatches(const T & read1,
 };
 
 pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) :
-		bibseq::seqApp(srv, config){
+		bibseq::seqApp(srv, config), config_(config){
 	bool pass = configTest(config, requiredOptions(), "pcvExp");
 	if(pass){
 		std::cout << "Passed config test" << std::endl;
@@ -35,9 +35,23 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 			make_path(config["resources"] + "html/redirectPage.html"));
 	pages_.emplace("individualSample",
 			make_path(config["resources"] + "pcvExp/individualSample.html"));
+	pages_.emplace("extractionStats",
+			make_path(config["resources"] + "pcvExp/extractionStats.html"));
 	for (auto & fCache : pages_) {
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
+	std::cout << "ExtractionDir: " << config["extractionDir"] << std::endl;
+	if(config["extractionDir"] != ""){
+		std::string nameDelim = "_extractor_";
+		auto dirs = getNewestDirs(config["extractionDir"], nameDelim);
+		for(const auto & dir : dirs){
+			std::cout << "Dir: " << dir << std::endl;
+		}
+		extractInfo_ = collectExtractionInfo(config["extractionDir"],config["indexToDir"], config["sampNames"]);
+	}
+
+
+
 	//main page
 	dispMapRoot(&pcvExp::mainPage, this);
 
@@ -55,6 +69,12 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	dispMap(&pcvExp::showMinTree, this, "showMinTree");
 	dispMap(&pcvExp::getMinTreeData, this, "minTreeData");
+
+
+	dispMap(&pcvExp::showExtractionInfo, this, "showExtractionInfo");
+	dispMap(&pcvExp::getIndexExtractionInfo, this, "getIndexExtractionInfo");
+	dispMap_1arg(&pcvExp::getSampleExtractionInfo, this, "getSampleExtractionInfo", "(\\w+)");
+
 
 	dispMap_1arg(&pcvExp::individualSamplePage, this, "individualSamplePage", "(\\w+)");
 	dispMap_1arg(&pcvExp::getSeqData, this, "seqData", "(\\w+)");
@@ -104,12 +124,19 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	for(const auto & pEnum : iter::enumerate(popReadsTranslated_)){
 		proteinCheck[pEnum.element.seqBase_.seq_].emplace_back(pEnum.index);
 	}
-	for(const auto & pc : proteinCheck){
-		//std::cout << pc.first << " : " << vectorToString(pc.second, ",") << std::endl;
-	}
+	/*for(const auto & pc : proteinCheck){
+		std::cout << pc.first << " : " << vectorToString(pc.second, ",") << std::endl;
+	}*/
 	/**todo make safter for non fastq pop clustering */
 
 	//encode sample names
+	std::set<std::string> allUniSampNames(sampleNames_.begin(), sampleNames_.end());
+	if(!extractInfo_.profileBySampTab_.content_.empty()){
+		for(const auto & samp : extractInfo_.profileBySampTab_.getColumn("Sample")){
+			allUniSampNames.emplace(samp);
+		}
+	}
+	sampleNames_ = std::vector<std::string>(allUniSampNames.begin(), allUniSampNames.end());
 	for(const auto & pos : iter::range(sampleNames_.size())){
 		codedNumToSampName_[pos] = sampleNames_[pos];
 		sampNameToCodedNum_[sampleNames_[pos]] = pos;
@@ -401,9 +428,62 @@ void pcvExp::showMinTreeForSample(std::string sampName){
 	}
 }
 
+
+void pcvExp::showExtractionInfo(){
+	bib::scopedMessage mess(bib::err::F()<< "showExtractionInfo", std::cout, true);
+	auto search = pages_.find("extractionStats");
+	response().out() << search->second.get("/ssv", rootName_);
+}
+
+void pcvExp::getIndexExtractionInfo(){
+	bib::scopedMessage mess(bib::err::F()<< "getIndexExtractionInfo", std::cout, true);
+	if(extractInfo_.allStatsTab_.content_.empty()){
+		std::cerr << "getIndexExtractionInfo: Extraction Info not loaded" << std::endl;
+	}else{
+		ret_json();
+		auto statsCopy = extractInfo_.allStatsTab_;
+		statsCopy.trimElementsAtFirstOccurenceOf("(");
+		auto ret = tableToJsonRowWise(statsCopy);
+		response().out() << ret;
+	}
+}
+
+void pcvExp::getSampleExtractionInfo(std::string sampNames){
+	bib::scopedMessage mess(bib::err::F()<< "getSampleExtractionInfo", std::cout, true);
+	if(extractInfo_.allStatsTab_.content_.empty()){
+		std::cerr << "getSampleExtractionInfo: Extraction Info not loaded" << std::endl;
+	}else{
+		ret_json();
+		auto sampTabCopy = extractInfo_.profileBySampTab_;
+		sampTabCopy.trimElementsAtFirstOccurenceOf("(");
+
+		auto sampToks = bibseq::tokenizeString(sampNames, "DELIM");
+		printVector(sampToks);
+		auto sampNameToCodedNum = sampNameToCodedNum_;
+		auto containsSampName = [&sampToks, &sampNameToCodedNum](const std::string & str) {
+			return bib::in(estd::to_string(sampNameToCodedNum[str]), sampToks);
+		};
+
+		sampTabCopy = sampTabCopy.extractByComp("Sample", containsSampName);
+		//sampTabCopy.outPutContentOrganized(std::cout);
+
+		for(auto & row : sampTabCopy.content_){
+			row[sampTabCopy.getColPos("Sample")] = row[sampTabCopy.getColPos("Sample")] + "_" +  row[sampTabCopy.getColPos("MidName")];
+		}
+		auto ret = tableToJsonRowWise(sampTabCopy);
+
+
+
+
+		response().out() << ret;
+	}
+}
+
+
 int popClusteringViewerExp(std::map<std::string, std::string> inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string mainDir = "";
+	std::string extractioinDir = "";
 	uint32_t port = 9881;
 	std::string name = "pcv";
 	std::string resourceDirName = "";
@@ -417,7 +497,15 @@ int popClusteringViewerExp(std::map<std::string, std::string> inputCommands){
 		mainDir.append("/");
 	}
 	setUp.setOption(port, "-port", "Port Number to Serve On");
-	setUp.setOption(name, "-name", "Nmae of root of the server");
+	setUp.setOption(name, "-name", "Name of root of the server");
+	std::string extractionDir = "";
+	std::string indexToDir = "";
+	std::string sampNames = "";
+
+	setUp.setOption(indexToDir, "-indexToDir", "File, first column is index name, second is the name of the file extraction was done on");
+	setUp.setOption(extractionDir, "-extractionDir", "Name of the directory where extraction was done");
+	setUp.setOption(sampNames, "-sampNames", "A file, first column is index name, second is sample name, the rest of the columns are MID names");
+
 	setUp.setOption(projectName, "-projectName", "Name of the Project", true);
 	setUp.finishSetUp(std::cout);
 	name = "/" + name;
@@ -430,6 +518,9 @@ int popClusteringViewerExp(std::map<std::string, std::string> inputCommands){
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
   appConfig["projectName"] = projectName;
+  appConfig["extractionDir"] = extractionDir;
+  appConfig["indexToDir"] = indexToDir;
+  appConfig["sampNames"] = sampNames;
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);

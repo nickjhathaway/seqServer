@@ -29,6 +29,11 @@ private:
 	std::string mainDir_;
 
 
+	ExtractionInfo extractInfo_;
+
+	std::map<std::string, std::string> config_;
+
+
 	std::unordered_map<std::string, Json::Value> sampleMinTreeDataCache_;
 	Json::Value minTreeData_;
 	bool calculatedTreeData_ = false;
@@ -65,6 +70,11 @@ public:
 
 	void getPopProtenData();
 	void getProteinColors();
+
+	void showExtractionInfo();
+	void getIndexExtractionInfo();
+	void getSampleExtractionInfo(std::string sampNames);
+
 
 	void showMinTree();
 	void getMinTreeData();
