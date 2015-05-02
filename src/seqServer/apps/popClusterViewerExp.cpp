@@ -63,6 +63,8 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	dispMap_1arg(&pcvExp::getSampInfo, this, "sampInfo", "(\\w+)");
 	dispMap(&pcvExp::getSampleNames, this, "sampleNames");
+	dispMap(&pcvExp::getAllSampleNames, this, "allSampleNames");
+
 	dispMap(&pcvExp::getSampleNamesEncoding, this, "sampleNamesEncoding");
 	dispMap(&pcvExp::getEncodingForSampleNames, this, "encodingForSampleNames");
 
@@ -98,7 +100,7 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	}*/
 	//get samp names
 	auto sampCounts = countVec(sampTable_.getColumn("s_Name"));
-	sampleNames_ = getVectorOfMapKeys(sampCounts);
+	clusteredSampleNames_ = getVectorOfMapKeys(sampCounts);
 	//read pop table
 
 
@@ -130,16 +132,16 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	/**todo make safter for non fastq pop clustering */
 
 	//encode sample names
-	std::set<std::string> allUniSampNames(sampleNames_.begin(), sampleNames_.end());
+	std::set<std::string> allUniSampNames(clusteredSampleNames_.begin(), clusteredSampleNames_.end());
 	if(!extractInfo_.profileBySampTab_.content_.empty()){
 		for(const auto & samp : extractInfo_.profileBySampTab_.getColumn("Sample")){
 			allUniSampNames.emplace(samp);
 		}
 	}
-	sampleNames_ = std::vector<std::string>(allUniSampNames.begin(), allUniSampNames.end());
-	for(const auto & pos : iter::range(sampleNames_.size())){
-		codedNumToSampName_[pos] = sampleNames_[pos];
-		sampNameToCodedNum_[sampleNames_[pos]] = pos;
+	allSampleNames_ = std::vector<std::string>(allUniSampNames.begin(), allUniSampNames.end());
+	for(const auto & pos : iter::range(allSampleNames_.size())){
+		codedNumToSampName_[pos] = allSampleNames_[pos];
+		sampNameToCodedNum_[allSampleNames_[pos]] = pos;
 	}
 
 	std::cout << "Finished set up" << std::endl;
@@ -158,7 +160,13 @@ void pcvExp::getProjectName(){
 
 void pcvExp::getSampleNames(){
 	ret_json();
-	cppcms::json::value ret = sampleNames_;
+	cppcms::json::value ret = clusteredSampleNames_;
+	response().out() << ret;
+}
+
+void pcvExp::getAllSampleNames(){
+	ret_json();
+	cppcms::json::value ret = allSampleNames_;
 	response().out() << ret;
 }
 
@@ -307,7 +315,7 @@ std::string pcvExp::decodeSampEncoding(const std::string& sampName){
 void pcvExp::individualSamplePage(std::string sampName){
 	sampName = decodeSampEncoding(sampName);
 	bib::scopedMessage mess(bib::err::F() << "individualSamplePage; " << "sampName: " << sampName, std::cout, true);
-	if(bib::in(sampName, sampleNames_)){
+	if(bib::in(sampName, clusteredSampleNames_)){
 		auto search = pages_.find("individualSample");
 		response().out() << search->second.get("/ssv", rootName_);
 	}else{
@@ -320,7 +328,7 @@ void pcvExp::individualSamplePage(std::string sampName){
 void pcvExp::getSeqData(std::string sampName){
 	sampName = decodeSampEncoding(sampName);
 	bib::scopedMessage mess(bib::err::F()<< "getSeqData; " << "sampName: " << sampName, std::cout, true);
-	if(bib::in(sampName, sampleNames_)){
+	if(bib::in(sampName, clusteredSampleNames_)){
 		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			ret_json();
@@ -341,7 +349,7 @@ void pcvExp::getProteinData(std::string sampName){
   bool transcribeToRNAFirst = false;
   uint64_t start = 0;
 	bib::scopedMessage mess(bib::err::F()<< "getProteinData; " << "sampName: " << sampName, std::cout, true);
-	if(bib::in(sampName, sampleNames_)){
+	if(bib::in(sampName, clusteredSampleNames_)){
 		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			ret_json();
@@ -361,7 +369,7 @@ void pcvExp::getProteinData(std::string sampName){
 void pcvExp::getMinTreeDataForSample(std::string sampName){
 	sampName = decodeSampEncoding(sampName);
 	bib::scopedMessage mess(bib::err::F()<< "getMinTreeDataForSample; " << "sampName: " << sampName, std::cout, true);
-	if(bib::in(sampName, sampleNames_)){
+	if(bib::in(sampName, clusteredSampleNames_)){
 		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			auto search = sampleMinTreeDataCache_.find(sampName);
@@ -419,7 +427,7 @@ void pcvExp::showMinTreeForSample(std::string sampName){
 	std::string encodedName = sampName;
 	sampName = decodeSampEncoding(sampName);
 	std::cout << "showMinTreeForSample; " << "sampName: " << sampName << std::endl;
-	if(bib::in(sampName, sampleNames_)){
+	if(bib::in(sampName, clusteredSampleNames_)){
 		response().out() << genHtmlStrForPsuedoMintree(rootName_ + "/minTreeDataForSample/" + encodedName);
 	}else{
 		auto search = pages_.find("redirectPage");

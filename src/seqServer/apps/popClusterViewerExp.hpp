@@ -23,7 +23,8 @@ private:
 	table popTable_;
 	std::vector<readObject> popReads_;
 	std::vector<readObject> popReadsTranslated_;
-	VecStr sampleNames_;
+	VecStr clusteredSampleNames_;
+	VecStr allSampleNames_;
 	std::string projectName_;
 	std::string rootName_;
 	std::string mainDir_;
@@ -59,6 +60,7 @@ public:
 	//json
 	void getProjectName();
 	void getSampleNames();
+	void getAllSampleNames();
 	void getSampleNamesEncoding();
 
 	void getEncodingForSampleNames();

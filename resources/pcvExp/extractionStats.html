@@ -28,7 +28,7 @@
 			//get sample names and the table with the sample names
 			var sampNames;
 			ajax('/' + rName + '/sampleNamesEncoding', function(sne){ sampNameEncoding = sne; });
-			ajax("/" + rName + "/sampleNames", function(mn){ sampNames = mn; });
+			ajax("/" + rName + "/allSampleNames", function(mn){ sampNames = mn; });
 			var sampNameEncoding;
 			var encodedSampNames =[];
 	    	for (sampN in sampNames){
