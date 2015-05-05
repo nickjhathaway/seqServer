@@ -59,6 +59,18 @@ protected:
 		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2);
 		mapper().assign(n, "/" + n + "/{1}/{2}");
 	}
+
+	/**@b dispatch a command with three arguments separated by /, eg. root/com/arg1/arg2/agr3
+	 *
+	 * @param func A function that takes two strings as arguments, both by copy by value
+	 * @param n The name of the command under root
+	 * @param r the arguments separated by one / , eg. arg1/arg2
+	 */
+	template<typename C, typename T> void dispMap_3arg(T func,C* classCaller, std::string n, std::string r) {
+		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2, 3);
+		mapper().assign(n, "/" + n + "/{1}/{2}/{3}");
+	}
+
 	/**@b indicate incoming content is json
 	 *
 	 */

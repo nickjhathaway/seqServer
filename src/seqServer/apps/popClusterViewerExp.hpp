@@ -18,14 +18,35 @@ class pcvExp: public bibseq::seqApp {
 private:
 
 
+	struct popInfo {
+		popInfo(){}
+		popInfo(const table & sampTable, const table & popTable,
+				const std::vector<readObject> & popReads,
+				const std::vector<readObject> & popReadsTranslated) :
+				sampTable_(sampTable), popTable_(popTable), popReads_(popReads), popReadsTranslated_(
+						popReadsTranslated) {
+			clusteredSampleNames_ = sampTable_.getColumnLevels("s_Name");
+			bib::sort(clusteredSampleNames_);
+		}
+		table sampTable_;
+		table popTable_;
+		std::vector<readObject> popReads_;
+		std::vector<readObject> popReadsTranslated_;
+		VecStr clusteredSampleNames_;
+	};
 
 	table sampTable_;
 	table popTable_;
 	std::vector<readObject> popReads_;
 	std::vector<readObject> popReadsTranslated_;
 	VecStr clusteredSampleNames_;
+
+	std::unordered_map<std::string, std::unordered_map<std::string, popInfo>> groupInfos_;
+	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> groupInfosDirNames_;
+
 	VecStr allSampleNames_;
 	std::string projectName_;
+
 	std::string rootName_;
 	std::string mainDir_;
 
@@ -86,6 +107,21 @@ public:
 
 	void showMinTreeForSample(std::string sampName);
 	void getMinTreeDataForSample(std::string sampName);
+
+	//group info
+	void getGroupPopInfo(std::string group, std::string subGroup);
+	void getGroupPopSeqData(std::string group, std::string subGroup);
+	void getGroupPopProtenData(std::string group, std::string subGroup);
+	void getGroupSampInfo(std::string group, std::string subGroup, std::string sampName);
+	void getGroupSampleNames(std::string group, std::string subGroup);
+
+	void showGroupMainPage(std::string group, std::string subGroup);
+	void showSubGroupsPage(std::string group);
+	void getSubGroupsForGroup(std::string group);
+
+	void getGroupNames();
+	bool setUpGroup(std::string group, std::string subGroup);
+
 
 };
 

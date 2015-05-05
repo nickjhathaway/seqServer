@@ -25,42 +25,37 @@
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
+			var subGroupName = locSplit.pop();
+			var groupName = locSplit.pop();
 			//get sample names and the table with the sample names
 			var sampNames;
 			ajax('/' + rName + '/sampleNamesEncoding', function(sne){ sampNameEncoding = sne; });
-			ajax("/" + rName + "/sampleNames", function(mn){ sampNames = mn; });
+			ajax("/" + rName + "/groupSampleNames/" + groupName + "/" + subGroupName, function(mn){ sampNames = mn; });
 			var sampNameEncoding;
 			var encodedSampNames =[];
 	    	for (sampN in sampNames){
 	    		encodedSampNames.push(sampNameEncoding[sampNames[sampN]]);
 	    	}
-			ajax('/' + rName + '/sampInfo' + "/" + encodedSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			ajax('/' + rName + '/groupSampInfo/' + groupName + "/" + subGroupName + "/" + encodedSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			var cols = 10;
 			var linkPre = "/" + rName + "/individualSamplePage/";
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";
 			var addTo = "#sampLinks";
 			createLinksTableDifferentLinks(addTo, linkPre, sampNames, encodedSampNames,cols, mouseOverC, mouseLeaveC);
-			
-			var groupNames;
-			ajax("/" + rName + "/getGroupNames", function(gn){ groupNames = gn; });
-			var linkPreGroup = "/" + rName + "/showSubGroupsPage/";
-			var addToGroup = "#groupLinks";
-			createLinksTable(addToGroup, linkPreGroup, groupNames,cols, mouseOverC, mouseLeaveC);
-			
 			//get the seq and color data for the sequence view of the population sequences 
 			var mainData;
 	        var baseColors = {};
-			ajax('/' + rName + '/popSeqData', function(md){ mainData = md; });
+			ajax('/' + rName + '/groupPopSeqData/' + groupName + "/" + subGroupName, function(md){ mainData = md; });
 			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
 			//get info on protein
 			var proteinMainData;
 	        var proteinColors = {};
-			ajax('/' + rName + '/popProteinData', function(md){ proteinMainData = md; });
+			ajax('/' + rName + '/groupPopProteinData/' + groupName + "/" + subGroupName, function(md){ proteinMainData = md; });
 			ajax('/' + rName + '/proteinColors', function(bc){ proteinColors = bc; });
 						//get the population information table from server
 			var popInfoTab;
-			ajax('/' + rName + '/popInfo', function(tab){ popInfoTab = tab; });
+			ajax('/' + rName + '/groupPopInfo/' + groupName + "/" + subGroupName, function(tab){ popInfoTab = tab; });
 			//change title to current name
 			var projectName;
 			ajax('/' + rName + '/projectName', function(proj){ projectName = proj; });
@@ -351,7 +346,7 @@
 			    	for (sampN in currentSampNames){
 			    		encodedCurrentSampNames.push(sampNameEncoding[currentSampNames[sampN]]);
 			    	}
-			    	ajax('/' + rName + '/sampInfo' + "/" + encodedCurrentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	ajax('/' + rName + '/groupSampInfo/' + groupName + "/" + subGroupName + "/" + encodedCurrentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			    	//ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
 			    }
 			 	updateTableOnClick();
@@ -574,14 +569,6 @@
 					<h1>See Extraction Stats</h1>
 				</div>
 				<div id= "linkToStats"><a href="/ssv/showExtractionInfo">Extraction Stats</a></div>
-			<div class="panel-body">
-			</div>
-		</div>
-		<div class="panel panel-primary">
-				<div class="panel-heading">
-					<h1>See Sample Infos By Group</h1>
-				</div>
-				<div id= "groupLinks"></div>
 			<div class="panel-body">
 			</div>
 		</div>

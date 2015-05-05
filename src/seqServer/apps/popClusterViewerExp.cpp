@@ -26,6 +26,7 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	}else{
 		std::cout << "Didn't pass config test " << std::endl;
 	}
+
 	rootName_ = config["name"];
 	mainDir_ = config["mainDir"];
 	projectName_ = config["projectName"];
@@ -37,6 +38,10 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 			make_path(config["resources"] + "pcvExp/individualSample.html"));
 	pages_.emplace("extractionStats",
 			make_path(config["resources"] + "pcvExp/extractionStats.html"));
+	pages_.emplace("subGroupsPage",
+			make_path(config["resources"] + "pcvExp/subGroupsPage.html"));
+	pages_.emplace("groupMainPage",
+			make_path(config["resources"] + "pcvExp/groupMainPage.html"));
 	for (auto & fCache : pages_) {
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
@@ -56,13 +61,29 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	dispMapRoot(&pcvExp::mainPage, this);
 
 	dispMap(&pcvExp::getProjectName, this, "projectName");
+
 	dispMap(&pcvExp::getPopInfo, this, "popInfo");
 	dispMap(&pcvExp::getPosSeqData, this, "popSeqData");
 	dispMap(&pcvExp::getPopProtenData, this, "popProteinData");
-	dispMap(&pcvExp::getProteinColors, this, "proteinColors");
-
 	dispMap_1arg(&pcvExp::getSampInfo, this, "sampInfo", "(\\w+)");
 	dispMap(&pcvExp::getSampleNames, this, "sampleNames");
+
+	//group info
+	dispMap(&pcvExp::getGroupNames, this, "getGroupNames");
+	dispMap_2arg(&pcvExp::getGroupPopInfo, this, "groupPopInfo", "(\\w+)/(\\w+)");
+	dispMap_2arg(&pcvExp::getGroupPopSeqData, this, "groupPopSeqData", "(\\w+)/(\\w+)");
+	dispMap_2arg(&pcvExp::getGroupPopProtenData, this, "groupPopProteinData", "(\\w+)/(\\w+)");
+	dispMap_3arg(&pcvExp::getGroupSampInfo, this, "groupSampInfo", "(\\w+)/(\\w+)/(\\w+)");
+	dispMap_2arg(&pcvExp::getGroupSampleNames, this, "groupSampleNames", "(\\w+)/(\\w+)");
+
+	dispMap_2arg(&pcvExp::showGroupMainPage, this, "showGroupMainPage", "(\\w+)/(\\w+)");
+	dispMap_1arg(&pcvExp::showSubGroupsPage, this, "showSubGroupsPage", "(\\w+)");
+	dispMap_1arg(&pcvExp::getSubGroupsForGroup, this, "getSubGroupsForGroup", "(\\w+)");
+
+
+	dispMap(&pcvExp::getProteinColors, this, "proteinColors");
+
+
 	dispMap(&pcvExp::getAllSampleNames, this, "allSampleNames");
 
 	dispMap(&pcvExp::getSampleNamesEncoding, this, "sampleNamesEncoding");
@@ -108,9 +129,9 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	/*for(const auto & d : delFromPop){
 		popTable_.deleteColumn(d);
 	}*/
-	popTable_.sortTable("popUID", false);
-	auto names = popTable_.getColumn("popUID");
-	auto proteins = popTable_.getColumn("protein");
+	popTable_.sortTable("h_popUID", false);
+	auto names = popTable_.getColumn("h_popUID");
+	auto proteins = popTable_.getColumn("h_Protein");
 	for(auto pos : iter::range(names.size())){
 		popReadsTranslated_.emplace_back(seqInfo(names[pos], proteins[pos]));
 	}
@@ -144,8 +165,23 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 		sampNameToCodedNum_[allSampleNames_[pos]] = pos;
 	}
 
+	if(bfs::exists(mainDir_ + "/groups")){
+		auto sampFiles = bib::files::listAllFiles(mainDir_ + "/groups", true, VecStr{"sampFile.tab.txt"});
+		for(const auto & sampF : sampFiles){
+			auto toks = tokenizeString(sampF.first.string(), "/");
+			groupInfosDirNames_[toks[toks.size() - 3]][toks[toks.size() - 2]] = sampF.first.parent_path().string();
+		}
+	}
+
 	std::cout << "Finished set up" << std::endl;
 }
+
+void pcvExp::getGroupNames(){
+	ret_json();
+	cppcms::json::value ret = getVectorOfMapKeys(groupInfosDirNames_);
+	response().out() << ret;
+}
+
 void pcvExp::mainPage(){
 	auto search = pages_.find("mainPageHtml");
 	response().out() << search->second.get("/ssv", rootName_);
@@ -479,11 +515,189 @@ void pcvExp::getSampleExtractionInfo(std::string sampNames){
 			row[sampTabCopy.getColPos("Sample")] = row[sampTabCopy.getColPos("Sample")] + "_" +  row[sampTabCopy.getColPos("MidName")];
 		}
 		auto ret = tableToJsonRowWise(sampTabCopy);
-
-
-
-
 		response().out() << ret;
+	}
+}
+
+void pcvExp::getGroupPopInfo(std::string group, std::string subGroup){
+	bib::scopedMessage mess(bib::err::F()<< "getGroupPopInfo", std::cout, true);
+	if(setUpGroup(group, subGroup)){
+		ret_json();
+		auto ret = tableToJsonRowWise(groupInfos_[group][subGroup].popTable_);
+		response().out() << ret;
+	}else{
+		//auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
+		//response().out() << search->second.get("/ssv", rootName_);
+	}
+}
+void pcvExp::getGroupPopSeqData(std::string group, std::string subGroup){
+	bib::scopedMessage mess(bib::err::F()<< "getGroupPopSeqData", std::cout, true);
+	if(setUpGroup(group, subGroup)){
+		ret_json();
+		auto ret = seqsToJson(groupInfos_[group][subGroup].popReads_);
+		response().out() << ret;
+	}else{
+		//auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
+		//response().out() << search->second.get("/ssv", rootName_);
+	}
+}
+void pcvExp::getGroupPopProtenData(std::string group, std::string subGroup){
+	bib::scopedMessage mess(bib::err::F()<< "getGroupPopProtenData", std::cout, true);
+	if(setUpGroup(group, subGroup)){
+		ret_json();
+		auto ret = seqsToJson(groupInfos_[group][subGroup].popReadsTranslated_);
+		response().out() << ret;
+	}else{
+		//auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
+		//response().out() << search->second.get("/ssv", rootName_);
+	}
+
+}
+void pcvExp::getGroupSampInfo(std::string group, std::string subGroup, std::string sampNames){
+	bib::scopedMessage mess(bib::err::F()<< "getGroupSampInfo", std::cout, true);
+	if(setUpGroup(group, subGroup)){
+		ret_json();
+		cppcms::json::value ret;
+
+		auto sampToks = bibseq::tokenizeString(sampNames, "DELIM");
+		auto sampNameToCodedNum = sampNameToCodedNum_;
+		auto containsSampName = [&sampToks, &sampNameToCodedNum](const std::string & str) {
+			return bib::in(estd::to_string(sampNameToCodedNum[str]), sampToks);
+		};
+		auto trimedTab = groupInfos_[group][subGroup].sampTable_.extractByComp("s_Name", containsSampName);
+		ret = tableToJsonRowWise(trimedTab);
+		auto popCounts = bibseq::countVec(trimedTab.getColumn("h_popUID"));
+		auto popColors = bib::njhColors(popCounts.size());
+		bibseq::VecStr popColorsStrs(popColors.size());
+		uint32_t count = 0;
+		uint32_t halfCount = 0;
+		for(const auto & cPos : iter::range(popColors.size())) {
+			uint32_t pos = 0;
+			if(cPos %2 == 0) {
+				pos = popColors.size()/2 + halfCount;
+				++halfCount;
+			} else {
+				pos = count;
+				++count;
+			}
+			popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
+		}
+		ret["popColors"] = popColorsStrs;
+		response().out() << ret;
+	}else{
+		//auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
+		//response().out() << search->second.get("/ssv", rootName_);
+	}
+
+}
+
+void pcvExp::getGroupSampleNames(std::string group, std::string subGroup){
+	bib::scopedMessage mess(bib::err::F()<< "getGroupSampleNames", std::cout, true);
+	if(setUpGroup(group, subGroup)){
+		ret_json();
+		cppcms::json::value ret = groupInfos_[group][subGroup].clusteredSampleNames_;
+		response().out() << ret;
+	}else{
+		//auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
+		//response().out() << search->second.get("/ssv", rootName_);
+	}
+}
+void pcvExp::getSubGroupsForGroup(std::string group){
+	bib::scopedMessage mess(bib::err::F()<< "getSubGroupsForGroup", std::cout, true);
+	std::cout << "getSubGroupsForGroup: GroupName: " << group  << "\n";
+	auto search = groupInfosDirNames_.find(group);
+	if(search == groupInfosDirNames_.end()){
+		std::cout << "No group: " << group << "\n";
+		std::cout << "options: " << vectorToString(getVectorOfMapKeys(groupInfosDirNames_), ", ") << "\n";
+		std::cout << "group: " << group << " not found" << std::endl;
+	}else{
+		auto keys = getVectorOfMapKeys(search->second);
+		ret_json();
+		cppcms::json::value ret = keys;
+		response().out() << ret;
+	}
+}
+void pcvExp::showGroupMainPage(std::string group, std::string subGroup){
+	bib::scopedMessage mess(bib::err::F()<< "showGroupMainPage", std::cout, true);
+	std::cout << "showGroupMainPage: GroupName: " << group << " subGroup: " << subGroup << "\n";
+	auto search = groupInfosDirNames_.find(group);
+	if(search == groupInfosDirNames_.end()){
+		std::cout << "No group: " << group << "\n";
+		std::cout << "options: " << vectorToString(getVectorOfMapKeys(groupInfosDirNames_), ", ") << "\n";
+		auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << " not found, redirecting" << std::endl;
+		response().out() << search->second.get("/ssv", rootName_);
+	}else{
+		auto subSearch = search->second.find(subGroup);
+		if(subSearch == search->second.end()){
+			std::cout << "No subgroup: " << subGroup << " in group: " << group << "\n";
+			std::cout << "options: " << vectorToString(getVectorOfMapKeys(search->second), ", ") << "\n";
+			auto search = pages_.find("redirectPage");
+			std::cout << "group: " << group << " not found, redirecting" << std::endl;
+			response().out() << search->second.get("/ssv", rootName_);
+		}else{
+			auto search = pages_.find("groupMainPage");
+			response().out() << search->second.get("/ssv", rootName_);
+		}
+	}
+}
+void pcvExp::showSubGroupsPage(std::string group){
+	bib::scopedMessage mess(bib::err::F()<< "showSubGroupsPage", std::cout, true);
+	std::cout << "showSubGroupsPage: GroupName: " << group << "\n";
+	auto search = groupInfosDirNames_.find(group);
+	if(search == groupInfosDirNames_.end()){
+		std::cout << "No group: " << group << "\n";
+		std::cout << "options: " << vectorToString(getVectorOfMapKeys(groupInfosDirNames_), ", ") << "\n";
+		auto search = pages_.find("redirectPage");
+		std::cout << "group: " << group << " not found, redirecting" << std::endl;
+		response().out() << search->second.get("/ssv", rootName_);
+	}else{
+		auto search = pages_.find("subGroupsPage");
+		response().out() << search->second.get("/ssv", rootName_);
+	}
+}
+
+bool pcvExp::setUpGroup(std::string group, std::string subGroup){
+	bib::scopedMessage mess(bib::err::F()<< "setUpGroup", std::cout, true);
+	std::cout << "setUpGroup: GroupName: " << group << " subGroup: " << subGroup << "\n";
+	auto search = groupInfosDirNames_.find(group);
+	if(search == groupInfosDirNames_.end()){
+		std::cout << "No group: " << group << "\n";
+		std::cout << "options: " << vectorToString(getVectorOfMapKeys(groupInfosDirNames_), ", ") << "\n";
+		return false;
+	}else{
+		auto subSearch = search->second.find(subGroup);
+		if(subSearch == search->second.end()){
+			std::cout << "No subgroup: " << subGroup << " in group: " << group << "\n";
+			std::cout << "options: " << vectorToString(getVectorOfMapKeys(search->second), ", ") << "\n";
+			return false;
+		}else{
+			if(groupInfos_[group].find(subGroup) == groupInfos_[group].end()){
+				/**@todo should check to see if file exists*/
+				table sampTab = table(subSearch->second + "/sampFile.tab.txt", "\t", true);
+				table popTab = table(subSearch->second + "/popFile.tab.txt", "\t", true);
+				auto popNames = popTab.getColumn("h_popUID");
+				std::vector<readObject> popReads;
+				std::vector<readObject> popTranslatedReads;
+				for(const auto & read : popReads_){
+					if(bib::in(read.seqBase_.name_, popNames)){
+						popReads.emplace_back(read);
+					}
+				}
+				for(const auto & read : popReadsTranslated_){
+					if(bib::in(read.seqBase_.name_, popNames)){
+						popTranslatedReads.emplace_back(read);
+					}
+				}
+				groupInfos_[group][subGroup] = popInfo(sampTab, popTab, popReads, popTranslatedReads);
+			}
+			return true;
+		}
 	}
 }
 

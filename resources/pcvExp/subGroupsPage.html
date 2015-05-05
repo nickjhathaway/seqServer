@@ -1,0 +1,56 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Population Info</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs"></script>
+	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<style>
+		.container {
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: 15px;
+			}
+	</style>
+  </head>
+  <body>
+    <script>
+    	$(document).ready(function(){
+    		//get current name from window location
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var groupName = locSplit.pop();
+			//get sample names and the table with the sample names
+			var sampNames;
+			ajax("/" + rName + "/getSubGroupsForGroup/" + groupName, function(mn){ sampNames = mn; });
+			var cols = 10;
+			var linkPre = "/" + rName + "/showGroupMainPage/" + groupName + "/";
+			var mouseOverC = "#999";
+			var mouseLeaveC = "#FFF";
+			var addTo = "#sampLinks";
+			createLinksTable(addTo, linkPre, sampNames,cols, mouseOverC, mouseLeaveC);
+		});
+		
+    </script>
+    <div class="container theme-showcase" role="main">
+		<div class="jumbotron">
+			<h1 id="projName"></h1>
+		</div>
+		<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h1>See Indivudal Sample Infos</h1>
+				</div>
+				<div id= "sampLinks"></div>
+			<div class="panel-body">
+			</div>
+		</div>
+		
+    </div>
+  </body>
+</html>
