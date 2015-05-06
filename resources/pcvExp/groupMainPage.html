@@ -59,8 +59,8 @@
 			//change title to current name
 			var projectName;
 			ajax('/' + rName + '/projectName', function(proj){ projectName = proj; });
-			$("title", "head").html(projectName);
-			$("#projName").html(projectName);
+			$("title", "head").html(groupName + " : " + subGroupName) ;
+			$("#projName").html(groupName + " : " + subGroupName);
 			//create sample table 
 			var sampTab = createTable("#sampTable");
 			updateTable(sampTab, mainPopInfoTab["tab"],  mainPopInfoTab["columnNames"]);

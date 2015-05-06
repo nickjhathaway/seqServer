@@ -35,6 +35,10 @@
 			var mouseLeaveC = "#FFF";
 			var addTo = "#sampLinks";
 			createLinksTable(addTo, linkPre, sampNames,cols, mouseOverC, mouseLeaveC);
+			var projectName;
+			ajax('/' + rName + '/projectName', function(proj){ projectName = proj; });
+			$("title", "head").html(projectName);
+			$("#projName").html(projectName);
 		});
 		
     </script>
@@ -44,7 +48,7 @@
 		</div>
 		<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h1>See Indivudal Sample Infos</h1>
+					<h1>See Group</h1>
 				</div>
 				<div id= "sampLinks"></div>
 			<div class="panel-body">
