@@ -534,7 +534,7 @@
 			//get the x labels for the pop chart
 			var xLabs = [];
 			for(obj in popInfoTab["tab"]){
-				xLabs.push(popInfoTab["tab"][obj]["popUID"]);
+				xLabs.push(popInfoTab["tab"][obj]["h_popUID"]);
 			}
 			//create pop chart
 			popChart = c3.generate({
@@ -560,7 +560,7 @@
 		        },
 		        bindto: "#popChart"
 		    });
-		    popChart.hide(["popReadCntTot","popInputClusterCnt", "hapReadCNT"]);
+		    popChart.hide(["p_TotalInputReadCnt","p_TotalInputClusterCnt","p_TotalPopulationSampCnt","p_TotalUniqueHaplotypes","p_meanMoi","p_medianMoi","p_minMoi","p_maxMoi"]);
 		    $("<a href = " + rName + "/showMinTree >Show Minimum Spanning Tree</a>").appendTo("#minTreeDiv");
 		});
 		

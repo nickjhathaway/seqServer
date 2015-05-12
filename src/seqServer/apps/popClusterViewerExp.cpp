@@ -79,7 +79,7 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	dispMap_2arg(&pcvExp::showGroupMainPage, this, "showGroupMainPage", "(\\w+)/(\\w+)");
 	dispMap_1arg(&pcvExp::showSubGroupsPage, this, "showSubGroupsPage", "(\\w+)");
 	dispMap_1arg(&pcvExp::getSubGroupsForGroup, this, "getSubGroupsForGroup", "(\\w+)");
-
+	dispMap_1arg(&pcvExp::getGroupPopInfos, this, "getGroupPopInfos", "(\\w+)");
 
 	dispMap(&pcvExp::getProteinColors, this, "proteinColors");
 
@@ -660,6 +660,36 @@ void pcvExp::showSubGroupsPage(std::string group){
 		auto search = pages_.find("subGroupsPage");
 		response().out() << search->second.get("/ssv", rootName_);
 	}
+}
+
+void pcvExp::getGroupPopInfos(std::string group){
+	bib::scopedMessage mess(bib::err::F()<< "getGroupPopInfos", std::cout, true);
+	std::cout << "getGroupPopInfos: GroupName: " << group << "\n";
+	auto search = groupInfosDirNames_.find(group);
+	cppcms::json::value ret;
+	ret_json();
+	if(search == groupInfosDirNames_.end()){
+		std::cout << "No group: " << group << "\n";
+		std::cout << "options: " << vectorToString(getVectorOfMapKeys(groupInfosDirNames_), ", ") << "\n";
+		std::cout << "group: " << group << " not found, redirecting" << std::endl;
+	}else{
+		auto keys = getVectorOfMapKeys(search->second);
+		for(const auto & k : keys){
+			setUpGroup(group, k);
+		}
+		VecStr groupInfoColNames { "g_GroupName", "p_TotalInputReadCnt",
+				"p_TotalInputClusterCnt", "p_TotalPopulationSampCnt",
+				"p_TotalUniqueHaplotypes", "p_meanMoi", "p_medianMoi", "p_minMoi",
+				"p_maxMoi" };
+		table outTab(groupInfoColNames);
+		for(const auto & k : keys){
+			outTab.rbind(groupInfos_[group][k].popTable_.getColumns(groupInfoColNames));
+		}
+		outTab = outTab.getUniqueRows();
+		outTab.sortTable("g_GroupName", false);
+		ret = tableToJsonRowWise(outTab);
+	}
+	response().out() << ret;
 }
 
 bool pcvExp::setUpGroup(std::string group, std::string subGroup){

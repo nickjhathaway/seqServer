@@ -123,6 +123,8 @@ public:
 	bool setUpGroup(std::string group, std::string subGroup);
 
 
+	void getGroupPopInfos(std::string group);
+
 };
 
 int popClusteringViewerExp(std::map<std::string, std::string> inputCommands);
