@@ -679,7 +679,7 @@ void pcvExp::getGroupPopInfos(std::string group){
 		}
 		VecStr groupInfoColNames { "g_GroupName", "p_TotalInputReadCnt",
 				"p_TotalInputClusterCnt", "p_TotalPopulationSampCnt",
-				"p_TotalUniqueHaplotypes", "p_meanMoi", "p_medianMoi", "p_minMoi",
+				"p_TotalHaplotypes", "p_TotalUniqueHaplotypes", "p_meanMoi", "p_medianMoi", "p_minMoi",
 				"p_maxMoi", "g_hapsFoundOnlyInThisGroup"};
 		table outTab(groupInfoColNames);
 		for(const auto & k : keys){
