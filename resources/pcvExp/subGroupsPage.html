@@ -106,7 +106,7 @@
 			//get the x labels for the pop chart
 			var xLabs = [];
 			for(obj in popInfoTab["tab"]){
-				xLabs.push(popInfoTab["tab"][obj]["h_popUID"]);
+				xLabs.push(popInfoTab["tab"][obj]["g_GroupName"]);
 			}
 			//create pop chart
 			popChart = c3.generate({
@@ -132,7 +132,7 @@
 		        },
 		        bindto: "#popChart"
 		    });
-		    popChart.hide(["p_TotalInputReadCnt","p_TotalInputClusterCnt","p_TotalPopulationSampCnt","p_TotalUniqueHaplotypes","p_meanMoi","p_medianMoi","p_minMoi","p_maxMoi"]);
+		    //popChart.hide(["p_TotalInputReadCnt","p_TotalInputClusterCnt","p_TotalPopulationSampCnt","p_TotalUniqueHaplotypes","p_meanMoi","p_medianMoi","p_minMoi","p_maxMoi"]);
 		});
 		
     </script>
@@ -150,7 +150,7 @@
 		</div>
 		<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h1>Haplotype Infomation Table</h1>
+					<h1>Population Infomation Table</h1>
 				</div>
 			<div class="panel-body">
 			</div>
