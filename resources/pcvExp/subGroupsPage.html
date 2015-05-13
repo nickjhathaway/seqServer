@@ -70,6 +70,28 @@
 					.attr("value",function(d){return d;})
 					.attr("id", function(d){return d;});
 			$( '#popTableMenu input' ).click( updatePopTableOnClick );
+			//Add check all and uncheck all to the menu on their own line for easy viewing 
+			$('<br>').appendTo('#popTableMenu');
+			$('<a>',{
+			    text: 'Check All',
+			    href: "javascript:void(0);",
+			    id: "check-all"
+			}).appendTo('#popTableMenu');
+			$('<br>').appendTo('#popTableMenu');
+			$('<a>',{
+			    text: 'Uncheck All',
+			    href: "javascript:void(0);",
+			    id: "uncheck-all"
+			}).appendTo('#popTableMenu');
+			//add check all and uncheck all actions to the buttons
+			$('#check-all', "#popTableMenu").click(function(){
+			    $("input:checkbox", "#popTableMenu").prop('checked', true);
+			    updatePopTableOnClick();
+			  });
+			  $('#uncheck-all', "#popTableMenu").click(function(){
+			    $("input:checkbox", "#popTableMenu").prop('checked', false);
+			    updatePopTableOnClick();
+			});
 			$('<br>').appendTo('#popTableMenu');
 			$('<button>',{
 			    text: 'Download Table',
