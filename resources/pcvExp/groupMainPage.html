@@ -504,7 +504,7 @@
 				}
 			    //console.log(mainTable);
 			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
-			  	var imgsrc = 'data:text/csv;base64,'+ btoa(d3.csv.format(mainTable));
+			  	var imgsrc = 'data:text/csv;base64,'+ btoa(d3.tsv.format(mainTable));
 			  	d3.select("#popTabDownLink").attr("download", projectName + "_popTable.csv");
 			  	d3.select("#popTabDownLink").attr("href", imgsrc);
 			  	var a = $("#popTabDownLink")[0];
