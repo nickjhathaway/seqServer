@@ -490,7 +490,7 @@ void pcvExp::getIndexExtractionInfo(){
 		ret_json();
 		auto statsCopy = extractInfo_.allStatsTab_;
 		statsCopy.trimElementsAtFirstOccurenceOf("(");
-		auto ret = tableToJsonRowWise(statsCopy, "Sample", VecStr{"SamllFragments(len<50)","failedForwardPrimer", "failedQualityFiltering", "contamination"});
+		auto ret = tableToJsonRowWise(statsCopy, "IndexName", VecStr{"SamllFragments(len<50)","failedForwardPrimer", "failedQualityFiltering", "contamination"});
 		response().out() << ret;
 	}
 }

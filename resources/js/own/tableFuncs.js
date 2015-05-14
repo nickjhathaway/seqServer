@@ -172,7 +172,7 @@
 				var dataset = [],
 				tmpDataset = [],
 				i, j;
-				var rowNum = Math.ceil(links.length/10);
+				var rowNum = Math.ceil(links.length/colNum);
 				for (i = 0; i < rowNum; ++i) {
 				    for (j = 0, tmpDataset = []; j < colNum && i * colNum + j < links.length; ++j) {
 				        tmpDataset.push({text: links[i * colNum + j],link: linkPrefix + links[i * colNum + j] });
@@ -205,7 +205,7 @@
 				var dataset = [],
 				tmpDataset = [],
 				i, j;
-				var rowNum = Math.ceil(links.length/10);
+				var rowNum = Math.ceil(links.length/colNum);
 				for (i = 0; i < rowNum; ++i) {
 				    for (j = 0, tmpDataset = []; j < colNum && i * colNum + j < links.length; ++j) {
 				        tmpDataset.push({text: links[i * colNum + j],link: linkPrefix + encodedLinks[i * colNum + j] });
