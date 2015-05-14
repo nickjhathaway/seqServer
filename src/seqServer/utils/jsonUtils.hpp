@@ -15,7 +15,7 @@ namespace bibseq {
 
 
 cppcms::json::value dotToJson(const std::string& dotFilename);
-cppcms::json::value tableToJsonRowWise(const bibseq::table & tab);
+cppcms::json::value tableToJsonRowWise(const bibseq::table & tab, const std::string mainColName, const VecStr & hideOnStartColNames, const VecStr & excludeFromNum = VecStr{});
 cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab);
 
 cppcms::json::object server_config(std::string name, uint32_t port);
@@ -35,9 +35,6 @@ cppcms::json::value seqsToJson(const std::vector<T> & reads){
   ret["maxLen"] = maxLen;
   for(const auto & pos : iter::range(reads.size())){
   	seqs[pos]= jsonToCppcmsJson(reads[pos].seqBase_.toJson());
-    /*seqs[pos]["seq"] = reads[pos].seqBase_.seq_;
-    seqs[pos]["name"] = reads[pos].seqBase_.name_;
-    seqs[pos]["qual"] = reads[pos].seqBase_.qual_;*/
   }
   return ret;
 }

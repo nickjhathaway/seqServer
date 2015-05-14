@@ -234,7 +234,7 @@ void pcvExp::getSampInfo(std::string sampNames){
 		return bib::in(estd::to_string(sampNameToCodedNum[str]), sampToks);
 	};
 	auto trimedTab = sampTable_.extractByComp("s_Name", containsSampName);
-	ret = tableToJsonRowWise(trimedTab);
+	ret = tableToJsonRowWise(trimedTab,"s_Name", VecStr{});
 	auto popCounts = bibseq::countVec(trimedTab.getColumn("h_popUID"));
 	auto popColors = bib::njhColors(popCounts.size());
 	bibseq::VecStr popColorsStrs(popColors.size());
@@ -261,9 +261,12 @@ void pcvExp::getPosSeqData(){
 	response().out() << ret;
 }
 
-void pcvExp::getPopInfo(){
+void pcvExp::getPopInfo() {
 	ret_json();
-	auto ret = tableToJsonRowWise(popTable_);
+	auto ret = tableToJsonRowWise(popTable_, "h_popUID", VecStr { "h_ReadCnt" },
+			VecStr { "p_TotalInputReadCnt", "p_TotalInputClusterCnt",
+					"p_TotalPopulationSampCnt", "p_TotalHaplotypes", "p_meanMoi",
+					"p_medianMoi", "p_minMoi", "p_maxMoi" });
 	response().out() << ret;
 }
 
@@ -487,7 +490,7 @@ void pcvExp::getIndexExtractionInfo(){
 		ret_json();
 		auto statsCopy = extractInfo_.allStatsTab_;
 		statsCopy.trimElementsAtFirstOccurenceOf("(");
-		auto ret = tableToJsonRowWise(statsCopy);
+		auto ret = tableToJsonRowWise(statsCopy, "Sample", VecStr{"SamllFragments(len<50)","failedForwardPrimer", "failedQualityFiltering", "contamination"});
 		response().out() << ret;
 	}
 }
@@ -514,7 +517,7 @@ void pcvExp::getSampleExtractionInfo(std::string sampNames){
 		for(auto & row : sampTabCopy.content_){
 			row[sampTabCopy.getColPos("Sample")] = row[sampTabCopy.getColPos("Sample")] + "_" +  row[sampTabCopy.getColPos("MidName")];
 		}
-		auto ret = tableToJsonRowWise(sampTabCopy);
+		auto ret = tableToJsonRowWise(sampTabCopy, "Sample", VecStr{});
 		response().out() << ret;
 	}
 }
@@ -523,7 +526,7 @@ void pcvExp::getGroupPopInfo(std::string group, std::string subGroup){
 	bib::scopedMessage mess(bib::err::F()<< "getGroupPopInfo", std::cout, true);
 	if(setUpGroup(group, subGroup)){
 		ret_json();
-		auto ret = tableToJsonRowWise(groupInfos_[group][subGroup].popTable_);
+		auto ret = tableToJsonRowWise(groupInfos_[group][subGroup].popTable_, "h_popUID", VecStr{"h_ReadCnt"}, VecStr{"p_TotalInputReadCnt","p_TotalInputClusterCnt","p_TotalPopulationSampCnt","p_TotalHaplotypes","p_TotalUniqueHaplotypes","p_meanMoi","p_medianMoi","p_minMoi","p_maxMoi"});
 		response().out() << ret;
 	}else{
 		//auto search = pages_.find("redirectPage");
@@ -568,7 +571,8 @@ void pcvExp::getGroupSampInfo(std::string group, std::string subGroup, std::stri
 			return bib::in(estd::to_string(sampNameToCodedNum[str]), sampToks);
 		};
 		auto trimedTab = groupInfos_[group][subGroup].sampTable_.extractByComp("s_Name", containsSampName);
-		ret = tableToJsonRowWise(trimedTab);
+		trimedTab.sortTable("s_Sample",false);
+		ret = tableToJsonRowWise(trimedTab, "s_Sample", VecStr{});
 		auto popCounts = bibseq::countVec(trimedTab.getColumn("h_popUID"));
 		auto popColors = bib::njhColors(popCounts.size());
 		bibseq::VecStr popColorsStrs(popColors.size());
@@ -600,6 +604,7 @@ void pcvExp::getGroupSampleNames(std::string group, std::string subGroup){
 	if(setUpGroup(group, subGroup)){
 		ret_json();
 		cppcms::json::value ret = groupInfos_[group][subGroup].clusteredSampleNames_;
+
 		response().out() << ret;
 	}else{
 		//auto search = pages_.find("redirectPage");
@@ -617,6 +622,7 @@ void pcvExp::getSubGroupsForGroup(std::string group){
 		std::cout << "group: " << group << " not found" << std::endl;
 	}else{
 		auto keys = getVectorOfMapKeys(search->second);
+		bib::sort(keys);
 		ret_json();
 		cppcms::json::value ret = keys;
 		response().out() << ret;
@@ -687,7 +693,7 @@ void pcvExp::getGroupPopInfos(std::string group){
 		}
 		outTab = outTab.getUniqueRows();
 		outTab.sortTable("g_GroupName", false);
-		ret = tableToJsonRowWise(outTab);
+		ret = tableToJsonRowWise(outTab, "g_GroupName", VecStr{});
 	}
 	response().out() << ret;
 }

@@ -355,7 +355,7 @@ void miv::getInitialReadStats(std::string sampleNames){
 		return bib::in(str, sampToks);
 	};
 	auto tab = stats_.extractByComp("sampleName", containsSampName);
-	response().out() << tableToJsonRowWise(stats_);
+	response().out() << tableToJsonRowWise(stats_,"mipName", VecStr{} );
 }
 
 
@@ -387,7 +387,7 @@ void miv::getInitialReadStatsPerSample(std::string sampName, std::string mipName
 		tab = tab.extractByComp("mipName", containsMipName);
 		tab.trimElementsAtFirstOccurenceOf("(");
 		tab.content_.erase(tab.content_.end() -1 );
-		ret = tableToJsonRowWise(tab);
+		ret = tableToJsonRowWise(tab, "mipName", VecStr{});
 	}else{
 		std::cout << "getInitialReadStatsPerSample: " << "couldn't find sampName: " << sampName << std::endl;
 	}
@@ -498,7 +498,7 @@ void miv::oneSampAllMipData(std::string sampName, std::string mipNames) {
 	//std::cout << bibseq::vectorToString(sampToks,",")<< std::endl;
 	auto trimedTab = mipTab.extractByComp("mipName", containsMipName);
 	trimedTab.sortTable("mipName", true);
-	auto ret = tableToJsonRowWise(trimedTab);
+	auto ret = tableToJsonRowWise(trimedTab, "mipName", VecStr{});
 	auto outMipNames = trimedTab.getColumn("mipName");
 	auto geneNames = trimedTab.getColumn("geneName");
 
@@ -587,7 +587,7 @@ void miv::popInfoData(std::string mipName) {
 	if(search == mipAnalysisFolders_.end()) {
 		std::cout << "Couldn't find mipName: " << mipName << std::endl;
 	} else {
-		ret = tableToJsonRowWise(bibseq::table(appendSlashRet(search->second.string()) + "population/populationCluster.tab.txt", "\t", true));
+		ret = tableToJsonRowWise(bibseq::table(appendSlashRet(search->second.string()) + "population/populationCluster.tab.txt", "\t", true), "h_popUID", VecStr{});
 	}
 	response().out() << ret;
 }
@@ -605,7 +605,7 @@ void miv::allSampsInfoData(std::string mipName, std::string sampNames) {
 			return bib::in(str, sampToks);
 		};
 		auto trimedTab = sampTab.extractByComp("s_sName", containsSampName);
-		ret = tableToJsonRowWise(trimedTab);
+		ret = tableToJsonRowWise(trimedTab, "s_Sample", VecStr{});
 		auto popCounts = bibseq::countVec(trimedTab.getColumn("h_popUID"));
 		auto popColors = bib::njhColors(popCounts.size());
 		bibseq::VecStr popColorsStrs(popColors.size());
@@ -683,7 +683,7 @@ void miv::oneSampTabData(std::string mipName, std::string sampname) {
 	if(search != mipAnalysisFolders_.end()){
 		auto tab = bibseq::table(search->second.string() + "/selectedClustersInfo.tab.txt", "\t", true);
 		auto outTab = tab.getRows("s_sName", sampname);
-		ret = tableToJsonRowWise(outTab);
+		ret = tableToJsonRowWise(outTab, "h_popUID", VecStr{});
 	}else{
 		std::cout << "oneSampTabData: " << "couldn't find mipName: " << mipName << std::endl;
 	}
@@ -762,7 +762,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 			{
 				auto fileName = mainMipAnalysisDir + "info.tab.txt";
 				if(bfs::exists(bfs::path(fileName))){
-					ret ["clusterBarInfo"] = tableToJsonRowWise(table(fileName, "\t", true));
+					ret ["clusterBarInfo"] = tableToJsonRowWise(table(fileName, "\t", true) ,"", VecStr{});
 				}else{
 					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
 				}
@@ -772,7 +772,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 			{
 				auto fileName = barcodeCoverageDir + "coverageAfterFiltering.tab.txt";
 				if(bfs::exists(bfs::path(fileName))){
-					ret ["coverageAfter"] = tableToJsonRowWise(table(fileName, "\t", true));
+					ret ["coverageAfter"] = tableToJsonRowWise(table(fileName, "\t", true), "", VecStr{});
 				}else{
 					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
 				}
@@ -781,7 +781,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 			{
 				auto fileName = barcodeCoverageDir + "barcodePerformance.tab.txt";
 				if(bfs::exists(bfs::path(fileName))){
-					ret ["performance"] = tableToJsonRowWise(table(fileName, "\t", true));
+					ret ["performance"] = tableToJsonRowWise(table(fileName, "\t", true),  "", VecStr{});
 				}else{
 					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
 				}
@@ -790,7 +790,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 			{
 				auto fileName = barcodeCoverageDir + "coverageBeforeFiltering.tab.txt";
 				if(bfs::exists(bfs::path(fileName))){
-					ret ["coverageBefore"] = tableToJsonRowWise(table(fileName, "\t", true));
+					ret ["coverageBefore"] = tableToJsonRowWise(table(fileName, "\t", true),  "", VecStr{});
 				}else{
 					std::cout << "getBarcodeInfoPerSamplePerMip: " << " couldn't find clustered file: " << fileName << std::endl;
 				}
@@ -801,7 +801,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 				if(bfs::exists(bfs::path(fileName))){
 					auto idenTab = table(fileName, "\t", true);
 					if(!idenTab.content_.empty()){
-						ret ["uniqueIdentical"] = tableToJsonRowWise(idenTab);
+						ret ["uniqueIdentical"] = tableToJsonRowWise(idenTab,  "", VecStr{});
 					}else{
 						std::cout << "idenTab is empty" << std::endl;
 					}
@@ -816,7 +816,7 @@ void miv::getBarcodeInfoPerSamplePerMip(std::string mipName, std::string sampNam
 				if(bfs::exists(bfs::path(fileName))){
 					auto clusTab = table(fileName, "\t", true);
 					if(!clusTab.content_.empty()){
-						ret ["uniqueCluster"] = tableToJsonRowWise(clusTab);
+						ret ["uniqueCluster"] = tableToJsonRowWise(clusTab,  "", VecStr{});
 					}else{
 						std::cout << "idenTab is empty" << std::endl;
 					}

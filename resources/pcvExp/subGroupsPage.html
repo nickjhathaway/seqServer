@@ -43,118 +43,7 @@
 			//create the population table and populate it 
 			var popInfoTab;
 			ajax('/' + rName + '/getGroupPopInfos/' + groupName, function(tab){ popInfoTab = tab; });
-			
-			var popTab = createTable("#popTable");
-			var numericCols = popInfoTab["numericColNames"];
-			updateTable(popTab,popInfoTab["tab"],  popInfoTab["columnNames"]);
-			//update function for the population table 
-			function updatePopTableOnClick() {         
-			     var allVals = [];
-			     $('#popTableMenu :checked').each(function() {
-			       allVals.push($(this).val());
-			     });
-			     var currentColumnNames = _.intersection(popInfoTab["columnNames"], allVals);
-			     updateTable(popTab,popInfoTab["tab"], currentColumnNames );;
-			};
-			//add the check boxes for the pop menu
-			var inputs = d3.select("#popTableMenu").selectAll("input")
-				.data(popInfoTab["columnNames"])
-				.enter()
-				.append("label")
-					.html(function(d){return d;})
-					.attr("style", "border:2px solid black;  padding: 2px;margin: 1px")
-				.append("input")
-					.attr("type","checkbox")
-					.attr("name", "check")
-					.attr("checked", true)
-					.attr("value",function(d){return d;})
-					.attr("id", function(d){return d;});
-			$( '#popTableMenu input' ).click( updatePopTableOnClick );
-			//Add check all and uncheck all to the menu on their own line for easy viewing 
-			$('<br>').appendTo('#popTableMenu');
-			$('<a>',{
-			    text: 'Check All',
-			    href: "javascript:void(0);",
-			    id: "check-all"
-			}).appendTo('#popTableMenu');
-			$('<br>').appendTo('#popTableMenu');
-			$('<a>',{
-			    text: 'Uncheck All',
-			    href: "javascript:void(0);",
-			    id: "uncheck-all"
-			}).appendTo('#popTableMenu');
-			//add check all and uncheck all actions to the buttons
-			$('#check-all', "#popTableMenu").click(function(){
-			    $("input:checkbox", "#popTableMenu").prop('checked', true);
-			    updatePopTableOnClick();
-			  });
-			  $('#uncheck-all', "#popTableMenu").click(function(){
-			    $("input:checkbox", "#popTableMenu").prop('checked', false);
-			    updatePopTableOnClick();
-			});
-			$('<br>').appendTo('#popTableMenu');
-			$('<button>',{
-			    text: 'Download Table',
-			    id: "popTabSave"
-			}).appendTo('#popTableMenu');
-			d3.select("#popTabSave").append("a").attr("id", "popTabDownLink");
-			d3.select("#popTabSave").on("click", function(){
-			  	//var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
-			  	var allVals = [];
-			    $(':checked', "#popTableMenu").each(function() {
-			       allVals.push($(this).val());
-			    });
-			    var currentColumnNames = _.intersection(popInfoTab["columnNames"], allVals);
-			    
-			    var mainTable = [];
-			    mainTable.push(currentColumnNames);
-			    //
-			    for (i = 0; i <popInfoTab["tab"].length ; i++) { 
-			    	var currentRow = [];
-				   	for(colNum in currentColumnNames){
-				   		currentRow.push(popInfoTab["tab"][i][currentColumnNames[colNum]]);
-						//console.log(mainPopInfoTab["tab"][i][currentColumnNames[colNum]]);
-					}
-					mainTable.push(currentRow);
-				}
-			    //console.log(mainTable);
-			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
-			  	var imgsrc = 'data:text/csv;base64,'+ btoa(d3.csv.format(mainTable));
-			  	d3.select("#popTabDownLink").attr("download", projectName + "_popTable.csv");
-			  	d3.select("#popTabDownLink").attr("href", imgsrc);
-			  	var a = $("#popTabDownLink")[0];
-			  	a.click();
-			});
-			//get the x labels for the pop chart
-			var xLabs = [];
-			for(obj in popInfoTab["tab"]){
-				xLabs.push(popInfoTab["tab"][obj]["g_GroupName"]);
-			}
-			//create pop chart
-			popChart = c3.generate({
-		        data: {
-		            json: popInfoTab["tab"],
-		            keys: {
-		                value: numericCols,
-		            }, 
-		            axes: {
-		            	hapSampCNT :'y'
-		            }, 
-		            type: 'bar'
-		        },
-		        axis: {
-		            x: {
-		                type: 'category',
-						categories: xLabs ,
-			            tick: {
-			                rotate: 75
-			            },
-			            height: 130
-		            }
-		        },
-		        bindto: "#popChart"
-		    });
-		    //popChart.hide(["p_TotalInputReadCnt","p_TotalInputClusterCnt","p_TotalPopulationSampCnt","p_TotalUniqueHaplotypes","p_meanMoi","p_medianMoi","p_minMoi","p_maxMoi"]);
+			var popTable = new njhTable("#popTable", popInfoTab, projectName + "_" + groupName  + "_popInfo", true);
 		});
 		
     </script>
@@ -177,12 +66,8 @@
 			<div class="panel-body">
 			</div>
 		</div>
-	    <div id = "popTable">
-	    	<div id = "popTableMenu"></div>
-	    </div>
-	    <div id = "popChart">
-	    	
-	    </div>
+	    <div id = "popTable"></div>
+
     </div>
   </body>
 </html>

@@ -85,7 +85,7 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 	return graph;
 }
 
-cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
+cppcms::json::value tableToJsonRowWise(const bibseq::table & tab, const std::string mainColName, const VecStr & hideOnStartColNames, const VecStr & excludeFromNum ){
 	cppcms::json::value ret;
 	auto & outTab = ret["tab"];
 	std::unordered_map<uint32_t, bool> numCheck;
@@ -93,7 +93,9 @@ cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 	for(const auto & colPos : iter::range(tab.columnNames_.size())){
 		numCheck[colPos] = bibseq::isVecOfDoubleStr(tab.getColumn(colPos));
 		if(numCheck[colPos]){
-			numericCols.emplace_back(tab.columnNames_[colPos]);
+			if(!bib::in(tab.columnNames_[colPos], excludeFromNum)){
+				numericCols.emplace_back(tab.columnNames_[colPos]);
+			}
 		}
 	}
 
@@ -108,6 +110,10 @@ cppcms::json::value tableToJsonRowWise(const bibseq::table & tab){
 	}
 	ret["columnNames"] = tab.columnNames_;
 	ret["numericColNames"] = numericCols;
+
+	/**@todo hide checks for presence of actual names for mainColName and hideOnSTartColNames*/
+	ret["mainColName"] = mainColName;
+	ret["hideOnStartColNames"] = hideOnStartColNames;
 	return ret;
 }
 
