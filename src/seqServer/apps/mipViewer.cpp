@@ -102,7 +102,7 @@ table getSampleStats(const std::string & dirName, bool verbose){
 
 miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 		bibseq::seqApp(srv, config){
-	bool pass = configTest(config, requiredOptions(), "miv");
+	configTest(config, requiredOptions(), "miv");
 	rootName_ = config["name"];
 	clusteringDir_ = config["clusDir"];
 	genomeDir_ = config["genomeDir"];
@@ -651,7 +651,7 @@ void miv::popSeqData(std::string mipName) {
 			reader.read("fastq", appendSlashRet(search->second.string()) + "population/" + mipName + ".fastq",false);
 			popReads_[mipName] = reader.reads;
 		}
-		ret = seqsToJson(popReads_[mipName]);
+		ret = seqsToJson(popReads_[mipName], mipName);
 	}else{
 		std::cout << "popSeqData: " << "couldn't find mipName: " << mipName << std::endl;
 	}
@@ -709,7 +709,7 @@ void miv::oneSampInitSeqData(std::string mipName, std::string sampName) {
 					reader.read("fastq", fileName,false);
 					clusteredReads_[mipName][sampName] = reader.reads;
 				}
-				ret = seqsToJson(clusteredReads_[mipName][sampName]);
+				ret = seqsToJson(clusteredReads_[mipName][sampName], sampName + "_" + mipName);
 			}else{
 				std::cout << "oneSampInitSeqData: " << " couldn't find clustered file: " << fileName << std::endl;
 			}
@@ -731,7 +731,7 @@ void miv::oneSampFinalSeqData(std::string mipName, std::string sampName) {
 				reader.read("fastq", fileName,false);
 				filteredReads_[mipName][sampName] = reader.reads;
 			}
-			ret = seqsToJson(filteredReads_[mipName][sampName]);
+			ret = seqsToJson(filteredReads_[mipName][sampName], sampName + "_" + mipName);
 		}else{
 			std::cout << "oneSampFinalSeqData: " << " couldn't find file " << fileName << std::endl;
 		}
@@ -908,7 +908,7 @@ void miv::oneGeneOneSampAlnData(std::string geneName, std::string sampName){
 					readVecSorter::sortReadVector(allReads, "name", false);
 					aligner alignerObj(maxLen,gapScoringParameters(5,1,0,0,0,0), substituteMatrix::createDegenScoreMatrixCaseInsensitive(2,-2));
 					auto alns = alignTargets(allReads, ref.front(), alignerObj);
-					ret = seqsToJson(alns);
+					ret = seqsToJson(alns, sampName + "_" + geneName);
 				}
 			}
 		}

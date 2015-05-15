@@ -7,5 +7,6 @@
  */
 #include "seqServer/utils.h"
 #include "seqServer/exception.h"
+#include "seqServer/objects.h"
 #include "seqServer/apps.h"
 

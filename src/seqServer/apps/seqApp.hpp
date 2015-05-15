@@ -15,6 +15,7 @@
 #include <bibcpp.h>
 #include <cppitertools/range.hpp>
 #include "seqServer/utils.h"
+#include "seqServer/objects/seqCache.hpp"
 
 namespace bibseq {
 
@@ -106,6 +107,9 @@ protected:
 public:
 	seqApp(cppcms::service& srv, std::map<std::string, std::string> config);
 
+	seqCache seqs_;
+
+	bool debug_ = true;
 	virtual ~seqApp();
 
 	virtual VecStr requiredOptions()const;
@@ -123,6 +127,11 @@ public:
 	void jsOwn();
 	void cssLibs();
 	void cssOwn();
+
+	void sort(std::string uid, std::string sortBy);
+	void muscleAln(std::string uid);
+	void removeGaps(std::string uid);
+	void complementSeqs(std::string uid);
 };
 
 } /* namespace bibseq */

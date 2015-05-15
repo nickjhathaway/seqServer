@@ -108,49 +108,14 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	mapper().root(rootName_);
 
-	//read samp table
-	/*VecStr delFromPop { "popInputClusterCnt", "hapPopFrac", "hapSumSampPopFrac",
-			"hapMeanSampFrac", "hapClusterCNT" };
-	VecStr delFromSamp = catenateVectors(delFromPop, VecStr { "popReadCntTot",
-			"hapReadFrac", "hapConsesus", "cConsensus", "sInputCluster", "cReadFrac",
-			"ReadCnt", "cChiReadCnt", "cChiClusCnt", "cChiRepCnt", "cInputNames",
-			"R1totalCntExcluded", "R1totalFracExcluded", "R1.ClusCnt" });*/
 	sampTable_ = table(mainDir_ + "selectedClustersInfo.tab.txt", "\t", true);
-	/*for(const auto & d : delFromSamp){
-		sampTable_.deleteColumn(d);
-	}*/
+
 	//get samp names
 	auto sampCounts = countVec(sampTable_.getColumn("s_Name"));
 	clusteredSampleNames_ = getVectorOfMapKeys(sampCounts);
 	//read pop table
-
-
 	popTable_ = table(mainDir_ + "population/populationCluster.tab.txt", "\t", true);
-	/*for(const auto & d : delFromPop){
-		popTable_.deleteColumn(d);
-	}*/
 	popTable_.sortTable("h_popUID", false);
-	auto names = popTable_.getColumn("h_popUID");
-	auto proteins = popTable_.getColumn("h_Protein");
-	for(auto pos : iter::range(names.size())){
-		popReadsTranslated_.emplace_back(seqInfo(names[pos], proteins[pos]));
-	}
-	//read pop seqs
-	auto files = bib::files::listAllFiles(mainDir_ + "population/", false, {std::regex{".*\\.fastq"}});
-	readObjectIO reader;
-	reader.read("fastq", files.begin()->first.string(), true);
-	popReads_ = reader.reads;
-	for(auto & read : popReads_){
-		read.seqBase_.name_ = read.seqBase_.name_.substr(0, read.seqBase_.name_.rfind("_"));
-	}
-	std::unordered_map<std::string, std::vector<uint32_t>> proteinCheck;
-	for(const auto & pEnum : iter::enumerate(popReadsTranslated_)){
-		proteinCheck[pEnum.element.seqBase_.seq_].emplace_back(pEnum.index);
-	}
-	/*for(const auto & pc : proteinCheck){
-		std::cout << pc.first << " : " << vectorToString(pc.second, ",") << std::endl;
-	}*/
-	/**todo make safter for non fastq pop clustering */
 
 	//encode sample names
 	std::set<std::string> allUniSampNames(clusteredSampleNames_.begin(), clusteredSampleNames_.end());
@@ -255,10 +220,30 @@ void pcvExp::getSampInfo(std::string sampNames){
 	response().out() << ret;
 }
 
+void pcvExp::loadInPopSeqs(){
+	bib::scopedMessage mess(bib::err::F() << "loadInPopSeqs", std::cout, true);
+	std::string popSeqDataUid = projectName_ + "_seqs";
+	if(!seqs_.containsRecord(popSeqDataUid) || !seqs_.recordValid(popSeqDataUid)){
+		/**todo make safter for non fastq pop clustering */
+		//read pop seqs
+		auto files = bib::files::listAllFiles(mainDir_ + "population/", false, {std::regex{".*\\.fastq"}});
+		readObjectIO reader;
+		reader.read("fastq", files.begin()->first.string(), true);
+		for(auto & read : reader.reads){
+			read.seqBase_.name_ = read.seqBase_.name_.substr(0, read.seqBase_.name_.rfind("_"));
+		}
+		if(seqs_.containsRecord(popSeqDataUid)){
+			seqs_.updateCache(popSeqDataUid, std::make_shared<std::vector<readObject>>(std::vector<readObject>(reader.reads)));
+		}else{
+			seqs_.addToCache(popSeqDataUid, std::make_shared<std::vector<readObject>>(std::vector<readObject>(reader.reads)));
+		}
+	}
+}
 void pcvExp::getPosSeqData(){
 	ret_json();
-	auto ret = seqsToJson(popReads_);
-	response().out() << ret;
+	loadInPopSeqs();
+	std::string popSeqDataUid = projectName_ + "_seqs";
+	response().out() << seqs_.getJson(popSeqDataUid);;
 }
 
 void pcvExp::getPopInfo() {
@@ -294,32 +279,59 @@ void pcvExp::getProteinColors(){
   ret["V"] = "#fdab58";
   ret["W"] = "#fed65f";
   ret["Y"] = "#ffff66";
+	ret["-"] = "#e6e6e6";
 	response().out() << ret;
 }
 
 void pcvExp::getPopProtenData(){
 	ret_json();
-	auto ret = seqsToJson(popReadsTranslated_);
-	response().out() << ret;
+	bib::scopedMessage mess(bib::err::F() << "getPopProtenData", std::cout, true);
+	std::string proteinUid = projectName_ + "_protein";
+	if(!seqs_.containsRecord(proteinUid) || !seqs_.recordValid(proteinUid)){
+		auto proteins = popTable_.getColumn("h_Protein");
+		auto names = popTable_.getColumn("h_popUID");
+		std::vector<readObject> popReads;
+		for(auto pos : iter::range(names.size())){
+			popReads.emplace_back(seqInfo(names[pos], proteins[pos]));
+		}
+		std::unordered_map<std::string, std::vector<uint32_t>> proteinCheck;
+		for(const auto & pEnum : iter::enumerate(popReads)){
+			proteinCheck[pEnum.element.seqBase_.seq_].emplace_back(pEnum.index);
+		}
+		if(seqs_.containsRecord(proteinUid)){
+			seqs_.updateCache(proteinUid, std::make_shared<std::vector<readObject>>(popReads));
+		}else{
+			seqs_.addToCache(proteinUid, std::make_shared<std::vector<readObject>>(popReads));
+		}
+		/*for(const auto & pc : proteinCheck){
+			std::cout << pc.first << " : " << vectorToString(pc.second, ",") << std::endl;
+		}*/
+	}
+
+	response().out() << seqs_.getJson(proteinUid);;
 }
 
 void pcvExp::getMinTreeData(){
 	ret_json();
 	if(!calculatedTreeData_){
+		loadInPopSeqs();
+		std::string popSeqDataUid = projectName_ + "_seqs";
 		//get min tree data
 		uint64_t maxLength = 0;
-		readVec::getMaxLength(popReads_, maxLength);
+		auto popReadsPtr = seqs_.getRecord(popSeqDataUid);
+		std::vector<readObject> & popReads = *popReadsPtr;
+		readVec::getMaxLength(popReads, maxLength);
 		aligner alignerObj(maxLength, gapScoringParameters(5,1), substituteMatrix::createDegenScoreMatrix(2, -2));
 	  std::function<uint32_t(const readObject & ,
 	  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
-		auto misDistances = getDistanceCopy(popReads_, 2, misFun,
+		auto misDistances = getDistanceCopy(popReads, 2, misFun,
 				alignerObj, true);
-	  readDistGraph<uint32_t> graphMis(misDistances, popReads_);
+	  readDistGraph<uint32_t> graphMis(misDistances, popReads);
 		std::vector<std::string> popNames;
 	  for(const auto & n : graphMis.nodes_){
 	  	popNames.emplace_back(n->name_);
 	  }
-		auto popColors = bib::njhColors(popReads_.size());
+		auto popColors = bib::njhColors(popReads.size());
 		bibseq::VecStr popColorsStrs(popColors.size());
 		uint32_t count = 0;
 		uint32_t halfCount = 0;
@@ -371,9 +383,17 @@ void pcvExp::getSeqData(std::string sampName){
 		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			ret_json();
-			readObjectIO reader;
-			reader.read("fastq", fileName, true);
-			response().out() << seqsToJson(reader.reads);
+			std::string seqUid = projectName_ + "_" + sampName ;
+			if(!seqs_.containsRecord(seqUid) || ! seqs_.recordValid(seqUid)){
+				readObjectIO reader;
+				reader.read("fastq", fileName, true);
+				if(seqs_.containsRecord(seqUid)){
+					seqs_.updateCache(seqUid, std::make_shared<std::vector<readObject>>(reader.reads));
+				}else{
+					seqs_.addToCache(seqUid, std::make_shared<std::vector<readObject>>(reader.reads));
+				}
+			}
+			response().out() << seqs_.getJson(seqUid);
 		}else{
 			std::cout << "File " << fileName << " does not exist" << std::endl;
 		}
@@ -392,11 +412,19 @@ void pcvExp::getProteinData(std::string sampName){
 		auto fileName = bib::files::appendAsNeededRet(mainDir_, "/") + "final/" + sampName + ".fastq";
 		if(fexists(fileName)){
 			ret_json();
-			readObjectIO reader;
-			reader.read("fastq", fileName, true);
-			readVec::convertReadsToProteinFromcDNA(reader.reads, transcribeToRNAFirst,
-			                                           start, forceStartM);
-			response().out() << seqsToJson(reader.reads);
+			std::string seqUid = projectName_ + "_" + sampName + "_protein";
+			if(!seqs_.containsRecord(seqUid) || ! seqs_.recordValid(seqUid)){
+				readObjectIO reader;
+				reader.read("fastq", fileName, true);
+				readVec::convertReadsToProteinFromcDNA(reader.reads, transcribeToRNAFirst,
+				                                           start, forceStartM);
+				if(seqs_.containsRecord(seqUid)){
+					seqs_.updateCache(seqUid, std::make_shared<std::vector<readObject>>(reader.reads));
+				}else{
+					seqs_.addToCache(seqUid, std::make_shared<std::vector<readObject>>(reader.reads));
+				}
+			}
+			response().out() << seqs_.getJson(seqUid);
 		}else{
 			std::cout << "File " << fileName << " does not exist" << std::endl;
 		}
@@ -538,8 +566,15 @@ void pcvExp::getGroupPopSeqData(std::string group, std::string subGroup){
 	bib::scopedMessage mess(bib::err::F()<< "getGroupPopSeqData", std::cout, true);
 	if(setUpGroup(group, subGroup)){
 		ret_json();
-		auto ret = seqsToJson(groupInfos_[group][subGroup].popReads_);
-		response().out() << ret;
+		std::string seqUid = projectName_ + "_" + group + "_" + subGroup;
+		if(!seqs_.containsRecord(seqUid) || ! seqs_.recordValid(seqUid)){
+			if(seqs_.containsRecord(seqUid)){
+				seqs_.updateCache(seqUid, std::make_shared<std::vector<readObject>>(groupInfos_[group][subGroup].popReads_));
+			}else{
+				seqs_.addToCache(seqUid, std::make_shared<std::vector<readObject>>(groupInfos_[group][subGroup].popReads_));
+			}
+		}
+		response().out() << seqs_.getJson(seqUid);
 	}else{
 		//auto search = pages_.find("redirectPage");
 		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
@@ -550,8 +585,15 @@ void pcvExp::getGroupPopProtenData(std::string group, std::string subGroup){
 	bib::scopedMessage mess(bib::err::F()<< "getGroupPopProtenData", std::cout, true);
 	if(setUpGroup(group, subGroup)){
 		ret_json();
-		auto ret = seqsToJson(groupInfos_[group][subGroup].popReadsTranslated_);
-		response().out() << ret;
+		std::string seqUid = projectName_ + "_" + group + "_" + subGroup + "_protein";
+		if(!seqs_.containsRecord(seqUid) || ! seqs_.recordValid(seqUid)){
+			if(seqs_.containsRecord(seqUid)){
+				seqs_.updateCache(seqUid, std::make_shared<std::vector<readObject>>(groupInfos_[group][subGroup].popReadsTranslated_));
+			}else{
+				seqs_.addToCache(seqUid, std::make_shared<std::vector<readObject>>(groupInfos_[group][subGroup].popReadsTranslated_));
+			}
+		}
+		response().out() << seqs_.getJson(seqUid);
 	}else{
 		//auto search = pages_.find("redirectPage");
 		std::cout << "group: " << group << ":" << subGroup<< " not found, redirecting" << std::endl;
@@ -680,6 +722,7 @@ void pcvExp::getGroupPopInfos(std::string group){
 		std::cout << "group: " << group << " not found, redirecting" << std::endl;
 	}else{
 		auto keys = getVectorOfMapKeys(search->second);
+		bib::sort(keys);
 		for(const auto & k : keys){
 			setUpGroup(group, k);
 		}
@@ -718,19 +761,23 @@ bool pcvExp::setUpGroup(std::string group, std::string subGroup){
 				table sampTab = table(subSearch->second + "/sampFile.tab.txt", "\t", true);
 				table popTab = table(subSearch->second + "/popFile.tab.txt", "\t", true);
 				auto popNames = popTab.getColumn("h_popUID");
-				std::vector<readObject> popReads;
-				std::vector<readObject> popTranslatedReads;
-				for(const auto & read : popReads_){
+				std::vector<readObject> currentPopReads;
+
+				loadInPopSeqs();
+				std::string popSeqDataUid = projectName_ + "_seqs";
+				//get min tree data
+				//uint64_t maxLength = 0;
+				std::cout << "recordValid: " << bib::colorBool(seqs_.recordValid(popSeqDataUid));
+				auto popReadsPtr = seqs_.getRecord(popSeqDataUid);
+				std::vector<readObject> & popReads = *popReadsPtr;
+				for(const auto & read : popReads){
 					if(bib::in(read.seqBase_.name_, popNames)){
-						popReads.emplace_back(read);
+						currentPopReads.emplace_back(read);
 					}
 				}
-				for(const auto & read : popReadsTranslated_){
-					if(bib::in(read.seqBase_.name_, popNames)){
-						popTranslatedReads.emplace_back(read);
-					}
-				}
-				groupInfos_[group][subGroup] = popInfo(sampTab, popTab, popReads, popTranslatedReads);
+				std::vector<readObject> currentPopTranslatedReads = currentPopReads;
+				readVec::convertReadsToProteinFromcDNA(currentPopTranslatedReads, false);
+				groupInfos_[group][subGroup] = popInfo(sampTab, popTab, currentPopReads, currentPopTranslatedReads);
 			}
 			return true;
 		}

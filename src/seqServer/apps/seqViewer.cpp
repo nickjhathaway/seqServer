@@ -6,13 +6,14 @@
  */
 
 #include "seqViewer.hpp"
+#include "seqServer/objects/seqCache.hpp"
 
 namespace bibseq {
 
 ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 : bibseq::seqApp(srv, config)
 {
-	bool pass = configTest(config, requiredOptions(), "ssv");
+	configTest(config, requiredOptions(), "ssv");
 	pages_.emplace("mainPageHtml",make_path(config["resources"] + "ssv/mainPage.html") );
 	rootName_ = config["name"];
 	for(auto & fCache : pages_){
@@ -21,22 +22,18 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 
 	//main page
 	dispMapRoot(&ssv::mainPage, this);
+
 	dispMap(&ssv::seqData,this, "seqData");
 
 	//general information
 	dispMap(&ssv::rootName,this, "rootName");
-	dispMap_1arg(&ssv::sort,this, "sort", "(\\w+)");
-	dispMap(&ssv::muscleAln,this, "muscle");
-	dispMap(&ssv::complementSeqs,this, "complement");
-	dispMap(&ssv::removeGaps,this, "removeGaps");
+
 	mapper().root(rootName_);
 	//read in data and set to the json
 	readObjectIOOptions options(config["ioOptions"]);
 	readObjectIO reader;
 	reader.read(options);
-	reads_ = reader.reads;
-	readsJson_ = seqsToJson(reads_);
-	needsUpdate_= false;
+	seqs_.addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reader.reads));
 	std::cout << "Finished set up" << std::endl;
 
 }
@@ -47,11 +44,9 @@ VecStr ssv::requiredOptions() const {
 
 void ssv::seqData() {
 	bib::scopedMessage run("seqData", std::cout, debug_);
+	printVector(getVectorOfMapKeys(seqs_.cache_));
 	ret_json();
-	if(needsUpdate_){
-		readsJson_ = seqsToJson(reads_);
-	}
-	response().out() << readsJson_;
+	response().out() << seqs_.getJson(rootName_.substr(1));
 }
 
 
@@ -63,39 +58,7 @@ void ssv::rootName() {
 	response().out() << r;
 }
 
-void ssv::sort(std::string sortBy){
-	bib::scopedMessage run("sort", std::cout, debug_);
-	std::cout << "sort; sortBy: " << sortBy << std::endl;
-	readVecSorter::sortReadVector(reads_, sortBy);
-	ret_json();
-	readsJson_ = seqsToJson(reads_);
-	response().out() << readsJson_;
-}
 
-void ssv::muscleAln(){
-	bib::scopedMessage run("muscleAln", std::cout, debug_);
-	bib::for_each(reads_, [](readObject & read){ read.seqBase_.removeGaps();});
-	sys::muscleSeqs(reads_);
-	ret_json();
-	readsJson_ = seqsToJson(reads_);
-	response().out() << readsJson_;
-}
-
-void ssv::removeGaps(){
-	bib::scopedMessage run("removeGaps", std::cout, debug_);
-	bib::for_each(reads_, [](readObject & read){ read.seqBase_.removeGaps();});
-	ret_json();
-	readsJson_ = seqsToJson(reads_);
-	response().out() << readsJson_;
-}
-
-void ssv::complementSeqs(){
-	bib::scopedMessage run("complementSeqs", std::cout, debug_);
-	readVec::allReverseComplement(reads_, true);
-	ret_json();
-	readsJson_ = seqsToJson(reads_);
-	response().out() << readsJson_;
-}
 
 
 void ssv::showMinTree() {

@@ -41,7 +41,7 @@ seqApp::seqApp(cppcms::service& srv,
 		std::map<std::string, std::string>  config):cppcms::application(srv)
 				{
 	//check configuration
-	bool pass = configTest(config, requiredOptions(), "seqApp");
+	configTest(config, requiredOptions(), "seqApp");
 	//load js and css
 	jsAndCss_.emplace("jsLibs", getLibFiles(config["js"], ".js"));
 	jsAndCss_.emplace("jsOwn", getOwnFiles(config["js"], ".js"));
@@ -52,6 +52,11 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::jsOwn,this, "jsOwn");
 	dispMap(&seqApp::cssLibs,this, "cssLibs");
 	dispMap(&seqApp::cssOwn,this, "cssOwn");
+
+	dispMap_2arg(&seqApp::sort,this, "sort", "(\\w+)/(\\w+)");
+	dispMap_1arg(&seqApp::muscleAln,this, "muscle", "(\\w+)");
+	dispMap_1arg(&seqApp::removeGaps,this, "removeGaps", "(\\w+)");
+	dispMap_1arg(&seqApp::complementSeqs,this, "complement", "(\\w+)");
 
 
 	//general information
@@ -107,6 +112,67 @@ void seqApp::colorsData() {
 	r["-"] = "#e6e6e6";
 
 	response().out() << r;
+}
+
+void seqApp::sort(std::string uid, std::string sortBy){
+	bib::scopedMessage mess("sort", std::cout, debug_);
+	if(seqs_.containsRecord(uid)){
+		if(seqs_.recordValid(uid)){
+			ret_json();
+			auto ret = seqs_.sort(uid, sortBy);
+			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+void seqApp::muscleAln(std::string uid){
+	bib::scopedMessage mess("muscleAln", std::cout, debug_);
+	if(seqs_.containsRecord(uid)){
+		if(seqs_.recordValid(uid)){
+			ret_json();
+			auto ret = seqs_.muscle(uid);
+			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+void seqApp::removeGaps(std::string uid){
+	bib::scopedMessage mess("removeGaps", std::cout, debug_);
+	if(seqs_.containsRecord(uid)){
+		if(seqs_.recordValid(uid)){
+			ret_json();
+			auto ret =  seqs_.removeGaps(uid);
+			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+void seqApp::complementSeqs(std::string uid){
+	bib::scopedMessage mess("complementSeqs", std::cout, debug_);
+	if(seqs_.containsRecord(uid)){
+		if(seqs_.recordValid(uid)){
+			ret_json();
+			auto ret =  seqs_.rComplement(uid);
+			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
 }
 
 void seqApp::getColors(std::string num) {

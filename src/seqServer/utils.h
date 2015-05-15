@@ -6,7 +6,7 @@
  *      Author: nickhathaway
  */
 
-#include "utils/ip.hpp"
-#include "utils/jsonUtils.hpp"
-#include "utils/utils.hpp"
+#include "seqServer/utils/ip.hpp"
+#include "seqServer/utils/jsonUtils.hpp"
+#include "seqServer/utils/utils.hpp"
 

@@ -37,8 +37,8 @@ private:
 
 	table sampTable_;
 	table popTable_;
-	std::vector<readObject> popReads_;
-	std::vector<readObject> popReadsTranslated_;
+	//std::vector<readObject> popReads_;
+	//std::vector<readObject> popReadsTranslated_;
 	VecStr clusteredSampleNames_;
 
 	std::unordered_map<std::string, std::unordered_map<std::string, popInfo>> groupInfos_;
@@ -73,6 +73,9 @@ public:
 	virtual VecStr requiredOptions() const{
 		return VecStr{"mainDir", "resources", "projectName"};
 	}
+
+	void loadInPopSeqs();
+
 	//html
 	//main page
 	void mainPage();

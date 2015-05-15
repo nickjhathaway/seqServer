@@ -12,7 +12,7 @@ namespace bibseq {
 mpv::mpv(cppcms::service& srv, std::map<std::string, std::string> config)
 : bibseq::seqApp(srv, config)
 {
-	bool pass = configTest(config, requiredOptions(), "mpv");
+	configTest(config, requiredOptions(), "mpv");
 	pages_.emplace("mainPageHtml",make_path(config["resources"] + "mpv/mainPage.html") );
 	rootName_ = config["name"];
 	for(auto & fCache : pages_){

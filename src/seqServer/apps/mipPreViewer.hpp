@@ -22,8 +22,6 @@ private:
 	std::vector<bibseq::readObject> reads_;
 	cppcms::json::value readsJson_;
 	std::string rootName_;
-	bool needsUpdate_ = false;
-	bool debug_ = true;
 	static bfs::path make_path(const bfs::path fn) {
 		return fn;
 	}

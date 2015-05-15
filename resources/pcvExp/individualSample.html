@@ -81,10 +81,10 @@
 			//create SeqViewer for the population final sequences 
 			var cellWidth = 20;
 			var cellHeight = 25;
-			var SeqViewer = new SeqView("canvasDiv1",  mainData, cellWidth, cellHeight, baseColors, "#qualChart");
+			var SeqViewer = new njhSeqView("#dnaViewer",  mainData, cellWidth, cellHeight, baseColors, true, rName + "/showMinTreeForSample/" +sampName);
 			//var proteinMainData;
 	        //var proteinColors = {};
-	        var SeqViewerProtein = new SeqView("canvasDiv2",  proteinMainData, cellWidth, cellHeight, proteinColors);
+	        var SeqViewerProtein = new njhSeqView("#proteinViewer",  proteinMainData, cellWidth, cellHeight, proteinColors, false);
 			function init(){
 				$(window).bind("resize", function(){
 					SeqViewer.updateCanvas();
@@ -103,47 +103,6 @@
 			init();
 			//create the population table and populate it 
 
-			$('<button>',{
-			    text: 'Download Fasta',
-			    id: "popFastaSave"
-			}).appendTo('#donwPopFasta');
-			d3.select("#popFastaSave").append("a").attr("id", "popFastaDownLink");
-			d3.select("#popFastaSave").on("click", function(){
-			    var mainTable = [];
-			    //
-			    for (i = 0; i <mainData["seqs"].length ; i++) { 
-					mainTable.push([">" + mainData["seqs"][i]["name"]]);
-					mainTable.push([mainData["seqs"][i]["seq"]]);
-				}
-			    //console.log(mainTable);
-			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
-			  	var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainTable));
-			  	d3.select("#popFastaDownLink").attr("download", sampName + ".fasta");
-			  	d3.select("#popFastaDownLink").attr("href", imgsrc);
-			  	var a = $("#popFastaDownLink")[0];
-			  	a.click();
-			});
-			$('<button>',{
-			    text: 'Download Fasta',
-			    id: "proteinFastaSave"
-			}).appendTo('#downProteinFasta');
-			d3.select("#proteinFastaSave").append("a").attr("id", "proteinFastaDownLink");
-			d3.select("#proteinFastaSave").on("click", function(){
-			    var mainTable = [];
-			    //
-			    for (i = 0; i <proteinMainData["seqs"].length ; i++) { 
-					mainTable.push([">" + proteinMainData["seqs"][i]["name"]]);
-					mainTable.push([proteinMainData["seqs"][i]["seq"]]);
-				}
-			    //console.log(mainTable);
-			  	//var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainPopInfoTab["tab"]));
-			  	var imgsrc = 'data:text/plain;base64,'+ btoa(d3.csv.format(mainTable));
-			  	d3.select("#proteinFastaDownLink").attr("download", sampName + "_protein.fasta");
-			  	d3.select("#proteinFastaDownLink").attr("href", imgsrc);
-			  	var a = $("#proteinFastaDownLink")[0];
-			  	a.click();
-			});
-		    $("<a href = /" + rName + "/showMinTreeForSample/" +sampName +" >Show Minimum Spanning Tree</a>").appendTo("#minTreeDiv");
 		});
 		
     </script>
@@ -163,27 +122,11 @@
 	    <div class="panel panel-primary">
 			<div class="panel-heading"><h1>Haplotypes Sequences</h1></div>
 		</div>
-	    <div id= "minTreeDiv" style="border:2px solid black;  padding: 2px;margin: 5px;width: 100px"> </div>
-	    <div id= "donwPopFasta" style="border:2px solid black;  padding: 2px;margin: 5px;width: 100px" ></div>
-	    <div id="canvasDiv1" class = "SeqView">
-	    	<div id="rightSlider"></div>
-		    <canvas id="canvas"></canvas>
-		    <div id="bottomSlider"></div>
-		    <div id="pop-up"><p id="info"></p></div>
-	      	<div id="select"></div>
-	    </div>
-	    <div id = "qualChart"></div>
+		<div id = "dnaViewer"></div>
 	    <div class="panel panel-primary">
 			<div class="panel-heading"><h1>Haplotypes Possible Protein Sequences</h1></div>
 		</div>
-	    <div id= "downProteinFasta" style="border:2px solid black;  padding: 2px;margin: 5px;width: 100px" ></div>
-	   	<div id="canvasDiv2" class = "SeqView">
-	    	<div id="rightSlider"></div>
-		    <canvas id="canvas"></canvas>
-		    <div id="bottomSlider"></div>
-		    <div id="pop-up"><p id="info"></p></div>
-	      	<div id="select"></div>
-	    </div>
+		<div id = "proteinViewer"></div>
     </div>
   </body>
 </html>

@@ -24,7 +24,7 @@ Json::Value cppcmsJsonToJson(const cppcms::json::value& val);
 cppcms::json::value jsonToCppcmsJson(const Json::Value & val);
 
 template<typename T>
-cppcms::json::value seqsToJson(const std::vector<T> & reads){
+cppcms::json::value seqsToJson(const std::vector<T> & reads, const std::string & uid){
   cppcms::json::value ret;
   auto& seqs = ret["seqs"];
   //find number of reads
@@ -33,6 +33,7 @@ cppcms::json::value seqsToJson(const std::vector<T> & reads){
   uint64_t maxLen = 0;
   bibseq::readVec::getMaxLength(reads, maxLen);
   ret["maxLen"] = maxLen;
+  ret["uid"] = uid;
   for(const auto & pos : iter::range(reads.size())){
   	seqs[pos]= jsonToCppcmsJson(reads[pos].seqBase_.toJson());
   }
