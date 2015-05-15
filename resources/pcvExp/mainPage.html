@@ -10,6 +10,7 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
 	<style>
 		.container {
 			padding-right: 15px;
@@ -41,13 +42,19 @@
 			var mouseLeaveC = "#FFF";
 			var addTo = "#sampLinks";
 			createLinksTableDifferentLinks(addTo, linkPre, sampNames, encodedSampNames,8, mouseOverC, mouseLeaveC);
-			
 			var groupNames;
 			ajax("/" + rName + "/getGroupNames", function(gn){ groupNames = gn; });
 			var linkPreGroup = "/" + rName + "/showSubGroupsPage/";
 			var addToGroup = "#groupLinks";
 			createLinksTable(addToGroup, linkPreGroup, groupNames,cols, mouseOverC, mouseLeaveC);
-			
+			d3.select("#groupsDropdownMenu")
+				.selectAll(".gDrop")
+				.data(groupNames)
+				.enter()
+					.append("li")
+					.append("a")
+						.attr("href",function(d){return linkPreGroup + d;} )
+						.text(function(d){return d;});
 			//get the seq and color data for the sequence view of the population sequences 
 			var mainData;
 	        var baseColors = {};
@@ -123,6 +130,33 @@
 		});
 		
     </script>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/ssv">Home</a></li>
+            <li class=""><a href="/ssv/showExtractionInfo">Extraction Info</a></li>
+            <li class="Samples">
+              <a href="./Theme Template for Bootstrap_files/Theme Template for Bootstrap.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Groups<span class="caret"></span></a>
+              <ul id = "groupsDropdownMenu" class="dropdown-menu" role="menu">
+
+              </ul>
+            </li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+    
     <div class="container theme-showcase" role="main">
 		<div class="jumbotron">
 			<h1 id="projName"></h1>

@@ -20,14 +20,10 @@ bool seqApp::configTest(const MapStrStr & config,
 		if(config.find(check) == config.end()){
 			passed = false;
 			missing.emplace_back(check);
-			//warnings.emplace_back("Config doesn't contain " + check);
 		}
 	}
 	//print warning messaging for anything missing from config
 	if(!passed){
-		//std::cerr << bib::bashCT::red << bib::bashCT::bold;
-		//printVector(warnings, "\n", std::cerr);
-		//std::cerr << bib::bashCT::reset << std::endl;
 		throw configException{nameOfClass,missing};
 	}
 	return passed;
@@ -47,6 +43,7 @@ seqApp::seqApp(cppcms::service& srv,
 	jsAndCss_.emplace("jsOwn", getOwnFiles(config["js"], ".js"));
 	jsAndCss_.emplace("cssLibs",getLibFiles(config["css"], ".css"));
 	jsAndCss_.emplace("cssOwn",getOwnFiles(config["css"], ".css"));
+
 	//js and css loading
 	dispMap(&seqApp::jsLibs,this, "jsLibs");
 	dispMap(&seqApp::jsOwn,this, "jsOwn");
@@ -61,6 +58,7 @@ seqApp::seqApp(cppcms::service& srv,
 
 	//general information
 	dispMap(&seqApp::colorsData,this, "baseColors");
+	dispMap(&seqApp::getProteinColors, this, "proteinColors");
 
 	dispMap_1arg(&seqApp::getColors,this, "getColors", "(\\d+)");
 
@@ -112,6 +110,35 @@ void seqApp::colorsData() {
 	r["-"] = "#e6e6e6";
 
 	response().out() << r;
+}
+
+
+void seqApp::getProteinColors(){
+	ret_json();
+	cppcms::json::value ret;
+  ret["A"] = "#14b814";
+  ret["*"] = "#e6e6e6";
+  ret["L"] = "#14c86e";
+  ret["F"] = "#13d0a1";
+  ret["C"] = "#13d8d8";
+  ret["D"] = "#12ade0";
+  ret["E"] = "#117de8";
+  ret["G"] = "#134aef";
+  ret["H"] = "#1919f0";
+  ret["I"] = "#541ff2";
+  ret["K"] = "#8c25f4";
+  ret["M"] = "#c32bf5";
+  ret["N"] = "#f631f6";
+  ret["P"] = "#f838c8";
+  ret["Q"] = "#f93e9c";
+  ret["R"] = "#fa4572";
+  ret["S"] = "#fb4b4b";
+  ret["T"] = "#fc7c52";
+  ret["V"] = "#fdab58";
+  ret["W"] = "#fed65f";
+  ret["Y"] = "#ffff66";
+	ret["-"] = "#e6e6e6";
+	response().out() << ret;
 }
 
 void seqApp::sort(std::string uid, std::string sortBy){

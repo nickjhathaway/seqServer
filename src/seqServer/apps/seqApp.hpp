@@ -92,16 +92,13 @@ protected:
 	}
 
 	void colorsData();
+	void getProteinColors();
 
 	void getColors(std::string num);
 
 	std::map<std::string, bib::FileCache> pages_;
-	std::map<std::string, bib::FilesCache> jsAndCss_;
-	//bib::FilesCache jsLibs_;
-	//bib::FilesCache jsOwn_;
 
-	//bib::FilesCache cssLibs_;
-	//bib::FilesCache cssOwn_;
+	std::map<std::string, bib::FilesCache> jsAndCss_;
 
 
 public:

@@ -81,7 +81,7 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	dispMap_1arg(&pcvExp::getSubGroupsForGroup, this, "getSubGroupsForGroup", "(\\w+)");
 	dispMap_1arg(&pcvExp::getGroupPopInfos, this, "getGroupPopInfos", "(\\w+)");
 
-	dispMap(&pcvExp::getProteinColors, this, "proteinColors");
+
 
 
 	dispMap(&pcvExp::getAllSampleNames, this, "allSampleNames");
@@ -255,33 +255,7 @@ void pcvExp::getPopInfo() {
 	response().out() << ret;
 }
 
-void pcvExp::getProteinColors(){
-	ret_json();
-	cppcms::json::value ret;
-  ret["A"] = "#14b814";
-  ret["*"] = "#e6e6e6";
-  ret["L"] = "#14c86e";
-  ret["F"] = "#13d0a1";
-  ret["C"] = "#13d8d8";
-  ret["D"] = "#12ade0";
-  ret["E"] = "#117de8";
-  ret["G"] = "#134aef";
-  ret["H"] = "#1919f0";
-  ret["I"] = "#541ff2";
-  ret["K"] = "#8c25f4";
-  ret["M"] = "#c32bf5";
-  ret["N"] = "#f631f6";
-  ret["P"] = "#f838c8";
-  ret["Q"] = "#f93e9c";
-  ret["R"] = "#fa4572";
-  ret["S"] = "#fb4b4b";
-  ret["T"] = "#fc7c52";
-  ret["V"] = "#fdab58";
-  ret["W"] = "#fed65f";
-  ret["Y"] = "#ffff66";
-	ret["-"] = "#e6e6e6";
-	response().out() << ret;
-}
+
 
 void pcvExp::getPopProtenData(){
 	ret_json();

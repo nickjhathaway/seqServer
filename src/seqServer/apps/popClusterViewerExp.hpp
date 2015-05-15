@@ -95,7 +95,7 @@ public:
 	void getPopInfo();
 
 	void getPopProtenData();
-	void getProteinColors();
+
 
 	void showExtractionInfo();
 	void getIndexExtractionInfo();
