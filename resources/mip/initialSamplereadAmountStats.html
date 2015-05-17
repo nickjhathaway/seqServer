@@ -3,16 +3,6 @@
 <html>
   <head>
 	<title>All Samples Info</title>
-	<style>	
-	
-		
-
-		#qualChart, #popTable, #popChart {
-			position: relative;
-			clear: both;
-			top: 80px;
-		}
-	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -20,6 +10,18 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
+	<style>
+		.container {
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: 15px;
+			}
+		a:visited {
+			color:#8844CC;
+		}
+	</style>
   </head>
   <body>
 
@@ -34,102 +36,57 @@
 			//get sample names and the table with the sample names
 			var mainSampStatsInfoTab;
 			var sampNames;
-			ajax("/" + rName + "/allSampNames", function(mn) {
-				sampNames = mn;
-			});
+			ajax("/" + rName + "/allSampNames", function(mn) {sampNames = mn; });
 			ajax('/' + rName + '/getInitialReadStats/' + sampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
 
 			//create sample table 
-			var sampTab = createTable("#sampStatsTable");
-			updateTable(sampTab, mainSampStatsInfoTab["tab"],  mainSampStatsInfoTab["columnNames"]);
-			//create update click function 
-			function updateTableOnClick() {         
-			     var allVals = [];
-			     $(':checked', "#sampStatsTableMenu").each(function() {
-			       allVals.push($(this).val());
-			     });
-			     var currentColumnNames = _.intersection(mainSampStatsInfoTab["columnNames"], allVals);
-			     updateTable(sampTab, mainSampStatsInfoTab["tab"], currentColumnNames );;
+			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab, rName + "_allSampExtractInfo", true);	
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#sampNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentSampNames = _.intersection(sampNames, allVals);
+			    if(currentSampNames.length == 0){
+			    	mainPopInfoTab = {};
+			    }else{
+			    	ajax('/' + rName + '/getInitialReadStats/' + currentSampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			    }
+			 	sampleTable.updateWithData(mainSampStatsInfoTab);
 			};
-			//add column name checkboxes as needed
-			var inputs = d3.select("#sampStatsTableMenu").selectAll("input")
-				.data(mainSampStatsInfoTab["columnNames"])
-				.enter()
-				.append("label")
-					.html(function(d){return d;})
-					.attr("style", "border:2px solid black; padding: 2;")
-				.append("input")
-					.attr("type","checkbox")
-					.attr("name", "check")
-					.attr("checked", true)
-					.attr("value",function(d){return d;})
-					.attr("id", function(d){return d;});
+			//create samp menu 
+			var sampMenu = new njhCheckboxMenu("#sampNameMenu", sampNames, updateChartOnClick);
 
-			//add click function to the sample table menu inputs 
-			$('input', "#sampStatsTableMenu" ).click( updateTableOnClick );
-			//Add check all and uncheck all to the menu on their own line for easy viewing 
-			$('<br>').appendTo('#sampStatsTableMenu');
-			$('<a>',{
-			    text: 'Check All',
-			    href: "javascript:void(0);",
-			    id: "check-all"
-			}).appendTo('#sampStatsTableMenu');
-			$('<br>').appendTo('#sampStatsTableMenu');
-			$('<a>',{
-			    text: 'Uncheck All',
-			    href: "javascript:void(0);",
-			    id: "uncheck-all"
-			}).appendTo('#sampStatsTableMenu');
-			//add check all and uncheck all actions to the buttons
-			$('#check-all', "#sampStatsTableMenu").click(function(){
-			    $("input:checkbox", "#sampStatsTableMenu").prop('checked', true);
-			    updateTableOnClick();
-			  });
-			  $('#uncheck-all', "#sampStatsTableMenu").click(function(){
-			    $("input:checkbox", "#sampStatsTableMenu").prop('checked', false);
-			    updateTableOnClick();
-			});
-			//console.log(mainSampStatsInfoTab);
-			var xLabs = [];
-			for(obj in mainSampStatsInfoTab["tab"]){
-				//console.log(popInfoTab[obj]["popUID"]);
-				console.log(mainSampStatsInfoTab["tab"][obj]);
-				console.log(obj);
-				xLabs.push(mainSampStatsInfoTab["tab"][obj]["sampleName"]);
-			}
-			console.log(xLabs);
-		    var chart = c3.generate({
-		        data: {
-		            json: mainSampStatsInfoTab["tab"],
-		            keys: {
-		                value: mainSampStatsInfoTab["numericColNames"],
-		            }, 
-		            axes: {
-		            	totalInitial :'y'
-		            }, 
-		            type: 'bar'
-		        },
-		        axis: {
-		            x: {
-		                type: 'category',
-						categories: xLabs ,
-			            tick: {
-			                rotate: 75
-			            },
-			            height: 130
-		            }
-		        },
-		        bindto: "#chart"
-			});
-			chart.hide(["assembled", "discarded", "unassembled", "matchingExtArm", "UnmatachedExtArm", "FailedLigationArm", "readsFailingBarcodeFiltering", "readsFailingMinlen", "readsFailingQuality"]);
 		});
+		//"assembled", "discarded", "unassembled", "matchingExtArm", "UnmatachedExtArm", "FailedLigationArm", "readsFailingBarcodeFiltering", "readsFailingMinlen", "readsFailingQuality"
 		
     </script>
-    
-    <div id = "sampStatsTable">
-    	<div id = "sampStatsTableMenu"></div>
-    </div>
-    <div id = "chart">
+    	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	      <div class="container">
+	        <div class="navbar-header">
+	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+	            <span class="sr-only">Toggle navigation</span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          
+	        </div>
+	        <div id="navbar" class="navbar-collapse collapse">
+	          <ul class="nav navbar-nav">
+	            <li class=""><a href="/ssv">Home</a></li>
+	          </ul>
+	        </div><!--/.nav-collapse -->
+	      </div>
+	    </nav>
+    	<div class="container theme-showcase" role="main">
+			<div class="jumbotron">
+				<h1>Initial Read Extraction Info</h1>
+			</div>
+			 <div id = "sampStatsTable">
+		</div>
+   
     	
     </div>
   </body>

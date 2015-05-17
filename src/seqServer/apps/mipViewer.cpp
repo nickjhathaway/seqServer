@@ -183,6 +183,9 @@ miv::miv(cppcms::service& srv, std::map<std::string, std::string> config) :
 	dispMap_1arg(&miv::popInfoData, this, "popInfo", "(\\w+)");
 	dispMap_1arg(&miv::popSeqData, this, "popSeqData", "(\\w+)");
 
+	//
+	dispMap_1arg(&miv::getGeneForMipName, this, "getGeneForMipName", "(\\w+)");
+
 	//general information
 
 	dispMap(&miv::rootName, this, "rootName");
@@ -343,19 +346,35 @@ void miv::mipNamesForSample(std::string sampName){
 	response().out() << ret;
 }
 
+void miv::getGeneForMipName(std::string mipName){
+	bib::scopedMessage mess(__func__, std::cout, debug_);
+	std::cout << "getGeneForMipName: mipName: " << mipName << std::endl;
+	ret_json();
+
+	auto pos = mipName.rfind("_");
+	cppcms::json::value ret = mipName.substr(0, pos);
+	/**@todo do an acutal look up*/
+	response().out() << ret;
+}
+
+
+
 void miv::showInitialReadStats(){
 	auto search = pages_.find("initialSamplereadAmountStatsHtml");
 	response().out() << search->second.get("/ssv", rootName_);
 }
 
-void miv::getInitialReadStats(std::string sampleNames){
+void miv::getInitialReadStats(std::string sampleNames) {
 	ret_json();
 	auto sampToks = bibseq::tokenizeString(sampleNames, "DELIM");
 	auto containsSampName = [&sampToks](const std::string & str) {
 		return bib::in(str, sampToks);
 	};
 	auto tab = stats_.extractByComp("sampleName", containsSampName);
-	response().out() << tableToJsonRowWise(stats_,"mipName", VecStr{} );
+	response().out() << tableToJsonRowWise(stats_, "sampleName", VecStr {
+			"assembled", "discarded", "unassembled", "matchingExtArm",
+			"UnmatachedExtArm", "FailedLigationArm", "readsFailingBarcodeFiltering",
+			"readsFailingMinlen", "readsFailingQuality" });
 }
 
 
@@ -587,7 +606,7 @@ void miv::popInfoData(std::string mipName) {
 	if(search == mipAnalysisFolders_.end()) {
 		std::cout << "Couldn't find mipName: " << mipName << std::endl;
 	} else {
-		ret = tableToJsonRowWise(bibseq::table(appendSlashRet(search->second.string()) + "population/populationCluster.tab.txt", "\t", true), "h_popUID", VecStr{});
+		ret = tableToJsonRowWise(bibseq::table(appendSlashRet(search->second.string()) + "population/populationCluster.tab.txt", "\t", true), "h_popUID", VecStr{"h_readCnt"}, VecStr{"p_sampleTotal", "p_totalInputClusters", "p_readTotal", "p_barcodeTotal", "p_finalHaplotypeNumber"});
 	}
 	response().out() << ret;
 }
@@ -646,12 +665,17 @@ void miv::popSeqData(std::string mipName) {
 	cppcms::json::value ret;
 	auto search = mipAnalysisFolders_.find(mipName);
 	if(search != mipAnalysisFolders_.end()){
-		if(popReads_.find(mipName) == popReads_.end()) {
+		std::string mipUid = mipName + "_seqs";
+		if(!seqs_.containsRecord(mipUid) || !seqs_.recordValid(mipUid)){
 			bibseq::readObjectIO reader;
 			reader.read("fastq", appendSlashRet(search->second.string()) + "population/" + mipName + ".fastq",false);
-			popReads_[mipName] = reader.reads;
+			if(seqs_.containsRecord(mipUid)){
+				seqs_.updateCache(mipUid, std::make_shared<std::vector<readObject>>(reader.reads));
+			}else{
+				seqs_.addToCache(mipUid, std::make_shared<std::vector<readObject>>(reader.reads));
+			}
 		}
-		ret = seqsToJson(popReads_[mipName], mipName);
+		ret = seqs_.getJson(mipUid);
 	}else{
 		std::cout << "popSeqData: " << "couldn't find mipName: " << mipName << std::endl;
 	}
@@ -704,12 +728,17 @@ void miv::oneSampInitSeqData(std::string mipName, std::string sampName) {
 		}else{
 			auto fileName = appendSlashRet(mSearch->second.string()) + mipName + "_clustered.fastq";
 			if(bfs::exists(bfs::path(fileName))){
-				if(clusteredReads_[mipName][sampName].empty()) {
+				std::string uid = mipName + "_" + sampName  + "_initialSeqs";
+				if(!seqs_.containsRecord(uid) || !seqs_.recordValid(uid)){
 					bibseq::readObjectIO reader;
 					reader.read("fastq", fileName,false);
-					clusteredReads_[mipName][sampName] = reader.reads;
+					if(seqs_.containsRecord(uid)){
+						seqs_.updateCache(uid, std::make_shared<std::vector<readObject>>(reader.reads));
+					}else{
+						seqs_.addToCache(uid, std::make_shared<std::vector<readObject>>(reader.reads));
+					}
 				}
-				ret = seqsToJson(clusteredReads_[mipName][sampName], sampName + "_" + mipName);
+				ret = seqs_.getJson(uid);
 			}else{
 				std::cout << "oneSampInitSeqData: " << " couldn't find clustered file: " << fileName << std::endl;
 			}
@@ -726,12 +755,17 @@ void miv::oneSampFinalSeqData(std::string mipName, std::string sampName) {
 	if(search != mipAnalysisFolders_.end()){
 		auto fileName = appendSlashRet(search->second.string()) + "final/" + sampName + ".fastq";
 		if(bfs::exists(bfs::path(fileName))){
-			if(filteredReads_[mipName][sampName].empty()) {
+			std::string uid = mipName + "_" + sampName  + "_finalSeqs";
+			if(!seqs_.containsRecord(uid) || !seqs_.recordValid(uid)){
 				bibseq::readObjectIO reader;
 				reader.read("fastq", fileName,false);
-				filteredReads_[mipName][sampName] = reader.reads;
+				if(seqs_.containsRecord(uid)){
+					seqs_.updateCache(uid, std::make_shared<std::vector<readObject>>(reader.reads));
+				}else{
+					seqs_.addToCache(uid, std::make_shared<std::vector<readObject>>(reader.reads));
+				}
 			}
-			ret = seqsToJson(filteredReads_[mipName][sampName], sampName + "_" + mipName);
+			ret = seqs_.getJson(uid);
 		}else{
 			std::cout << "oneSampFinalSeqData: " << " couldn't find file " << fileName << std::endl;
 		}
@@ -890,25 +924,37 @@ void miv::oneGeneOneSampAlnData(std::string geneName, std::string sampName){
 			if(!fexists(refName)){
 				std::cout << "showOneGeneOneSamp: couldn't find genomic seq for " << geneName << " at " << refName << std::endl;
 			}else{
-				auto ref = readObjectIO::getReferenceSeq(refName, "fasta", false, maxLen);
-				std::vector<readObject> allReads;
-				//find all mip target data
-				for(const auto & mipAnalysis : mipAnalysisFolders_){
-					if(beginsWith(mipAnalysis.first, geneName)){
-						std::string seqFilename = mipAnalysis.second.string() + "/final/" + sampName + ".fastq";
-						if(fexists(seqFilename)){
-							addOtherVec(allReads, readObjectIO::getReferenceSeq(seqFilename, "fastq", true, maxLen));
+				std::string uid = geneName + "_" + sampName  + "_alnGenomicSeqs";
+				if(!seqs_.containsRecord(uid) || !seqs_.recordValid(uid)){
+					auto ref = readObjectIO::getReferenceSeq(refName, "fasta", false, maxLen);
+					std::vector<readObject> allReads;
+					//find all mip target data
+					for(const auto & mipAnalysis : mipAnalysisFolders_){
+						if(beginsWith(mipAnalysis.first, geneName)){
+							std::string seqFilename = mipAnalysis.second.string() + "/final/" + sampName + ".fastq";
+							if(fexists(seqFilename)){
+								addOtherVec(allReads, readObjectIO::getReferenceSeq(seqFilename, "fastq", true, maxLen));
+							}
+						}
+					}
+					if(allReads.empty()){
+						std::cout << "showOneGeneOneSamp: " << "couldn't find any reads for samp: " << sampName << " for geneName: " << geneName << std::endl;
+					}else{
+						//align and return
+						readVecSorter::sortReadVector(allReads, "name", false);
+						aligner alignerObj(maxLen,gapScoringParameters(5,1,0,0,0,0), substituteMatrix::createDegenScoreMatrixCaseInsensitive(2,-2));
+						auto alns = alignTargets(allReads, ref.front(), alignerObj);
+						if(seqs_.containsRecord(uid)){
+							seqs_.updateCache(uid, std::make_shared<std::vector<readObject>>(alns));
+						}else{
+							seqs_.addToCache(uid, std::make_shared<std::vector<readObject>>(alns));
 						}
 					}
 				}
-				if(allReads.empty()){
-					std::cout << "showOneGeneOneSamp: " << "couldn't find any reads for samp: " << sampName << " for geneName: " << geneName << std::endl;
+				if(seqs_.recordValid(uid)){
+					ret = seqs_.getJson(uid);
 				}else{
-					//align and return
-					readVecSorter::sortReadVector(allReads, "name", false);
-					aligner alignerObj(maxLen,gapScoringParameters(5,1,0,0,0,0), substituteMatrix::createDegenScoreMatrixCaseInsensitive(2,-2));
-					auto alns = alignTargets(allReads, ref.front(), alignerObj);
-					ret = seqsToJson(alns, sampName + "_" + geneName);
+					std::cout << "showOneGeneOneSamp: " << "couldn't find any reads for samp: " << sampName << " for geneName: " << geneName << std::endl;
 				}
 			}
 		}
@@ -942,6 +988,7 @@ int mipViewer(std::map<std::string, std::string> inputCommands){
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
   appConfig["genomeDir"] = appendSlashRet(genomeDir);
+  std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);
 		app.applications_pool().mount(

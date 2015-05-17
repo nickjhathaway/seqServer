@@ -9,7 +9,14 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
+	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
 	<style>
+		.container {
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: 15px;
+			}
 		a:visited {
 			color:#8844CC;
 		}
@@ -36,9 +43,7 @@
 			createLinksTable(addTo, linkPre, gNames,cols, mouseOverC, mouseLeaveC);
 			
 			var sampNames;
-			ajax("/" + rName + "/allSampNames", function(mn) {
-				sampNames = mn;
-			});
+			ajax("/" + rName + "/allSampNames", function(mn) { sampNames = mn;  });
 			var linkPreSamp = "/" + rName + "/oneSampAllMipInfo/";
 			var addToSamp = "#sampLinks";
 			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"sPanel\"></div>");
@@ -54,6 +59,25 @@
 			createLinksTable(addToSampStats, linkPreSampStats, sampNames,cols, mouseOverC, mouseLeaveC);
 		});
 	</script>
+	    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	      <div class="container">
+	        <div class="navbar-header">
+	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+	            <span class="sr-only">Toggle navigation</span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          
+	        </div>
+	        <div id="navbar" class="navbar-collapse collapse">
+	          <ul class="nav navbar-nav">
+	            <li class="active"><a href="/ssv">Home</a></li>
+	          </ul>
+	        </div><!--/.nav-collapse -->
+	      </div>
+	    </nav>
+	     </nav>
 		<div class="container theme-showcase" role="main">
 			<div class="jumbotron">
 				<h1>Mips</h1>

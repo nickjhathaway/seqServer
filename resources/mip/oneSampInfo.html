@@ -11,25 +11,28 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs"></script>
 	<link rel="stylesheet" href="/ssv/cssOwn"></script>
-  </head>
-  <body >
-  	<div></div>
-    <script>
-    	$(document).ready(function(){
-    		/*
-    		 * 	<style>
-		#qualChart, #qualChartFinal, h1, #popTable, #chart {
-			position: relative;
-			clear: both;
-			top: 80px;
+	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
+	<style>
+		.container {
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: 15px;
+			}
+		a:visited {
+			color:#8844CC;
 		}
 	</style>
-    		 */
+  </head>
+  <body >
+    <script>
+    	$(document).ready(function(){
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			var currentSampName = locSplit.pop();
 			var currentPopName = locSplit.pop();
 			$("title", "head").html(currentPopName);
+			$("#titleName").html(currentPopName + ":" + currentSampName);
 			console.log(currentPopName);
 	    	var mainData;
 	    	var mainFinalData;
@@ -37,10 +40,15 @@
 			ajax('/' + rName + '/oneSampInitSeqData/' +currentPopName + "/" + currentSampName, function(md){ mainData = md; });
 			ajax('/' + rName + '/oneSampFinalSeqData/' +currentPopName + "/" + currentSampName, function(md){ mainFinalData = md; });
 			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			var geneName;
+			ajax("/" + rName + "/getGeneForMipName/" + currentPopName, function(gn){ geneName = gn; });
+			d3.select("#mipGeneLink").attr("href","/" + rName + "/geneInfo/" + geneName );
+			d3.select("#mipTargetLink").attr("href","/" + rName + "/mipInfo/" + currentPopName ).text(currentPopName);
+				
 			var cellWidth = 20;
 			var cellHeight = 25;
-			var SeqViewerInitial = new SeqView("canvasDiv1", mainData, cellWidth, cellHeight, baseColors, "#qualChart");
-			var SeqViewerFinal = new SeqView("canvasDiv2", mainFinalData, cellWidth, cellHeight, baseColors, "#qualChartFinal");
+			var SeqViewerInitial = new njhSeqView("#initialSeqs", mainData, cellWidth, cellHeight, baseColors, true);
+			var SeqViewerFinal = new njhSeqView("#finalSeqs", mainFinalData, cellWidth, cellHeight, baseColors, true,"/" + rName + "/showMinTree/" + currentPopName + "/" + currentSampName);
 
 			function init(){
 				$(window).bind("resize", function(){
@@ -60,150 +68,55 @@
 
 			//console.log(svg);
 			var mainPopInfoTab;
-			ajax('/' + rName + '/oneSampTabData/'+currentPopName + "/" + currentSampName, function(tab){ mainPopInfoTab = tab; });
-			var tab = createTable("#popTable");
-			var columnNames = mainPopInfoTab["columnNames"];
-			var popInfoTab = mainPopInfoTab["tab"];
-			var numericCols = mainPopInfoTab["numericColNames"];
-			updateTable(tab,popInfoTab,  columnNames);
-			function updateTableOnClick() {         
-			     var allVals = [];
-			     $('#popTableMenu :checked').each(function() {
-			       allVals.push($(this).val());
-			     });
-			     var currentColumnNames = _.intersection(columnNames, allVals);
-			     updateTable(tab,popInfoTab, currentColumnNames );;
-			 };
-			var inputs = d3.select("#popTableMenu").selectAll("input")
-				.data(columnNames)
-				.enter()
-				.append("label")
-					.html(function(d){return d;})
-					.attr("for",function(d){return d;})
-					.attr("style", "border:2px solid black; padding: 2;")
-				.append("input")
-					.attr("type","checkbox")
-					.attr("name", "check")
-					.attr("value",function(d){return d;})
-					.attr("id", function(d){return d;})
-					;
-				 ;
-			 $( '#popTableMenu input' ).click( updateTableOnClick );
-			 
-			var xLabs = [];
-			for(obj in popInfoTab){
-				xLabs.push(popInfoTab[obj]["popUID"]);
-			}
-			 chart = c3.generate({
-		        data: {
-		            json: popInfoTab,
-		            keys: {
-		                value: numericCols,
-		            }, 
-		            axes: {
-		            	hapSampCNT :'y',
-		            	hapReadCNT :'y2'
-		            }, 
-		            type: 'bar'
-		        },
-		        axis: {
-		            x: {
-		                type: 'category',
-						categories: xLabs ,
-			            tick: {
-			                rotate: 75
-			            },
-			            height: 130
-		            },
-		            y2: {
-		            	show:true
-		            }
-		        },
-		        bindto: "#chart"
-					});
-		$("#minTree")
-			.attr("href", "/" + rName + "/showMinTree/" + currentPopName + "/" + currentSampName)
-			.html("Show Tree");
-		
-		
-		var allBarcodeInfo;
-		console.log(rName);
-		ajax('/' + rName + '/barcodeInfo/' +currentPopName + "/" + currentSampName, function(tab){ allBarcodeInfo = tab; });
-		console.log(allBarcodeInfo);
-		
-		//final cluster info
-		var clusBarInfoTabMaster = allBarcodeInfo["clusterBarInfo"];
-		var clusBarTabElement = createTable("#clusBarTab");
-		var clusBarColumnNames = clusBarInfoTabMaster["columnNames"];
-		var clusBarTab = clusBarInfoTabMaster["tab"];
-		updateTable(clusBarTabElement, clusBarTab,  clusBarColumnNames);
-		//barcode coverage after
-		var covAfterInfoTabMaster = allBarcodeInfo["coverageAfter"];
-		var covAfterTabElement = createTable("#covAfterTab");
-		var covAfterColumnNames = covAfterInfoTabMaster["columnNames"];
-		var covAfterTab = covAfterInfoTabMaster["tab"];
-		updateTable(covAfterTabElement, covAfterTab,  covAfterColumnNames);
-		
-		//barcode performance
-		/*var barPerInfoTabMaster = allBarcodeInfo["performance"];
-		var barPerTabElement = createTable("#barPerTab");
-		var barPerColumnNames = barPerInfoTabMaster["columnNames"];
-		var barPerTab = barPerInfoTabMaster["tab"];
-		updateTable(barPerTabElement, barPerTab,  barPerColumnNames);*/
-		//barcode coverage before  coverageBefore
-		var covBeforeInfoTabMaster = allBarcodeInfo["coverageBefore"];
-		var covBeforeTabElement = createTable("#covBeforeTab");
-		var covBeforeColumnNames = covBeforeInfoTabMaster["columnNames"];
-		var covBeforeTab = covBeforeInfoTabMaster["tab"];
-		updateTable(covBeforeTabElement, covBeforeTab,  covBeforeColumnNames);
-		//barcode afterIden uniqueIdentical
-		var uniIdenInfoTabMaster = allBarcodeInfo["uniqueIdentical"];
-		var uniIdenTabElement = createTable("#uniIdenTab");
-		var uniIdenColumnNames = uniIdenInfoTabMaster["columnNames"];
-		var uniIdenTab = uniIdenInfoTabMaster["tab"];
-		updateTable(uniIdenTabElement, uniIdenTab,  uniIdenColumnNames);		
-		//barcode afterClus uniqueCluster
-		var uniClusInfoTabMaster = allBarcodeInfo["uniqueCluster"];
-		var uniClusTabElement = createTable("#uniClusTab");
-		var uniClusColumnNames = uniClusInfoTabMaster["columnNames"];
-		var uniClusTab = uniClusInfoTabMaster["tab"];
-		updateTable(uniClusTabElement, uniClusTab,  uniClusColumnNames);
+			ajax('/' + rName + '/oneSampTabData/'+ currentPopName + "/" + currentSampName, function(tab){ mainPopInfoTab = tab; });
+			var popTable = new njhTable("#popTable", mainPopInfoTab, currentPopName + "_" + currentSampName + "_popInfo", true);
+			var allBarcodeInfo;
+			ajax('/' + rName + '/barcodeInfo/' +currentPopName + "/" + currentSampName, function(tab){ allBarcodeInfo = tab; });
+			//final cluster info
+			var clusBarTable = new njhTable("#clusBarTab", allBarcodeInfo["clusterBarInfo"], currentPopName + "_" + currentSampName + "_clusBarInfo", false);
+			//barcode coverage after
+			var coverageAfterTable = new njhTable("#covAfterTab", allBarcodeInfo["coverageAfter"], currentPopName + "_" + currentSampName + "_coverageAfterInfo", false);
+			//barcode performance
+			//var performanceTable = new njhTable("#barPerTab", allBarcodeInfo["performance"], currentPopName + "_" + currentSampName + "_performanceInfo", false);
+			//barcode coverage before  coverageBefore
+			var coverageBeforeTable = new njhTable("#covBeforeTab", allBarcodeInfo["coverageBefore"], currentPopName + "_" + currentSampName + "_coverageBeforeInfo", false);
+			//barcode afterIden uniqueIdentical	
+			var uniqueIdenticalTable = new njhTable("#uniIdenTab", allBarcodeInfo["uniqueIdentical"], currentPopName + "_" + currentSampName + "_uniqueIdenticalInfo", false);	
+			//barcode afterClus uniqueCluster
+			var uniqueClusterTable = new njhTable("#uniClusTab", allBarcodeInfo["uniqueCluster"], currentPopName + "_" + currentSampName + "_uniqueClusterInfo", false);
 		});
     </script>
-    <a id = "minTree"> </a>
-	<h1>Initial Clustering</h1>
-    <div id="canvasDiv1" class = "SeqView">
-    	<div id="rightSlider"></div>
-	    <canvas id="canvas"></canvas>
-	    <div id="bottomSlider"></div>
-	    <div id="pop-up">
-        	<p id="info"></p>
-      	</div>
-      	<div id="select"></div>
-    </div>
-    <div id = "qualChart">
-    	
-    </div>
-    <h1>Final Clusters with Filtering for chimeras and low freq</h1>
-        <div id="canvasDiv2" class = "SeqView">
-    	<div id="rightSlider"></div>
-	    <canvas id="canvas"></canvas>
-	    <div id="bottomSlider"></div>
-	    <div id="pop-up">
-        	<p id="info"></p>
-      	</div>
-      	<div id="select"></div>
-    </div>
-    <div id = "qualChartFinal" class="qualGraph">
-    	
-    </div>
-    
-    <div id = "popTable">
-    	<div id = "popTableMenu"></div>
-    </div>
-    <div id = "chart">
-    	
-    </div>
+            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	      <div class="container">
+	        <div class="navbar-header">
+	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+	            <span class="sr-only">Toggle navigation</span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          
+	        </div>
+	        <div id="navbar" class="navbar-collapse collapse">
+	          <ul class="nav navbar-nav">
+	            <li class="active"><a href="/ssv">Home</a></li>
+	            <li class=""><a id = "mipGeneLink" href="">Mip Targets</a></li>
+				<li class=""><a id = "mipTargetLink" href=""></a></li>
+	          </ul>
+	        </div><!--/.nav-collapse -->
+	      </div>
+	       </nav>
+    <div class="container theme-showcase" role="main">
+		<div class="jumbotron">
+			<h1 id="titleName"></h1>
+		</div>
+		<h1>Initial Clustering</h1>
+		<div id = "initialSeqs"></div>
+    	<h1>Final Clusters with Filtering for chimeras and low freq</h1>
+    	<div id = "finalSeqs"></div>
+    	<div id = "popTable"> </div>
+
+
     
     <p></p>
     <div class="container theme-showcase" role="main">
@@ -245,6 +158,6 @@
     	</div>
     </div>
 	</div>
-
+</div>
   </body>
 </html>

@@ -31,17 +31,7 @@ table getSampleStats(const std::string & dirName, bool verbose);
 class miv: public bibseq::seqApp {
 private:
 
-	//bib::FileCache mainPageHtml_;
-	//bib::FileCache oneGeneInfoHtml_;
-	//bib::FileCache oneSampAllMipInfoHtml_;
-	//bib::FileCache oneMipInfoHtml_;
-	//bib::FileCache allSampsInfoHtml_;
-	//bib::FileCache oneSampInfoHtml_;
-	//bib::FileCache minTreeViewHtml_;
-	//bib::FileCache popInfoHtml_;
-	//bib::FileCache initialSamplereadAmountStatsHtml_;
-	//bib::FileCache initialSamplereadAmountStatsPerSampleHtml_;
-	//bib::FileCache redirectPageHtml_;
+
 
 	//by mip target
 	std::unordered_map<std::string, std::vector<bibseq::readObject>> popReads_;
@@ -117,7 +107,7 @@ public:
 	void allSampsInfoData(std::string mipName, std::string sampNames) ;
 	void mipSampleNames(std::string mipName) ;
 
-
+	void getGeneForMipName(std::string mipName);
 
 	void popSeqData(std::string mipName) ;
 

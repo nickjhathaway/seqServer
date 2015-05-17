@@ -11,17 +11,16 @@
 	<script src="/ssv/jsOwn"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
 	<style>
-		#qualChart, #popTable, #popChart{
-			clear: both;
-			top: 0px;
-			margin: 10px;
-			
-		}
-		.SeqView {
-			clear: both;
-			top: 0px;
-			margin: 10px;
+		.container {
+			padding-right: 15px;
+			padding-left: 15px;
+			margin-right: auto;
+			margin-left: 15px;
+			}
+		a:visited {
+			color:#8844CC;
 		}
 	</style>
   </head>
@@ -36,12 +35,13 @@
 			var rName = locSplit[2];
 			var sampName = locSplit.pop();
 			var geneName = locSplit.pop();
+			$("#titleName").html(sampName + ":" + geneName);
 			ajax('/' + rName + '/oneGeneOneSampAlnData/' + geneName + "/" + sampName, function(md){ mainData = md; });
 			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
 			
 			var cellWidth = 20;
 			var cellHeight = 25;
-			var SeqViewer = new SeqView("canvasDiv1",  mainData, cellWidth, cellHeight, baseColors, "#qualChart");
+			var SeqViewer = new njhSeqView("#seqView",  mainData, cellWidth, cellHeight, baseColors, false);
 			
 			function init(){
 				$(window).bind("resize", function(){
@@ -58,45 +58,38 @@
 		});
 		
     </script>
-<div class="bs-example">
-    <nav id="myNavbar" class="navbar navbar-default" role="navigation">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="container">
-			<div class="navbar-header">
-				<ul class="nav navbar-nav">
-					<li class="dropdown">
-						<a href="#" data-toggle="dropdown" class="dropdown-toggle">Sort<b class="caret"></b></a>
-						<ul class="dropdown-menu">
-							<li>
-								<a href="/ssv/sort/seq">seq</a>
-							</li>
-							<li>
-								<a href="/ssv/sort/seqCondensed">seqCondensed</a>
-							</li>
-							<li>
-								<a href="/ssv/sort/totalCount">total</a>
-							</li>
-							<li>
-								<a href="/ssv/sort/size">length</a>
-							</li>
-							<li>
-								<a href="/ssv/sort/name">name</a>
-							</li>
-						</ul>
-					</li>
-				</ul>
-			</div>
-        </div>
-    </nav>
-</div>
-    <div id="canvasDiv1" class = "SeqView">
-    	<div id="rightSlider"></div>
-	    <canvas id="canvas"></canvas>
-	    <div id="bottomSlider"></div>
-	    <div id="pop-up"><p id="info"></p></div>
-      	<div id="select"></div>
-    </div>
-    <div id = "qualChart"></div>
+            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+	      <div class="container">
+	        <div class="navbar-header">
+	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+	            <span class="sr-only">Toggle navigation</span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	            <span class="icon-bar"></span>
+	          </button>
+	          
+	        </div>
+	        <div id="navbar" class="navbar-collapse collapse">
+	          <ul class="nav navbar-nav">
+	            <li class="active"><a href="/ssv">Home</a></li>
+	            <li class=""><a href="/ssv/showExtractionInfo">Extraction Info</a></li>
+	            <li class="Samples">
+	              <a href="./Theme Template for Bootstrap_files/Theme Template for Bootstrap.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Groups<span class="caret"></span></a>
+	              <ul id = "groupsDropdownMenu" class="dropdown-menu" role="menu">
+	
+	              </ul>
+	            </li>
+	          </ul>
+	        </div><!--/.nav-collapse -->
+	      </div>
+	    </nav>
+    <div class="container theme-showcase" role="main">
+		<div class="jumbotron">
+			<h1 id="titleName"></h1>
+		</div>
+		<div id = "seqView"></div>
+	</div>
+	
 
   </body>
 </html>
