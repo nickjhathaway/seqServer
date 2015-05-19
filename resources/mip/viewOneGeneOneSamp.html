@@ -39,6 +39,8 @@
 			ajax('/' + rName + '/oneGeneOneSampAlnData/' + geneName + "/" + sampName, function(md){ mainData = md; });
 			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
 			
+			d3.select("#mipGeneLink").attr("href","/" + rName + "/geneInfo/" + geneName );
+			
 			var cellWidth = 20;
 			var cellHeight = 25;
 			var SeqViewer = new njhSeqView("#seqView",  mainData, cellWidth, cellHeight, baseColors, false);
@@ -71,14 +73,8 @@
 	        </div>
 	        <div id="navbar" class="navbar-collapse collapse">
 	          <ul class="nav navbar-nav">
-	            <li class="active"><a href="/ssv">Home</a></li>
-	            <li class=""><a href="/ssv/showExtractionInfo">Extraction Info</a></li>
-	            <li class="Samples">
-	              <a href="./Theme Template for Bootstrap_files/Theme Template for Bootstrap.html" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Groups<span class="caret"></span></a>
-	              <ul id = "groupsDropdownMenu" class="dropdown-menu" role="menu">
-	
-	              </ul>
-	            </li>
+	            <li class=""><a href="/ssv">Home</a></li>
+	            <li class=""><a id = "mipGeneLink" href="">Mip Targets</a></li>
 	          </ul>
 	        </div><!--/.nav-collapse -->
 	      </div>
