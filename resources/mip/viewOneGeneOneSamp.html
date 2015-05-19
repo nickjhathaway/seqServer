@@ -55,10 +55,45 @@
 				SeqViewer.paint();
 			}
 			init();
-
-
+			var snpData;
+			ajax('/' + rName + '/oneGeneOneSampSnpData/' + geneName + "/" + sampName, function(md){ snpData = md; });
+			console.log(snpData);
+			//add seq snps
+			seqSnps = snpData["seqSnps"];
+			for (seq in seqSnps){
+				var currentTargetName =seq;
+				console.log(currentTargetName);
+				var pan = d3.select("#mainContent")
+				.append("div")
+				.attr("class", "panel panel-info")
+				.attr("id",currentTargetName + "Info");
+				pan.append("div").attr("class","panel-heading" ).append("h1").text(currentTargetName + " Seq Snps");
+				pan.append("div").attr("class", "panel-body").attr("id", currentTargetName + "Tab");
+				var currentTable = new njhTable("#" + currentTargetName + "Tab", seqSnps[seq], geneName + "_" + sampName + "_" + currentTargetName  + "_SeqSnpInfo", false);
+			}
+			//add protein snps
+			proteinSnps = snpData["proteinSnps"];
+			for (prot in proteinSnps){
+				var currentTargetName =prot;
+				console.log(currentTargetName);
+				var pan = d3.select("#mainContent")
+				.append("div")
+				.attr("class", "panel panel-info")
+				.attr("id",currentTargetName + "ProtInfo");
+				pan.append("div").attr("class","panel-heading" ).append("h1").text(currentTargetName + " Protein AA Changes");
+				pan.append("div").attr("class", "panel-body").attr("id", currentTargetName + "ProtTab");
+				var currentTable = new njhTable("#" + currentTargetName + "ProtTab", proteinSnps[prot], geneName + "_" + sampName + "_" + currentTargetName  + "_SeqAAChangesInfo", false);
+			}
 		});
-		
+		/*
+		 * 		var uniqueClusterTable = new njhTable("#uniClusTab", allBarcodeInfo["uniqueCluster"], currentPopName + "_" + currentSampName + "_uniqueClusterInfo", false);
+		    <div class = "panel panel-info" id = "uniClusInfo">
+    	<div class = "panel-heading"><h1>Unique Seqs, After Clustering</h1></div>
+    	<div class = "panel-body" id = "uniClusTab">
+    		<div id = "uniClusTabMenu"></div>
+    	</div>
+    </div>
+		 */
     </script>
             <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 	      <div class="container">
@@ -79,7 +114,7 @@
 	        </div><!--/.nav-collapse -->
 	      </div>
 	    </nav>
-    <div class="container theme-showcase" role="main">
+    <div id = "mainContent" class="container theme-showcase" role="main">
 		<div class="jumbotron">
 			<h1 id="titleName"></h1>
 		</div>
