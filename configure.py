@@ -23,10 +23,10 @@ def main():
     
     if(args.prefix):
         prefix = args.prefix[0];
-        cmd = "setUpScripts/generateCompFile.py -prefix "  + prefix + " -installName seqServer -outFilename compfile.mk -externalLoc " + external + " -CC " + CC + "  -CXX " + CXX + " -neededLibs cppitertools,zi_lib,boost,r,bamtools,curl,bibseq,bibcpp,cppcms -outname seqServer "
+        cmd = "setUpScripts/generateCompFile.py -prefix "  + prefix + " -installName seqServer -outFilename compfile.mk -externalLoc " + external + " -CC " + CC + "  -CXX " + CXX + " -neededLibs cppitertools,zi_lib,boost,r,bamtools,curl,bibseqdev,bibcppdev,cppcms -outname seqServer "
 
     else:
-        cmd = "setUpScripts/generateCompFile.py "  + " -installName seqServer -outFilename compfile.mk -externalLoc " + external + " -CC " + CC + "  -CXX " + CXX  + "  -neededLibs cppitertools,zi_lib,boost,r,bamtools,curl,bibseq,bibcpp,cppcms -outname seqServer "
+        cmd = "setUpScripts/generateCompFile.py "  + " -installName seqServer -outFilename compfile.mk -externalLoc " + external + " -CC " + CC + "  -CXX " + CXX  + "  -neededLibs cppitertools,zi_lib,boost,r,bamtools,curl,bibseqdev,bibcppdev,cppcms -outname seqServer "
 
     
     Utils.run(cmd)
