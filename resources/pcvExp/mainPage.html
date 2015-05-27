@@ -55,6 +55,25 @@
 					.append("a")
 						.attr("href",function(d){return linkPreGroup + d;} )
 						.text(function(d){return d;});
+			//get frac cut off
+			var fracOff;
+			ajax('/' + rName + '/getFracCutOff', function(fo){ fracOff = fo; });
+			//set up frac cut off submission
+			$("#fracCutOffLabel").html(fracOff);
+			$("#fracCutOffInput").val(fracOff);
+		    $('#fracCutOffForm').submit(function(e){
+		        e.preventDefault();
+		        var input = $("#fracCutOffInput");
+				$.ajax({
+		            url: '/setFracCutOff',
+		            type: 'POST',
+		            data: {"input" : $("#fracCutOffInput").val()},
+					success: function()
+		            {
+		                location.reload();
+		            }
+		        });
+		    });
 			//get the seq and color data for the sequence view of the population sequences 
 			var mainData;
 	        var baseColors = {};
@@ -165,6 +184,21 @@
 			<div class="panel-heading"><h1>See Extraction Stats</h1></div>
 			<div class="panel-body">
 				<div id= "linkToStats"><a href="/ssv/showExtractionInfo">Extraction Stats</a></div>
+			</div>
+		</div>
+		<div class="panel panel-info">
+			<div class="panel-heading"><h1>Set Frac Cut Off</h1></div>
+			<div class="panel-body">
+				<div id= "cutOffDiv">
+					<form id="fracCutOffForm" class="form-inline">
+						<label id= "fracCutOffLabel" for="fracCutOffInput" class="control-label"></label>
+						<div class = "input-group">
+							<input type='number' class="form-control" id = "fracCutOffInput" step="0.01" min="0" max = "100"/>
+							<div class="input-group-addon">%</div>
+						</div>
+						<button type="submit" class="btn btn-primary">Submit</button>
+					</form>
+				</div>
 			</div>
 		</div>
 		<div class="panel panel-primary">

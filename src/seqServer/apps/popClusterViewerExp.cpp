@@ -82,7 +82,8 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	dispMap_1arg(&pcvExp::getGroupPopInfos, this, "getGroupPopInfos", "(\\w+)");
 
 
-
+	dispMap(&pcvExp::getFracCutOff, this, "getFracCutOff");
+	dispMap(&pcvExp::setFracCutOff, this, "setFracCutOff");
 
 	dispMap(&pcvExp::getAllSampleNames, this, "allSampleNames");
 
@@ -110,6 +111,8 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	sampTable_ = table(mainDir_ + "selectedClustersInfo.tab.txt", "\t", true);
 
+	auto fracs = vecStrToVecNum<double>(sampTable_.getColumn("c_AveragedFrac"));
+	fracCutOff_ = vectorMinimum(fracs);
 	//get samp names
 	auto sampCounts = countVec(sampTable_.getColumn("s_Name"));
 	clusteredSampleNames_ = getVectorOfMapKeys(sampCounts);
@@ -140,6 +143,23 @@ pcvExp::pcvExp(cppcms::service& srv, std::map<std::string, std::string> config) 
 
 	std::cout << "Finished set up" << std::endl;
 }
+
+
+void pcvExp::setFracCutOff(){
+	bib::scopedMessage mess("setFracCutOff",std::cout, true);
+  auto postData = request().post();
+  auto postJson = bib::json::toJson(postData);
+  std::cout << postJson << std::endl;
+  fracCutOff_ = bib::lexical_cast<double>(postJson["input"].asString());
+  fracCutOff_ /=100;
+  std::cout  << fracCutOff_ << std::endl;
+}
+
+void pcvExp::getFracCutOff(){
+	ret_json();
+	response().out() << roundDecPlaces((fracCutOff_ * 100),2);
+}
+
 
 void pcvExp::getGroupNames(){
 	ret_json();

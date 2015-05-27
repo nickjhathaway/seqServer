@@ -75,6 +75,9 @@ public:
 
 	void loadInPopSeqs();
 
+	void setFracCutOff();
+	void getFracCutOff();
+
 	//html
 	//main page
 	void mainPage();
