@@ -135,6 +135,7 @@ cppcms::json::object server_config(std::string name, uint32_t port){
   args["service"]["api"] = "http";
   args["service"]["port"] = port;
   args["service"]["ip"] = "0.0.0.0";
+
   args["http"]["script"] = name;
   return args;
 }
