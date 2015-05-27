@@ -37,9 +37,8 @@ private:
 
 	table sampTable_;
 	table popTable_;
-	//std::vector<readObject> popReads_;
-	//std::vector<readObject> popReadsTranslated_;
 	VecStr clusteredSampleNames_;
+	double fracCutOff_ = 0;
 
 	std::unordered_map<std::string, std::unordered_map<std::string, popInfo>> groupInfos_;
 	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> groupInfosDirNames_;

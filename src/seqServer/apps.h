@@ -7,6 +7,5 @@
  */
 
 #include "seqServer/apps/seqApp.hpp"
-#include "seqServer/apps/minTreeViewer.hpp"
 #include "seqServer/apps/seqViewer.hpp"
 #include "seqServer/apps/popClusterViewerExp.hpp"
