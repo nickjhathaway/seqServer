@@ -47,7 +47,8 @@
 			//sample table
 			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, currentSampName + "_sampInfo", false);	
 			// bar graph for the sample info
-			var sampleChart = new njhSampleChartAllMips("#sampleChartMaster", mainSampInfoTab, currentSampName +  "_sampChart");
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, currentSampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
+			//var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, currentSampName +  "_sampChart","mipName", "c_barcodeCnt","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeFrac", "c_barcodeCnt"]);
 			//update the chart and table on click of the sample checkboxes
 			function updateChartOnClick() { 
 				//get all currently checked sample boxes and then update the current samples  

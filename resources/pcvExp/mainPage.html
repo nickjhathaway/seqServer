@@ -95,7 +95,7 @@
 			//create sample table 
 			var sampleTable =  new njhTable("#sampTable", mainPopInfoTab, projectName + "_sampInfo", false);	
 			
-			var sampleChart = new njhSampleChart("#sampleChartMaster", mainPopInfoTab, projectName +  "_sampChart");
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainPopInfoTab, projectName +  "_sampChart","s_Sample", "c_AveragedFrac","h_popUID", ["s_Sample", "h_popUID", "c_clusterID", "c_AveragedFrac"]);
 			
 			//update the chart and table on click of the sample checkboxes
 			function updateChartOnClick() { 
