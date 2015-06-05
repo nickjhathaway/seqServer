@@ -222,10 +222,10 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 	bars.enter().append("rect")
 	      .attr("class", "bar");
 	      
-	bars.attr("x", function(d) { return self.x(d[this.xCol]); })
+	bars.attr("x", function(d) { return self.x(d[self.xCol]); })
 	      .attr("y", function(d) { 
-	      		var ret = self.y(sampleSum[d[this.xCol]] + d[self.yCol]);
-	      		sampleSum[d[this.xCol]] = sampleSum[d[this.xCol]] + d[self.yCol];
+	      		var ret = self.y(sampleSum[d[self.xCol]] + d[self.yCol]);
+	      		sampleSum[d[self.xCol]] = sampleSum[d[self.xCol]] + d[self.yCol];
 	      		return ret; 
 	      		})
 	      .attr("height", function(d) { return self.height - self.y(d[self.yCol]); })
@@ -233,7 +233,7 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 	      .attr("fill", function(d){ return self.color(d[self.colorBy]);})
 	      .style("stroke", "#000")
 	      .attr("data-legend",function(d) { return d[self.colorBy];})
-	      .on("mouseover", function(d){updateTableWithColors(self.hoverTab,samplePopNames[d[this.xCol]], self.hoverCols);
+	      .on("mouseover", function(d){updateTableWithColors(self.hoverTab,samplePopNames[d[self.xCol]], self.hoverCols);
 	       return self.tooltip.style("visibility", "visible");})
 		  .on("mousemove", function(){return self.tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 		  .on("mouseout", function(){return self.tooltip.style("visibility", "hidden");});
