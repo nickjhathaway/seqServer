@@ -18,13 +18,14 @@ tableViewer::tableViewer(cppcms::service& srv, std::map<std::string, std::string
 	for(auto & fCache : pages_){
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
-
-	originalTable_ = table(config["tableName"],config["delim"], config["header"] =="true");
+	filename_ = config["tableName"];
+	originalTable_ = table(config["tableName"],config["delim"], config["header"] == "true");
 	updatedTable_ = originalTable_;
 	//main page
 	dispMapRoot(&tableViewer::mainPage, this);
 	//table data
 	dispMap(&tableViewer::tableData, this, "tableData");
+	dispMap(&tableViewer::getFilename, this, "getFilename");
 	//updated table data
 	dispMap(&tableViewer::updatedTableData, this, "updatedTableData");
 
@@ -34,8 +35,16 @@ tableViewer::tableViewer(cppcms::service& srv, std::map<std::string, std::string
 
 }
 
+
 VecStr tableViewer::requiredOptions() const {
 	return VecStr{"resources", "tableName", "delim", "header"};
+}
+
+void tableViewer::getFilename(){
+	ret_json();
+	cppcms::json::value ret;
+	ret = filename_;
+	response().out() << ret;
 }
 
 void tableViewer::tableData(){
@@ -74,7 +83,7 @@ int tableViewerMain(std::map<std::string, std::string> inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	std::string tableName = "";
-	std::string delim = "";
+	std::string delim = "whitespace";
 	bool header = false;
 
 	uint32_t port = 8881;
@@ -86,7 +95,7 @@ int tableViewerMain(std::map<std::string, std::string> inputCommands){
 	}
 	setUp.setOption(delim , "-delim", "The delimiter of the Input Table");
 	setUp.setOption(header, "-header", "Whether the table has a header or not");
-	setUp.setOption(tableName, "-table", "Input Table");
+	setUp.setOption(tableName, "-table", "Input Table", true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
 	setUp.finishSetUp(std::cout);
@@ -102,7 +111,6 @@ int tableViewerMain(std::map<std::string, std::string> inputCommands){
   appConfig["tableName"] = tableName;
   appConfig["delim"] = delim;
   appConfig["header"] = convertBoolToString(header);
-
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);

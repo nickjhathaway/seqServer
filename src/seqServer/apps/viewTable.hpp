@@ -17,6 +17,7 @@ private:
 	typedef bibseq::seqApp super;
 
 	std::string rootName_;
+	std::string filename_;
 	table originalTable_;
 	table updatedTable_;
 
@@ -30,6 +31,7 @@ public:
 	virtual VecStr requiredOptions() const ;
 
 	void tableData();
+	void getFilename();
 
 	void updatedTableData();
 
