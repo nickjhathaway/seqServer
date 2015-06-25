@@ -120,6 +120,9 @@ int tableViewerMain(std::map<std::string, std::string> inputCommands){
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+
+
+
 	return 0;
 }
 

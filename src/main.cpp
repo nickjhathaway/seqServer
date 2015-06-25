@@ -12,8 +12,7 @@ class serverRunner : public bib::progutils::programRunner {
 serverRunner::serverRunner()
     : bib::progutils::programRunner(
           {addFunc("seqViewer", bibseq::seqViewer, false),
-					 addFunc("tableViewer", bibseq::tableViewerMain, false),
-					 addFunc("popClusteringViewerExp", bibseq::popClusteringViewerExp, false)
+					 addFunc("tableViewer", bibseq::tableViewerMain, false)
            },
           "serverRunner") {}
 
