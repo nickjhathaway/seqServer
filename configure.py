@@ -7,7 +7,7 @@ from utils import Utils
 from genFuncs import genHelper
 def main():
     name = "seqServer"
-    libs = "cppitertools,bibseqdev,bibcppdev,cppcms"
+    libs = "cppitertools,bibseq,bibcpp,cppcms"
     args = genHelper.parseNjhConfigureArgs()
     cmd = genHelper.mkConfigCmd(name, libs, sys.argv)
     Utils.run(cmd)
