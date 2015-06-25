@@ -121,10 +121,12 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, (this.nSeqs)*this.ch - this.ch , this.cw * 2, this.ch);
 	    seqContext.fillStyle = "#000000";
     	seqContext.font = "bold 15px Arial, sans-serif";
+    	//number of bases
       	seqContext.fillText(bStart, this.nameOffSet, (this.nSeqs)*this.ch +2 + this.ch/2.0);
       	seqContext.fillText(bStart + this.nBases -1, this.nameOffSet + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch +2 + this.ch/2.0);
-   		seqContext.fillText(sStart, this.nameOffSet + this.nBases * this.cw + this.cw + 2, this.ch/2.0  );
-   		seqContext.fillText(sStart + this.nSeqs - 1, this.nameOffSet + this.nBases * this.cw + this.cw + 2, (this.nSeqs)*this.ch - this.ch+ this.ch/2.0  );
+   		//number of seqs
+      	seqContext.fillText(sStart, this.nameOffSet + this.nBases * this.cw + (2.5/4) * this.cw , this.ch/2.0  );
+   		seqContext.fillText(sStart + this.nSeqs - 1, this.nameOffSet + this.nBases * this.cw + (2.5/4) * this.cw, (this.nSeqs)*this.ch - this.ch+ this.ch/2.0  );
    };
    
    SeqPainter.prototype.paintSelectedSeq = function(seqContext,seq, currentBase){
