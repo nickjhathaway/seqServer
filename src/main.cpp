@@ -35,17 +35,11 @@ serverRunner::serverRunner()
            },
           "serverRunner") {}
 
-int runServer(int argc, char* argv[]) {
-  serverRunner serRunner;
-  if (argc > 1) {
-    return serRunner.run(argc, argv);
-  }
-  serRunner.listPrograms(std::cout);
-  return 0;
-}
+
 
 int main(int argc, char** argv){
-	return runServer(argc, argv);
+  serverRunner serRunner;
+  return serRunner.run(argc, argv);
 }
 
 
