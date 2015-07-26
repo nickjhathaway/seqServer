@@ -75,8 +75,8 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 		this.addChart();
 	}
 }
-/*
-njhTable.prototype.updateTableOnClick = function() {
+
+/*njhTable.prototype.updateTableOnClick = function() {
 	var allVals = [];
 	d3.selectAll(this.masterDivId + " .njhTableMenu input:checked").each(function() {
 		allVals.push($(this).val());
@@ -127,7 +127,8 @@ njhTable.prototype.updateWithData = function(updatedDataTab){
 	//as long as there isn't different column names this should work, other wise the table menu has to change
 	/**@todo might want to add in the ability to update with new column names*/
 	this.tableMasterData = updatedDataTab;
-	this.updateTableOnClick();
+	//this.updateTableOnClick();
+	this.updateTableOnClickOrganized();
 	if(this.addedChart){
 		this.addChart();
 	}
