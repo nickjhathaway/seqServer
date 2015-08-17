@@ -127,7 +127,7 @@ public:
 
 	seqCache seqs_;
 
-	bool debug_ = true;
+	bool debug_ = false;
 	virtual ~seqApp();
 
 	virtual VecStr requiredOptions()const;

@@ -129,6 +129,9 @@ void seqApp::colorsData() {
 
 	r["-"] = "#e6e6e6";
 
+	r["N"] = "#AFAFAF";
+	r["n"] = "#7D7D7D";
+
 	response().out() << r;
 }
 
