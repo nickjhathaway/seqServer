@@ -56,6 +56,7 @@ public:
 
 	void addToCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads);
 	void updateCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads);
+	void updateAddCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads);
 
 	std::shared_ptr<std::vector<readObject>> getRecord(const std::string & uid);
 
@@ -70,12 +71,57 @@ public:
 
 class seqToJsonFactory{
 public:
+	template<typename T>
+	static cppcms::json::value seqsToJson(const std::vector<T> & reads, const std::string & uid){
+		//std::cout << "seqsToJson: start" << std::endl;
+	  cppcms::json::value ret;
+	  auto& seqs = ret["seqs"];
+	  //find number of reads
+	  ret["numReads"] = reads.size();
+	  // get the maximum length
+	  uint64_t maxLen = 0;
+	  bibseq::readVec::getMaxLength(reads, maxLen);
+	  ret["maxLen"] = maxLen;
+	  ret["uid"] = uid;
+	  for(const auto & pos : iter::range(reads.size())){
+	  	seqs[pos]= jsonToCppcmsJson(bib::json::toJson(reads[pos].seqBase_));
+	  }
+	  //std::cout << "seqsToJson: stop" << std::endl;
+	  return ret;
+	}
 
-	static cppcms::json::value sort(const std::shared_ptr<std::vector<readObject>> & reads, const std::string & sortOption);
-	static cppcms::json::value muscle(const std::shared_ptr<std::vector<readObject>> & reads);
-	static cppcms::json::value removeGaps(const std::shared_ptr<std::vector<readObject>> & reads);
-	static cppcms::json::value rComplement(const std::shared_ptr<std::vector<readObject>> & reads);
-	static cppcms::json::value minTreeData(const std::shared_ptr<std::vector<readObject>> & reads);
+	template<typename T>
+	static cppcms::json::value sort(const std::shared_ptr<std::vector<T>> & reads, const std::string & sortOption, const std::string & uid){
+		readVecSorter::sortReadVector(*reads, sortOption);
+		return seqsToJson(*reads, uid);
+	}
+	template<typename T>
+	static cppcms::json::value muscle(const std::shared_ptr<std::vector<T>> & reads, const std::string & uid){
+		bib::for_each(*reads, [](readObject & read){ read.seqBase_.removeGaps();});
+		sys::muscleSeqs(*reads);
+		return seqsToJson(*reads, uid);
+	}
+
+	template<typename T>
+	static cppcms::json::value removeGaps(const std::shared_ptr<std::vector<T>> & reads, const std::string & uid){
+		bib::for_each(*reads, [](readObject & read){ read.seqBase_.removeGaps();});
+		return seqsToJson(*reads, uid);
+	}
+
+	template<typename T>
+	static cppcms::json::value rComplement(const std::shared_ptr<std::vector<T>> & reads, const std::string & uid){
+		readVec::allReverseComplement(*reads, true);
+		return seqsToJson(*reads, uid);
+	}
+
+	template<typename T>
+	static cppcms::json::value minTreeData(const std::shared_ptr<std::vector<T>> & reads, const std::string & uid){
+		/**@todo need to complete function */
+		throw std::runtime_error{"seqToJsonFactory::minTreeData not yet implemented"};
+		return seqsToJson(*reads, uid);
+	}
+
+
 
 };
 

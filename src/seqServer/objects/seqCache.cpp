@@ -29,53 +29,28 @@
 
 namespace bibseq {
 
-
-
-
-
-cppcms::json::value seqToJsonFactory::sort(const std::shared_ptr<std::vector<readObject>> & reads, const std::string & sortOption){
-	readVecSorter::sortReadVector(*reads, sortOption);
-	return seqsToJson(*reads, "");
-}
-cppcms::json::value seqToJsonFactory::muscle(const std::shared_ptr<std::vector<readObject>> & reads){
-	bib::for_each(*reads, [](readObject & read){ read.seqBase_.removeGaps();});
-	sys::muscleSeqs(*reads);
-	return seqsToJson(*reads, "");
-}
-
-cppcms::json::value seqToJsonFactory::removeGaps(const std::shared_ptr<std::vector<readObject>> & reads){
-	bib::for_each(*reads, [](readObject & read){ read.seqBase_.removeGaps();});
-	return seqsToJson(*reads, "");
-}
-
-cppcms::json::value seqToJsonFactory::rComplement(const std::shared_ptr<std::vector<readObject>> & reads){
-	readVec::allReverseComplement(*reads, true);
-	return seqsToJson(*reads, "");
-}
-cppcms::json::value seqToJsonFactory::minTreeData(const std::shared_ptr<std::vector<readObject>> & reads){
-	/**@todo need to complete function */
-	return seqsToJson(*reads, "");
-}
-
-
 cppcms::json::value seqCache::getJson(const std::string & uid){
-	return seqsToJson(*(cache_.at(uid).reads_), uid);
+	return seqToJsonFactory::seqsToJson(*(cache_.at(uid).reads_), uid);
 }
 
 cppcms::json::value seqCache::sort(const std::string & uid, const std::string & sortOption){
-	return seqToJsonFactory::sort(cache_.at(uid).reads_, sortOption);
+	return seqToJsonFactory::sort(cache_.at(uid).reads_, sortOption, uid);
 }
+
 cppcms::json::value seqCache::muscle(const std::string & uid){
-	return seqToJsonFactory::muscle(cache_.at(uid).reads_);
+	return seqToJsonFactory::muscle(cache_.at(uid).reads_, uid);
 }
+
 cppcms::json::value seqCache::removeGaps(const std::string & uid){
-	return seqToJsonFactory::removeGaps(cache_.at(uid).reads_);
+	return seqToJsonFactory::removeGaps(cache_.at(uid).reads_, uid);
 }
+
 cppcms::json::value seqCache::rComplement(const std::string & uid){
-	return seqToJsonFactory::rComplement(cache_.at(uid).reads_);
+	return seqToJsonFactory::rComplement(cache_.at(uid).reads_, uid);
 }
+
 cppcms::json::value seqCache::minTreeData(const std::string & uid){
-	return seqToJsonFactory::minTreeData(cache_.at(uid).reads_);
+	return seqToJsonFactory::minTreeData(cache_.at(uid).reads_, uid);
 }
 
 
@@ -86,6 +61,7 @@ bool seqCache::recordValid(const std::string & uid)const{
 		return false;
 	}
 }
+
 bool seqCache::containsRecord(const std::string & uid)const{
 	return cache_.find(uid) != cache_.end();
 }
@@ -93,7 +69,7 @@ bool seqCache::containsRecord(const std::string & uid)const{
 void seqCache::addToCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads){
 	//check to see if cache already exists
 	if(containsRecord(uid)){
-		std::cerr << __func__ << std::endl;
+		std::cerr << "seqCache::addToCache" << std::endl;
 		std::cerr << "Cache already contains uid: " << uid << ", should call update instead" << std::endl;
 	}else{
 		cache_.emplace(uid,cacheRecord(uid, reads));
@@ -110,8 +86,17 @@ void seqCache::addToCache(const std::string & uid, const std::shared_ptr<std::ve
 		}
 	}
 }
+
 std::shared_ptr<std::vector<readObject>> seqCache::getRecord(const std::string & uid){
 	return cache_.find(uid)->second.reads_;
+}
+
+void seqCache::updateAddCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads){
+	if(containsRecord(uid)){
+		updateCache(uid,reads);
+	}else{
+		addToCache(uid, reads);
+	}
 }
 
 void seqCache::updateCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads){
@@ -129,7 +114,7 @@ void seqCache::updateCache(const std::string & uid, const std::shared_ptr<std::v
 			}
 		}
 	}else{
-		std::cerr << __func__ << std::endl;
+		std::cerr << "seqCache::updateCache" << std::endl;
 		std::cerr << "Cache doesn't contain uid: " << uid << ", nothing to update" << std::endl;
 	}
 }

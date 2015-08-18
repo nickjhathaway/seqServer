@@ -43,24 +43,7 @@ Json::Value cppcmsJsonToJson(const cppcms::json::object& obj);
 Json::Value cppcmsJsonToJson(const cppcms::json::value& val);
 cppcms::json::value jsonToCppcmsJson(const Json::Value & val);
 
-template<typename T>
-cppcms::json::value seqsToJson(const std::vector<T> & reads, const std::string & uid){
-	//std::cout << "seqsToJson: start" << std::endl;
-  cppcms::json::value ret;
-  auto& seqs = ret["seqs"];
-  //find number of reads
-  ret["numReads"] = reads.size();
-  // get the maximum length
-  uint64_t maxLen = 0;
-  bibseq::readVec::getMaxLength(reads, maxLen);
-  ret["maxLen"] = maxLen;
-  ret["uid"] = uid;
-  for(const auto & pos : iter::range(reads.size())){
-  	seqs[pos]= jsonToCppcmsJson(reads[pos].seqBase_.toJson());
-  }
-  //std::cout << "seqsToJson: stop" << std::endl;
-  return ret;
-}
+
 
 
 } /* namespace bibseq */
