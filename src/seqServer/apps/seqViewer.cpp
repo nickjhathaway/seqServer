@@ -134,5 +134,4 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
 
 
 
-
 } /* namespace bibseq */

@@ -37,7 +37,8 @@
 			var mainSampStatsInfoTab;
 			var sampNames;
 			ajax("/" + rName + "/allSampNames", function(mn) {sampNames = mn; });
-			ajax('/' + rName + '/getInitialReadStats/' + sampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			//ajax('/' + rName + '/getInitialReadStats/' + sampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			ajaxPost('/' + rName + '/getInitialReadStats', {"sampNames": sampNames}, function(tab){ mainSampStatsInfoTab = tab; });
 
 			//create sample table 
 			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab, rName + "_allSampExtractInfo", true);	
@@ -51,11 +52,13 @@
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/getInitialReadStats/' + currentSampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			    	//ajax('/' + rName + '/getInitialReadStats/' + currentSampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			    	ajaxPost('/' + rName + '/getInitialReadStats', {"sampNames": currentSampNames}, function(tab){ mainSampStatsInfoTab = tab; });
 			    }
 			 	sampleTable.updateWithData(mainSampStatsInfoTab);
 			};
 			//create samp menu 
+			
 			var sampMenu = new njhCheckboxMenu("#sampNameMenu", sampNames, updateChartOnClick);
 
 		});
@@ -84,9 +87,8 @@
 			<div class="jumbotron">
 				<h1>Initial Read Extraction Info</h1>
 			</div>
-			 <div id = "sampStatsTable">
-		</div>
-   
+			 <div id = "sampStatsTable"></div>
+   			<div id = "sampNameMenu"></div>
     	
     </div>
   </body>

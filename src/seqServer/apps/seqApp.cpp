@@ -185,6 +185,8 @@ void seqApp::sort(std::string sortBy){
 void seqApp::muscleAln(){
 	bib::scopedMessage mess("muscleAln", std::cout, debug_);
 	auto postData = request().post();
+
+
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){

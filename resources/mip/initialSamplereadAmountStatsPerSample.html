@@ -39,7 +39,7 @@
 			var allMipNames;
 			ajax("/" + rName + "/mipNamesForSample/" + currentSampName, function(mn){ allMipNames = mn; });
 			
-			ajax('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName + "/" + allMipNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName ,{"mipNames": allMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
 			$("#titleName").html(currentSampName + " Extraction Info");
 			//sample table
 			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab,  currentSampName + "_sampExtractInfo", true);	
@@ -55,7 +55,7 @@
 			    if(currentMipNames.length == 0){
 			    	mainSampStatsInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName + "/" + currentMipNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			    	ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName, {"mipNames": currentMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
 			    }
 			    sampleTable.updateWithData(mainSampStatsInfoTab);
 			};

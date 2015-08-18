@@ -26,6 +26,7 @@
  *      Author: nickhathaway
  */
 #include <cppcms/application.h>
+#include <cppcms/rpc_json.h>
 #include <cppcms/service.h>
 #include <cppcms/http_request.h>
 #include <cppcms/http_response.h>

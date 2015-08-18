@@ -42,7 +42,8 @@
 			ajax("/" + rName + "/sampMipNames/" + currentSampName, function(mn){ allMipNames = mn["mipNames"]; });
 			//console.log(allMipNames);
 			//console.log(allMipNames.join("DELIM"));
-			ajax('/' + rName + '/oneSampAllMipData/' + currentSampName + "/" + allMipNames.join("DELIM"), function(tab){ mainSampInfoTab = tab; });
+			//ajax('/' + rName + '/oneSampAllMipData/' + currentSampName + "/" + allMipNames.join("DELIM"), function(tab){ mainSampInfoTab = tab; });
+			ajaxPost('/' + rName + '/oneSampAllMipData/' + currentSampName, {"mipNames":allMipNames}, function(tab){ mainSampInfoTab = tab; });
 
 			//sample table
 			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, currentSampName + "_sampInfo", false);	
@@ -60,7 +61,7 @@
 			    if(currentMipNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/oneSampAllMipData/' + currentSampName + "/" + currentMipNames.join("DELIM"), function(tab){ mainSampInfoTab = tab; });;
+			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + currentSampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
 			    }
 			 	sampleTable.updateWithData(mainSampInfoTab);
 			 	sampleChart.updateWithData(mainSampInfoTab);
