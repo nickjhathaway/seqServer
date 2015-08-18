@@ -262,40 +262,40 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		var self = this;
 		sortOptions.push(new njhMenuItem("sortSeq", "Sequence",function(){
 			var mainData;
-		    ajax('/' + rName + '/sort/' + self.uid+'/seq', function(md){ mainData = md; });
+			ajaxPost('/' + rName + '/sort/seq',{"uid" : self.uid}, function(md){ mainData = md; });
 		    console.log(self.uid);
 		    self.updateData(mainData);
 		}));
 		sortOptions.push(new njhMenuItem("sortSeqCondensed", "Sequence Condensed",function(){
 			var mainData;
-	   		ajax('/' + rName + '/sort/' + self.uid+'/seqCondensed', function(md){ mainData = md; });
+			ajaxPost('/' + rName + '/sort/seqCondensed',{"uid" : self.uid}, function(md){ mainData = md; });
 	    	self.updateData(mainData);
 		}));
 		sortOptions.push(new njhMenuItem("sortTotalCount", "Total Read Count",function(){
 			var mainData;
-		    ajax('/' + rName + '/sort/' + self.uid+'/totalCount', function(md){ mainData = md; });
+			ajaxPost('/' + rName + '/sort/totalCount',{"uid" : self.uid}, function(md){ mainData = md; });
 		    self.updateData(mainData);
 		}));
 		sortOptions.push(new njhMenuItem("sortSize", "Length",function(){
 			var mainData;
-		    ajax('/' + rName + '/sort/' + self.uid+'/size', function(md){ mainData = md; });
+			ajaxPost('/' + rName + '/sort/size',{"uid" : self.uid}, function(md){ mainData = md; });
 		    self.updateData(mainData);
 		}));
 		sortOptions.push(new njhMenuItem("sortName", "Name",function(){
 			var mainData;
-		    ajax('/' + rName + '/sort/' + self.uid+'/name', function(md){ mainData = md; });
+			ajaxPost( '/' + rName + '/sort/name',{"uid" : self.uid}, function(md){ mainData = md; });
 		    self.updateData(mainData);
 		}));
 		menuItems["Sort"] = sortOptions;
 		var alnOptions = [];
 		alnOptions.push(new njhMenuItem("muscle", "muscle",function(){
 			var mainData;
-		    ajax('/' + rName + '/muscle/' + self.uid, function(md){ mainData = md; });
+			ajaxPost( '/' + rName + '/muscle',{"uid" : self.uid}, function(md){ mainData = md; });
 		    self.updateData(mainData);
 		}));
 		alnOptions.push(new njhMenuItem("removeGaps", "remove gaps",function(){
 			var mainData;
-		    ajax('/' + rName + '/removeGaps/' + self.uid, function(md){ mainData = md; });
+			ajaxPost( '/' + rName + '/removeGaps',{"uid" : self.uid}, function(md){ mainData = md; });
 		    self.updateData(mainData);
 		}));
 		
@@ -303,7 +303,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		var editOptions = [];
 		editOptions.push(new njhMenuItem("complement", "Reverse Complement",function(){
 			var mainData;
-		    ajax('/' + rName + '/complement/' + self.uid, function(md){ mainData = md; });
+			ajaxPost( '/' + rName + '/complement',{"uid" : self.uid}, function(md){ mainData = md; });
 		    self.updateData(mainData);
 		}));
 		

@@ -146,10 +146,10 @@ public:
 	void cssLibs();
 	void cssOwn();
 
-	void sort(std::string uid, std::string sortBy);
-	void muscleAln(std::string uid);
-	void removeGaps(std::string uid);
-	void complementSeqs(std::string uid);
+	void sort(std::string sortBy);
+	void muscleAln();
+	void removeGaps();
+	void complementSeqs();
 };
 
 } /* namespace bibseq */

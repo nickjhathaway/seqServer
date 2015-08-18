@@ -70,10 +70,10 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::cssLibs,this, "cssLibs");
 	dispMap(&seqApp::cssOwn,this, "cssOwn");
 
-	dispMap_2arg(&seqApp::sort,this, "sort", "(\\w+)/(\\w+)");
-	dispMap_1arg(&seqApp::muscleAln,this, "muscle", "(\\w+)");
-	dispMap_1arg(&seqApp::removeGaps,this, "removeGaps", "(\\w+)");
-	dispMap_1arg(&seqApp::complementSeqs,this, "complement", "(\\w+)");
+	dispMap_1arg(&seqApp::sort,this, "sort", "(\\w+)");
+	dispMap(&seqApp::muscleAln,this, "muscle");
+	dispMap(&seqApp::removeGaps,this, "removeGaps");
+	dispMap(&seqApp::complementSeqs,this, "complement");
 
 
 	//general information
@@ -164,8 +164,11 @@ void seqApp::getProteinColors(){
 	response().out() << ret;
 }
 
-void seqApp::sort(std::string uid, std::string sortBy){
+void seqApp::sort(std::string sortBy){
 	bib::scopedMessage mess("sort", std::cout, debug_);
+	auto postData = request().post();
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
@@ -179,8 +182,11 @@ void seqApp::sort(std::string uid, std::string sortBy){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
-void seqApp::muscleAln(std::string uid){
+void seqApp::muscleAln(){
 	bib::scopedMessage mess("muscleAln", std::cout, debug_);
+	auto postData = request().post();
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
@@ -194,8 +200,11 @@ void seqApp::muscleAln(std::string uid){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
-void seqApp::removeGaps(std::string uid){
+void seqApp::removeGaps(){
 	bib::scopedMessage mess("removeGaps", std::cout, debug_);
+	auto postData = request().post();
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
@@ -209,8 +218,11 @@ void seqApp::removeGaps(std::string uid){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
-void seqApp::complementSeqs(std::string uid){
+void seqApp::complementSeqs(){
 	bib::scopedMessage mess("complementSeqs", std::cout, debug_);
+	auto postData = request().post();
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();

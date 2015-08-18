@@ -26,6 +26,20 @@ function ajax(url, func) {
 	});
 }
 
+function ajaxPost(url, data, func) {
+	$.ajax({
+		type: 'POST',
+        url: url,
+        datatype : 'json',
+        async : false,
+        data: data,
+		success: function(ct) {
+			func(ct);
+		}
+    });
+}
+
+
 function ajaxAsync(url, func) {
 	$.ajax({
 		url : url,
