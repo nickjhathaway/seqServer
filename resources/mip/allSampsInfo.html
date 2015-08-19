@@ -45,7 +45,7 @@
 			//get sample names and the table with the sample names
 			var sampNames;
 			ajax("/" + rName + "/mipSampleNames/" + currentPopName, function(mn){ sampNames = mn; });
-			ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + sampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			ajaxPost('/' + rName + '/allSampsInfo/' + currentPopName , {"sampNames": sampNames}, function(tab){ mainPopInfoTab = tab; });
 			//get the seq and color data for the sequence view of the population sequences 
 			var mainData;
 	        var baseColors = {};
@@ -72,7 +72,7 @@
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	ajaxPost('/' + rName + '/allSampsInfo/' + currentPopName, {"sampNames": currentSampNames}, function(tab){ mainPopInfoTab = tab; });
 			    }
 			 	sampleTable.updateWithData(mainPopInfoTab);
 			 	sampleChart.updateWithData(mainPopInfoTab);
