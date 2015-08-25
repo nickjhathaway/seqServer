@@ -15,6 +15,13 @@ function drawLine(sx, sy, ex, ey, width) {
 	context.stroke();
 }
 
+
+function setToArray(set) {
+	var array_var = [];
+	set.forEach(function(element){array_var.push(element)});
+	return array_var;
+}
+
 function ajax(url, func) {
 	$.ajax({
 		url : url,

@@ -122,6 +122,9 @@ protected:
 
 	std::map<std::string, bib::FilesCache> jsAndCss_;
 
+	const std::string wordWithDash_ = "([A-Za-z0-9\\-\\_]+)";
+	const std::string twoWordArgs_ = "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
+
 
 public:
 	seqApp(cppcms::service& srv, std::map<std::string, std::string> config);

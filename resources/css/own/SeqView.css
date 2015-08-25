@@ -46,3 +46,13 @@
 	opacity: .50;
 }
 
+.SeqViewCanvasDiv .seqHighlight {
+	/*display: none;*/
+	position: absolute;
+	background: #85DDFA;
+	color: #000000;
+	border: 2px solid #000000;
+	opacity: .50;
+	pointer-events: none;
+}
+

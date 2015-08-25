@@ -53,6 +53,19 @@ cppcms::json::value seqCache::minTreeData(const std::string & uid){
 	return seqToJsonFactory::minTreeData(cache_.at(uid).reads_, uid);
 }
 
+cppcms::json::value seqCache::muscle(const std::string & uid,const std::vector<uint64_t> & positions){
+	return seqToJsonFactory::muscle(cache_.at(uid).reads_, positions, uid);
+}
+cppcms::json::value seqCache::removeGaps(const std::string & uid, const std::vector<uint64_t> & positions){
+	return seqToJsonFactory::removeGaps(cache_.at(uid).reads_, positions, uid);
+}
+cppcms::json::value seqCache::rComplement(const std::string & uid, const std::vector<uint64_t> & positions){
+	return seqToJsonFactory::rComplement(cache_.at(uid).reads_, positions, uid);
+}
+cppcms::json::value seqCache::getJson(const std::string & uid, const std::vector<uint64_t> & positions){
+	return seqToJsonFactory::seqsToJson(*(cache_.at(uid).reads_), positions, uid);
+}
+
 
 bool seqCache::recordValid(const std::string & uid)const{
 	if(containsRecord(uid)){

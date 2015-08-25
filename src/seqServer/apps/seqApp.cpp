@@ -70,7 +70,7 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::cssLibs,this, "cssLibs");
 	dispMap(&seqApp::cssOwn,this, "cssOwn");
 
-	dispMap_1arg(&seqApp::sort,this, "sort", "(\\w+)");
+	dispMap_1arg(&seqApp::sort,this, "sort", wordWithDash_);
 	dispMap(&seqApp::muscleAln,this, "muscle");
 	dispMap(&seqApp::removeGaps,this, "removeGaps");
 	dispMap(&seqApp::complementSeqs,this, "complement");
@@ -167,12 +167,27 @@ void seqApp::getProteinColors(){
 void seqApp::sort(std::string sortBy){
 	bib::scopedMessage mess("sort", std::cout, debug_);
 	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
-			auto ret = seqs_.sort(uid, sortBy);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_.sort(uid, sortBy);
+			}else{
+				/**@todo implement sort only on selected seqs */
+				ret = seqs_.sort(uid, sortBy);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -182,17 +197,33 @@ void seqApp::sort(std::string sortBy){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
+
 void seqApp::muscleAln(){
 	bib::scopedMessage mess("muscleAln", std::cout, debug_);
 	auto postData = request().post();
-
+	printOutMapContents(postData, ":", std::cout);
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
 
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
+
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
-			auto ret = seqs_.muscle(uid);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_.muscle(uid);
+			}else{
+				ret = seqs_.muscle(uid, selected);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -202,15 +233,31 @@ void seqApp::muscleAln(){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
+
 void seqApp::removeGaps(){
 	bib::scopedMessage mess("removeGaps", std::cout, debug_);
+
 	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
-			auto ret =  seqs_.removeGaps(uid);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_.removeGaps(uid);
+			}else{
+				ret = seqs_.removeGaps(uid, selected);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -223,12 +270,27 @@ void seqApp::removeGaps(){
 void seqApp::complementSeqs(){
 	bib::scopedMessage mess("complementSeqs", std::cout, debug_);
 	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_.containsRecord(uid)){
 		if(seqs_.recordValid(uid)){
 			ret_json();
-			auto ret =  seqs_.rComplement(uid);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_.rComplement(uid);
+			}else{
+				//printVector(selected);
+				ret = seqs_.rComplement(uid, selected);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
