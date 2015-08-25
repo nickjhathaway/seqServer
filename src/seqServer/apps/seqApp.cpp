@@ -201,7 +201,6 @@ void seqApp::sort(std::string sortBy){
 void seqApp::muscleAln(){
 	bib::scopedMessage mess("muscleAln", std::cout, debug_);
 	auto postData = request().post();
-	printOutMapContents(postData, ":", std::cout);
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
