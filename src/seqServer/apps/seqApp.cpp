@@ -54,7 +54,7 @@ VecStr seqApp::requiredOptions()const{
 }
 
 seqApp::seqApp(cppcms::service& srv,
-		std::map<std::string, std::string>  config):cppcms::application(srv)
+		std::map<std::string, std::string>  config):cppcms::application(srv), seqs_(std::make_shared<seqCache>())
 				{
 	//check configuration
 	configTest(config, requiredOptions(), "seqApp");
@@ -70,7 +70,7 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::cssLibs,this, "cssLibs");
 	dispMap(&seqApp::cssOwn,this, "cssOwn");
 
-	dispMap_1arg(&seqApp::sort,this, "sort", wordWithDash_);
+	dispMap_1word(&seqApp::sort,this, "sort");
 	dispMap(&seqApp::muscleAln,this, "muscle");
 	dispMap(&seqApp::removeGaps,this, "removeGaps");
 	dispMap(&seqApp::complementSeqs,this, "complement");
@@ -177,15 +177,15 @@ void seqApp::sort(std::string sortBy){
 	}
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
 			cppcms::json::value ret;
 			if(selected.empty()){
-				ret = seqs_.sort(uid, sortBy);
+				ret = seqs_->sort(uid, sortBy);
 			}else{
 				/**@todo implement sort only on selected seqs */
-				ret = seqs_.sort(uid, sortBy);
+				ret = seqs_->sort(uid, sortBy);
 				ret["selected"] = selected;
 			}
 			ret["uid"] = uid;
@@ -213,14 +213,14 @@ void seqApp::muscleAln(){
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
 			cppcms::json::value ret;
 			if(selected.empty()){
-				ret = seqs_.muscle(uid);
+				ret = seqs_->muscle(uid);
 			}else{
-				ret = seqs_.muscle(uid, selected);
+				ret = seqs_->muscle(uid, selected);
 				ret["selected"] = selected;
 			}
 			ret["uid"] = uid;
@@ -247,14 +247,14 @@ void seqApp::removeGaps(){
 	}
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
 			cppcms::json::value ret;
 			if(selected.empty()){
-				ret = seqs_.removeGaps(uid);
+				ret = seqs_->removeGaps(uid);
 			}else{
-				ret = seqs_.removeGaps(uid, selected);
+				ret = seqs_->removeGaps(uid, selected);
 				ret["selected"] = selected;
 			}
 			ret["uid"] = uid;
@@ -279,15 +279,15 @@ void seqApp::complementSeqs(){
 	}
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
 			cppcms::json::value ret;
 			if(selected.empty()){
-				ret = seqs_.rComplement(uid);
+				ret = seqs_->rComplement(uid);
 			}else{
 				//printVector(selected);
-				ret = seqs_.rComplement(uid, selected);
+				ret = seqs_->rComplement(uid, selected);
 				ret["selected"] = selected;
 			}
 			ret["uid"] = uid;

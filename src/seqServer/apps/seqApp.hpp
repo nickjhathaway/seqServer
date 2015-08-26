@@ -94,6 +94,60 @@ protected:
 		mapper().assign(n, "/" + n + "/{1}/{2}/{3}");
 	}
 
+	/**@b dispatch a command with four arguments separated by /, eg. root/com/arg1/arg2/agr3/agr4
+	 *
+	 * @param func A function that takes two strings as arguments, both by copy by value
+	 * @param n The name of the command under root
+	 * @param r the arguments separated by one / , eg. arg1/arg2
+	 */
+	template<typename C, typename T> void dispMap_4arg(T func,C* classCaller, std::string n, std::string r) {
+		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2, 3,4);
+		mapper().assign(n, "/" + n + "/{1}/{2}/{3}/{4}");
+	}
+
+	/**@b dispatch a command with one argument given by separating command with one / , eg. root/com/arg
+	 *
+	 * @param func A func that takes a one string by copy-by-value
+	 * @param n The name to dispatch under
+	 * @param r The argument to take
+	 */
+	template<typename C, typename T> void dispMap_1word(T func,C* classCaller, std::string n) {
+		dispatcher().assign("/" + n + "/" + wordWithDash_, func, classCaller, 1);
+		mapper().assign(n, "/" + n + "/{1}");
+	}
+	/**@b dispatch a command with two arguments separated by /, eg. root/com/arg1/arg2
+	 *
+	 * @param func A function that takes two strings as arguments, both by copy by value
+	 * @param n The name of the command under root
+	 * @param r the arguments separated by one / , eg. arg1/arg2
+	 */
+	template<typename C, typename T> void dispMap_2word(T func,C* classCaller, std::string n) {
+		dispatcher().assign("/" + n + "/" + twoWordArgs_, func, classCaller, 1, 2);
+		mapper().assign(n, "/" + n + "/{1}/{2}");
+	}
+
+	/**@b dispatch a command with three arguments separated by /, eg. root/com/arg1/arg2/agr3
+	 *
+	 * @param func A function that takes two strings as arguments, both by copy by value
+	 * @param n The name of the command under root
+	 * @param r the arguments separated by one / , eg. arg1/arg2
+	 */
+	template<typename C, typename T> void dispMap_3word(T func,C* classCaller, std::string n) {
+		dispatcher().assign("/" + n + "/" + threeWordArgs_, func, classCaller, 1, 2, 3);
+		mapper().assign(n, "/" + n + "/{1}/{2}/{3}");
+	}
+
+	/**@b dispatch a command with four arguments separated by /, eg. root/com/arg1/arg2/agr3/agr4
+	 *
+	 * @param func A function that takes two strings as arguments, both by copy by value
+	 * @param n The name of the command under root
+	 * @param r the arguments separated by one / , eg. arg1/arg2
+	 */
+	template<typename C, typename T> void dispMap_4word(T func,C* classCaller, std::string n) {
+		dispatcher().assign("/" + n + "/" + fourWordArgs_, func, classCaller, 1, 2, 3,4);
+		mapper().assign(n, "/" + n + "/{1}/{2}/{3}/{4}");
+	}
+
 	/**@b indicate incoming content is json
 	 *
 	 */
@@ -122,14 +176,16 @@ protected:
 
 	std::map<std::string, bib::FilesCache> jsAndCss_;
 
-	const std::string wordWithDash_ = "([A-Za-z0-9\\-\\_]+)";
-	const std::string twoWordArgs_ = "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
+	const std::string wordWithDash_ =  "([A-Za-z0-9\\-\\_]+)";
+	const std::string twoWordArgs_ =   "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
+	const std::string threeWordArgs_ = "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
+	const std::string fourWordArgs_ =  "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
 
 
 public:
 	seqApp(cppcms::service& srv, std::map<std::string, std::string> config);
 
-	seqCache seqs_;
+	std::shared_ptr<seqCache> seqs_;
 
 	bool debug_ = false;
 	virtual ~seqApp();

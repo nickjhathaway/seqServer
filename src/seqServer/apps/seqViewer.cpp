@@ -53,7 +53,7 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	readObjectIOOptions options(config["ioOptions"]);
 	readObjectIO reader;
 	reader.read(options);
-	seqs_.addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reader.reads));
+	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reader.reads));
 	std::cout << "Finished set up" << std::endl;
 
 }
@@ -64,9 +64,9 @@ VecStr ssv::requiredOptions() const {
 
 void ssv::seqData() {
 	bib::scopedMessage run("seqData", std::cout, debug_);
-	printVector(getVectorOfMapKeys(seqs_.cache_));
+	printVector(getVectorOfMapKeys(seqs_->cache_));
 	ret_json();
-	response().out() << seqs_.getJson(rootName_.substr(1));
+	response().out() << seqs_->getJson(rootName_.substr(1));
 }
 
 
