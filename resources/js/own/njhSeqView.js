@@ -166,7 +166,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		//this.selected = [1,4,5];
 		//this.selected.add(1);
 		//this.selected.add(4);
-		console.log(this.selected);
+		//console.log(this.selected);
 		this.menuDiv = d3.select(viewName).append("div")
 				.attr("class", "njhSeqViewMenu");
 		this.setUpDefaultMenu();
@@ -483,7 +483,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 					return 0;
 				}})
 			.style("left",function(d){ 
-				console.log(d);
+				//console.log(d);
 				if(d >= lowerBound && d < upperBound){
 					return 0;
 				}else{
