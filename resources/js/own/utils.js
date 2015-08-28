@@ -163,3 +163,23 @@ var sort_by = function(field, reverse, primer){
    };
 };
 
+
+function addSvgSaveButton(buttonId, topSvg) {
+	d3.select(buttonId).append("a").attr("id", "imgDownload");
+	d3.select(buttonId).on(
+			"click",
+			function() {
+				var html = $(
+						d3.select(topSvg).attr("version", 1.1).attr("xmlns",
+								"http://www.w3.org/2000/svg").node()).clone()
+						.wrap('<p/>').parent().html();
+				;
+				// add the svg information to a and then click it to trigger the
+				// download
+				var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
+				d3.select("#imgDownload").attr("download", "graph.svg");
+				d3.select("#imgDownload").attr("href", imgsrc);
+				var a = $("#imgDownload")[0];
+				a.click();
+			});
+}

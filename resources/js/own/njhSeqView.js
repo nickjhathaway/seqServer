@@ -28,7 +28,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			.attr("class", "dropdown-toggle")
 			.text(menuKeys[mk])
 				.append("b").attr("class", "caret");
-		var currentMenuItemOptions = currentMenuItem.append("ul").attr("class", "dropdown-menu");
+		var currentMenuItemOptions = currentMenuItem.append("ul").attr("class", "dropdown-menu").attr("id", menuKeys[mk] + "Drops");
 		for (it in menuContent[menuKeys[mk]]){
 			currentMenuItemOptions.append("li")
 				.append("a")
@@ -154,7 +154,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	    seqContext.fillText(logInfo,this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2  + this.ch/2 );
    };
 
-	function njhSeqView(viewName, seqData, cellWidth, cellHeight, baseColors,addQualChart, minTreeLink){
+	function njhSeqView(viewName, seqData, cellWidth, cellHeight, baseColors,addQualChart, minTreeLink, protein){
 		//need to add style and html, currently just there
 		//retrieve html elements 
 		this.topDivName = viewName;
@@ -169,8 +169,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		//console.log(this.selected);
 		this.menuDiv = d3.select(viewName).append("div")
 				.attr("class", "njhSeqViewMenu");
-		this.setUpDefaultMenu();
-		if(minTreeLink != undefined){
+		this.setUpDefaultMenu(protein);
+		if(minTreeLink != undefined && !protein){
 			d3.select(viewName).append("div")
 				.attr("id", "minTreeDiv")
 				.style("border", "2px solid black")
@@ -275,13 +275,12 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			    }
 			});
 		}
-
-		//
+		
 	};
 	
 	
 	
-	njhSeqView.prototype.setUpDefaultMenu = function(){
+	njhSeqView.prototype.setUpDefaultMenu = function(protein){
 		var locSplit = window.location.toString().split(/[\/]+/);
 		var rName = locSplit[2];
 		var menuItems = {};
@@ -355,27 +354,95 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		}));
 		
 		menuItems["Aln"] = alnOptions;
-		var editOptions = [];
-		editOptions.push(new njhMenuItem("complement", "Reverse Complement",function(){
-			var mainData;
-			var postData = {"uid" : self.uid};
-			console.log("rc");
-			console.log(self.selected);
-			if (self.selected.size > 0){
-				postData["selected"] = setToArray(self.selected);
-			}
-			var ar = setToArray(self.selected);
-			console.log(ar);
-			console.log(postData);
-			ajaxPost( '/' + rName + '/complement',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
-		}));
+		if(!protein){
+			var editOptions = [];
+			editOptions.push(new njhMenuItem("complement", "Reverse Complement",function(){
+				var mainData;
+				var postData = {"uid" : self.uid};
+				if (self.selected.size > 0){
+					postData["selected"] = setToArray(self.selected);
+				}
+				var ar = setToArray(self.selected);
+				ajaxPost( '/' + rName + '/complement',postData, function(md){ mainData = md; });
+			    self.updateData(mainData);
+			}));
+			menuItems["Edit"] = editOptions;
+		}
+
 		
-		menuItems["Edit"] = editOptions;
-	
+
+		if(!protein){
+			var translateOptions = [];
+			translateOptions.push(new njhMenuItem("translate", "Translate",function(){
+				var mainData;
+				console.log($("#startSiteInput", self.topDivName).val());
+				var postData = {"uid" : self.uid, "start" : $("#startSiteInput", self.topDivName).val()};
+				if (self.selected.size > 0){
+					postData["selected"] = setToArray(self.selected);
+				}
+				var ar = setToArray(self.selected);
+				ajaxPost( '/' + rName + '/translate',postData, function(md){ mainData = md; });
+			    console.log(mainData);
+			    console.log(self.topDivName.substring(1) + "_protein");
+			    if($("#" + self.topDivName.substring(1) + "_protein").length){
+			    	self.proteinViewer.updateData(mainData);
+			    }else{
+			    	var proteinColors = {};
+					ajax('/' + rName + '/proteinColors', function(bc){ proteinColors = bc; });
+			    	$( "<div id = \"" + self.topDivName.substring(1) + "_protein" +   "\"></div>" ).insertAfter( self.topDivName );
+			    	self.proteinViewer = new njhSeqView("#" + self.topDivName.substring(1) + "_protein", mainData, self.painter.cw, self.painter.ch, proteinColors,false, "", true);
+			    	self.proteinViewer.setUp();
+			    	self.proteinViewer.paint();
+			    }
+			    
+				//self.updateData(mainData);
+			}));
+			menuItems["Translate"] = translateOptions;
+		}
 		createSeqMenu(this.topDivName + " .njhSeqViewMenu", menuItems);
+		if(!protein){
+			var startSiteInput = d3.select(self.topDivName +  " .njhSeqViewMenu #TranslateDrops")
+			.append("li")
+				.append("div")
+					.attr("style", "padding: 3px 20px;")
+				.append("form")
+					.attr("class", "form-inline")
+					.attr("id", "startSiteForm");
+			startSiteInput
+				.append("label")
+					.attr("id", "startSiteLabel")
+					.attr("for","startSiteInput")
+					.attr("class", "control-label");
+			var divInputGroup = startSiteInput
+				.append("div")
+				.attr("class", "input-group");
+			divInputGroup.append("input")
+				.attr("type", "number")
+				.attr("class", "form-control")
+				.attr("id", "startSiteInput")
+				.attr("step", "1")
+				.attr("min", "0")
+				.attr("max", "2")
+				.attr("value", "0");
+			$('#startSiteForm').submit(function(e){
+		        e.preventDefault();
+		        console.log($("#startSiteInput").val());
+		    });
+		}	
 	};
 	
+	/*
+	 * <div id= "cutOffDiv">
+					<form id="fracCutOffForm" class="form-inline">
+						<label id= "fracCutOffLabel" for="fracCutOffInput" class="control-label"></label>
+						<div class = "input-group">
+							<input type='number' class="form-control" id = "fracCutOffInput" step="0.01" min="0" max = "100"/>
+							<div class="input-group-addon">%</div>
+						</div>
+						<button type="submit" class="btn btn-primary">Submit</button>
+					</form>
+				</div>
+	 */
 	njhSeqView.prototype.updateData = function(inputSeqData){
 		this.seqData = inputSeqData;
 		this.seqStart = 0;

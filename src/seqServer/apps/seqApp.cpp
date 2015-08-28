@@ -74,7 +74,7 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::muscleAln,this, "muscle");
 	dispMap(&seqApp::removeGaps,this, "removeGaps");
 	dispMap(&seqApp::complementSeqs,this, "complement");
-
+	dispMap(&seqApp::translate,this, "translate");
 
 	//general information
 	dispMap(&seqApp::colorsData,this, "baseColors");
@@ -294,6 +294,44 @@ void seqApp::complementSeqs(){
 				ret["selected"] = selected;
 			}
 			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+
+void seqApp::translate(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+  uint64_t start =  bib::lexical_cast<uint64_t>(postJson["start"].asString());
+  bool complement = false;
+  bool reverse = false;
+
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
+			ret_json();
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->translate(uid,           complement, reverse, start);
+			}else{
+				ret = seqs_->translate(uid, selected, complement, reverse, start);
+				ret["selected"] = std::vector<uint32_t>{};
+			}
+			ret["uid"] = uid + "_protein";
 			response().out() << ret;
 		}else{
 			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;

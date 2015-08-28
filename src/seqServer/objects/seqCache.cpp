@@ -65,7 +65,31 @@ cppcms::json::value seqCache::rComplement(const std::string & uid, const std::ve
 cppcms::json::value seqCache::getJson(const std::string & uid, const std::vector<uint64_t> & positions){
 	return seqToJsonFactory::seqsToJson(*(cache_.at(uid).reads_), positions, uid);
 }
-
+cppcms::json::value seqCache::translate(const std::string & uid,
+		const std::vector<uint64_t> & positions, bool complement, bool reverse,
+		uint64_t start){
+	auto ret = seqToJsonFactory::translate(cache_.at(uid).reads_, positions, uid, complement, reverse, start);
+	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
+	for(const auto & j : cppcmsJsonToJson(ret["seqs"])){
+		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
+		(*proteins).back().seqBase_.cnt_ = j["cnt"].asDouble();
+		(*proteins).back().seqBase_.frac_ = j["frac"].asDouble();
+	}
+	updateAddCache(uid + "_protein", proteins);
+	return ret;
+}
+cppcms::json::value seqCache::translate(const std::string & uid, bool complement,
+		bool reverse, uint64_t start){
+	auto ret = seqToJsonFactory::translate(cache_.at(uid).reads_, uid, complement, reverse, start);
+	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
+	for(const auto & j : cppcmsJsonToJson(ret["seqs"])){
+		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
+		(*proteins).back().seqBase_.cnt_ = j["cnt"].asDouble();
+		(*proteins).back().seqBase_.frac_ = j["frac"].asDouble();
+	}
+	updateAddCache(uid + "_protein", proteins);
+	return ret;
+}
 
 bool seqCache::recordValid(const std::string & uid)const{
 	if(containsRecord(uid)){
@@ -131,5 +155,7 @@ void seqCache::updateCache(const std::string & uid, const std::shared_ptr<std::v
 		std::cerr << "Cache doesn't contain uid: " << uid << ", nothing to update" << std::endl;
 	}
 }
+
+
 
 } /* namespace bibseq */

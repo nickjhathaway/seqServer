@@ -210,6 +210,7 @@ public:
 	void muscleAln();
 	void removeGaps();
 	void complementSeqs();
+	void translate();
 
 	std::string messStrFactory(const std::string & funcName);
 

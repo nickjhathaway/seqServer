@@ -61,19 +61,31 @@ public:
 	std::shared_ptr<std::vector<readObject>> getRecord(const std::string & uid);
 
 	/*These currently assume cache is valid and is current in cache_ */
-	cppcms::json::value sort(const std::string & uid, const std::string & sortOption);
+	cppcms::json::value sort(const std::string & uid,
+			const std::string & sortOption);
 	cppcms::json::value muscle(const std::string & uid);
 	cppcms::json::value removeGaps(const std::string & uid);
 	cppcms::json::value rComplement(const std::string & uid);
+	cppcms::json::value translate(const std::string & uid, bool complement,
+				bool reverse, uint64_t start);
 	cppcms::json::value minTreeData(const std::string & uid);
 	cppcms::json::value getJson(const std::string & uid);
 
-	cppcms::json::value muscle(const std::string & uid,const std::vector<uint64_t> & positions);
-	cppcms::json::value removeGaps(const std::string & uid, const std::vector<uint64_t> & positions);
-	cppcms::json::value rComplement(const std::string & uid, const std::vector<uint64_t> & positions);
-	cppcms::json::value getJson(const std::string & uid, const std::vector<uint64_t> & positions);
+	cppcms::json::value muscle(const std::string & uid,
+			const std::vector<uint64_t> & positions);
+	cppcms::json::value removeGaps(const std::string & uid,
+			const std::vector<uint64_t> & positions);
+	cppcms::json::value translate(const std::string & uid,
+			const std::vector<uint64_t> & positions, bool complement, bool reverse,
+			uint64_t start);
+	cppcms::json::value rComplement(const std::string & uid,
+			const std::vector<uint64_t> & positions);
+	cppcms::json::value getJson(const std::string & uid,
+			const std::vector<uint64_t> & positions);
 
 };
+
+
 
 class seqToJsonFactory {
 public:
@@ -177,6 +189,26 @@ public:
 		bib::for_each_pos(*reads, selected,
 				[]( T & read) {read.seqBase_.reverseComplementRead(true,true);});
 		return seqsToJson(*reads, uid);
+	}
+
+	template<typename T>
+	static cppcms::json::value translate(
+			const std::shared_ptr<std::vector<T>> & reads,
+			const std::vector<uint64_t> & selected, const std::string & uid, bool complement, bool reverse, uint64_t start) {
+		std::vector<baseReadObject> ret;
+		for(const auto & readPos : selected){
+			ret.emplace_back(baseReadObject((*reads)[readPos].seqBase_.translateRet(complement, reverse, start)));
+		}
+		return seqsToJson(ret, uid);
+	}
+
+	template<typename T>
+	static cppcms::json::value translate(
+			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid,
+			bool complement, bool reverse, uint64_t start) {
+		std::vector<uint64_t> positions((*reads).size());
+		bib::iota<uint64_t>(positions, 0);
+		return translate(reads, positions, uid, complement, reverse, start);
 	}
 
 	template<typename T>
