@@ -88,6 +88,10 @@ seqApp::~seqApp() {
 
 }
 
+std::string seqApp::messStrFactory(const std::string & funcName){
+	return bib::err::F() << "[" << getCurrentDate() << "] " << funcName;
+}
+
 void seqApp::jsLibs() {
 	ret_js();
 	auto search = jsAndCss_.find("jsLibs");
@@ -165,7 +169,7 @@ void seqApp::getProteinColors(){
 }
 
 void seqApp::sort(std::string sortBy){
-	bib::scopedMessage mess("sort", std::cout, debug_);
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [sortBy=" + sortBy +  "]"), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
@@ -199,7 +203,7 @@ void seqApp::sort(std::string sortBy){
 }
 
 void seqApp::muscleAln(){
-	bib::scopedMessage mess("muscleAln", std::cout, debug_);
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
@@ -234,8 +238,7 @@ void seqApp::muscleAln(){
 }
 
 void seqApp::removeGaps(){
-	bib::scopedMessage mess("removeGaps", std::cout, debug_);
-
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
@@ -267,7 +270,7 @@ void seqApp::removeGaps(){
 	}
 }
 void seqApp::complementSeqs(){
-	bib::scopedMessage mess("complementSeqs", std::cout, debug_);
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
@@ -301,6 +304,7 @@ void seqApp::complementSeqs(){
 }
 
 void seqApp::getColors(std::string num) {
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [num=" + estd::to_string(num) +  "]"), std::cout, debug_);
 	ret_json();
 	cppcms::json::value ret;
 	auto outColors = bib::njhColors(std::stoi(num));

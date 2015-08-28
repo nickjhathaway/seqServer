@@ -210,6 +210,9 @@ public:
 	void muscleAln();
 	void removeGaps();
 	void complementSeqs();
+
+	std::string messStrFactory(const std::string & funcName);
+
 };
 
 } /* namespace bibseq */
