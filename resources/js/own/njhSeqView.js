@@ -608,6 +608,14 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	      }.bind(this)
 	    }).bind(this);
    };
+   njhSeqView.prototype.updateOnResize = function(){
+	   this.updateCanvas();
+	   this.setUpSliders();
+	   this.paint();
+	   if(this.proteinViewer){
+		   this.proteinViewer.updateOnResize();
+	   }
+   }
    njhSeqView.prototype.clicked = function(e){
         var pt = getRelCursorPosition(e, this.canvas);
         if(pt[1] <= this.painter.nSeqs * this.painter.ch && 
@@ -693,7 +701,6 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
         }else{
         	$(popUpWindow).hide();
         }
-
     });
    };
 
