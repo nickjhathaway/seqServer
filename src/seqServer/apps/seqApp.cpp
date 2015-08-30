@@ -88,9 +88,7 @@ seqApp::~seqApp() {
 
 }
 
-std::string seqApp::messStrFactory(const std::string & funcName){
-	return bib::err::F() << "[" << getCurrentDate() << "] " << funcName;
-}
+
 
 void seqApp::jsLibs() {
 	ret_js();
@@ -169,7 +167,8 @@ void seqApp::getProteinColors(){
 }
 
 void seqApp::sort(std::string sortBy){
-	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [sortBy=" + sortBy +  "]"), std::cout, debug_);
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
+	//bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [sortBy=" + sortBy +  "]"), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
@@ -341,6 +340,7 @@ void seqApp::translate(){
 	}
 }
 
+
 void seqApp::getColors(std::string num) {
 	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [num=" + estd::to_string(num) +  "]"), std::cout, debug_);
 	ret_json();
@@ -353,6 +353,19 @@ void seqApp::getColors(std::string num) {
 	}
 	ret["colors"] = outColorsStrs;
 	response().out() << ret;
+}
+
+std::string seqApp::messStrFactory(const std::string & funcName){
+	return bib::err::F() << "[" << getCurrentDate() << "] " << funcName;
+}
+
+std::string seqApp::messStrFactory(const std::string & funcName, const MapStrStr & args){
+	VecStr argsVec;
+	for(const auto & kv : args){
+		argsVec.emplace_back(kv.first + " = " + kv.second);
+	}
+	std::string argStrs = messStrFactory(funcName) + " [" + vectorToString(argsVec, ", ") + "]";
+	return argStrs;
 }
 
 } /* namespace bibseq */

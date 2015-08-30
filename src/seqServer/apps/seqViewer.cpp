@@ -36,6 +36,7 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	configTest(config, requiredOptions(), "ssv");
 	pages_.emplace("mainPageHtml",make_path(config["resources"] + "ssv/mainPage.html") );
 	rootName_ = config["name"];
+	debug_ = config["debug"] == "true";
 	for(auto & fCache : pages_){
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
@@ -108,6 +109,7 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
+	setUp.processDebug();
 	setUp.finishSetUp(std::cout);
 	name = "/" + name;
   auto config = server_config(name, port);
@@ -120,6 +122,7 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
+  appConfig["debug"] = bib::boolToStr(setUp.debug_);
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);

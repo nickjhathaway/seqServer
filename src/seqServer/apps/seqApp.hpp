@@ -213,6 +213,7 @@ public:
 	void translate();
 
 	std::string messStrFactory(const std::string & funcName);
+	std::string messStrFactory(const std::string & funcName, const MapStrStr & args);
 
 };
 
