@@ -39,9 +39,7 @@ private:
 	std::string rootName_;
 
 
-	static bfs::path make_path(const bfs::path fn) {
-		return fn;
-	}
+
 
 public:
 	ssv(cppcms::service& srv, std::map<std::string, std::string> config);
