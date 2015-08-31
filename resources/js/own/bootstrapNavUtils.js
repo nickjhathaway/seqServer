@@ -14,7 +14,7 @@ function addNavDrop(selector, title, id){
 			.attr("class", "caret");
 	top.append("ul")
 		.attr("id", function(){return id;})
-		.attr("class", "dropdown-menu");
+		.attr("class", "dropdown-menu scrollable-menu");
 } 
 
 function addNavLink(selector, title, link, id, active){

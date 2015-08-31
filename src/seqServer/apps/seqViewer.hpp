@@ -50,16 +50,11 @@ public:
 
 	void seqData();
 
-
 	void rootName();
 
 	void showMinTree();
 
-	void minTreeData();
-
 	void mainPage();
-
-
 
 };
 

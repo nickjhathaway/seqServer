@@ -211,6 +211,7 @@ public:
 	void removeGaps();
 	void complementSeqs();
 	void translate();
+	void minTreeData();
 
 	std::string messStrFactory(const std::string & funcName);
 	std::string messStrFactory(const std::string & funcName, const MapStrStr & args);

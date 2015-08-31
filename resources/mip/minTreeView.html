@@ -17,13 +17,15 @@ body{
 }
 </style>
 <body>
-	<script src="/ssv/jsLibs"></script>
-	<script src="/ssv/jsOwn"></script>
-	<link rel="stylesheet" href="/ssv/cssLibs"></script>
-	<link rel="stylesheet" href="/ssv/cssOwn"></script>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
 
 <script>
 	$(document).ready(function() {
@@ -36,12 +38,23 @@ body{
 		var name = "testTree";
 		var wid = 2000;
 		var hei = 2000;
-		var force = createMinTree(dataFile, appendToElement, name, wid, hei);
+		//var force = createMinTree(dataFile, appendToElement, name, wid, hei);
+		createNavBar("#topNav", rName, "", currentSampName, currentPopName);
+		var add = "#mainTree";
+		drawPsuedoMinTree(dataFile, add);
+		var bName = "#save_svg";
+		addSvgSaveButton(bName, add);
 	});
 
 </script>
 
-
+<div id = "topNav"></div>
+<div class="container theme-showcase" role="main">
+		<button id="save_svg">Save as Svg</button>
+		<svg id = "mainTree"></svg>
+    </div>
+  </body>
+</html>
 
 
 

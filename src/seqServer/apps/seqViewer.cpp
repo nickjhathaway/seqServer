@@ -65,11 +65,9 @@ VecStr ssv::requiredOptions() const {
 
 void ssv::seqData() {
 	bib::scopedMessage run("seqData", std::cout, debug_);
-	printVector(getVectorOfMapKeys(seqs_->cache_));
 	ret_json();
 	response().out() << seqs_->getJson(rootName_.substr(1));
 }
-
 
 void ssv::rootName() {
 	//std::cout << "rootName" << std::endl;
@@ -79,14 +77,7 @@ void ssv::rootName() {
 	response().out() << r;
 }
 
-
-
-
 void ssv::showMinTree() {
-
-}
-
-void ssv::minTreeData() {
 
 }
 

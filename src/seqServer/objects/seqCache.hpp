@@ -30,6 +30,19 @@
 
 namespace bibseq {
 
+template<typename T>
+uint32_t getMismatches(const T & read1,
+				const T & read2,
+				aligner alignerObj, bool weightHomopolymers){
+	alignerObj.alignVec(read1.seqBase_,read2.seqBase_, false);
+	alignerObj.profilePrimerAlignment(read1.seqBase_, read2.seqBase_, weightHomopolymers);
+	return alignerObj.comp_.hqMismatches_;
+};
+
+std::unordered_map<std::string,bib::color> getColorsForNames(const VecStr & popNames);
+Json::Value genMinTreeData(const std::vector<readObject> & reads);
+Json::Value genMinTreeData(const std::vector<readObject> & reads, aligner & alignerObj);
+
 class seqCache {
 public:
 
@@ -67,7 +80,7 @@ public:
 	cppcms::json::value removeGaps(const std::string & uid);
 	cppcms::json::value rComplement(const std::string & uid);
 	cppcms::json::value translate(const std::string & uid, bool complement,
-				bool reverse, uint64_t start);
+			bool reverse, uint64_t start);
 	cppcms::json::value minTreeData(const std::string & uid);
 	cppcms::json::value getJson(const std::string & uid);
 
@@ -79,6 +92,8 @@ public:
 			const std::vector<uint64_t> & positions, bool complement, bool reverse,
 			uint64_t start);
 	cppcms::json::value rComplement(const std::string & uid,
+			const std::vector<uint64_t> & positions);
+	cppcms::json::value minTreeData(const std::string & uid,
 			const std::vector<uint64_t> & positions);
 	cppcms::json::value getJson(const std::string & uid,
 			const std::vector<uint64_t> & positions);
@@ -214,10 +229,18 @@ public:
 	template<typename T>
 	static cppcms::json::value minTreeData(
 			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid) {
-		/**@todo need to complete function */
-		throw std::runtime_error {
-				"seqToJsonFactory::minTreeData not yet implemented" };
-		return seqsToJson(*reads, uid);
+		return jsonToCppcmsJson(genMinTreeData(*reads));
+	}
+
+	template<typename T>
+	static cppcms::json::value minTreeData(
+			const std::shared_ptr<std::vector<T>> & reads,
+			const std::vector<uint64_t> & selected, const std::string & uid) {
+		std::vector<readObject> selReads;
+		for(const auto & pos : selected){
+			selReads.emplace_back((*reads)[pos]);
+		}
+		return jsonToCppcmsJson(genMinTreeData(selReads));
 	}
 
 };

@@ -2,27 +2,17 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-	<title>Sequence Viewer</title>
+	<title>Overlap View</title>
 
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMiv"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
-	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
-	<style>
-		.container {
-			padding-right: 15px;
-			padding-left: 15px;
-			margin-right: auto;
-			margin-left: 15px;
-			}
-		a:visited {
-			color:#8844CC;
-		}
-	</style>
+	<link rel="stylesheet" href="/ssv/cssMiv">
   </head>
   <body>
 
@@ -57,7 +47,7 @@
 			init();
 			var snpData;
 			ajax('/' + rName + '/oneGeneOneSampSnpData/' + geneName + "/" + sampName, function(md){ snpData = md; });
-			console.log(snpData);
+			//console.log(snpData);
 			//add seq snps
 			seqSnps = snpData["seqSnps"];
 			for (seq in seqSnps){
@@ -77,43 +67,17 @@
 				var currentTargetName =prot;
 				console.log(currentTargetName);
 				var pan = d3.select("#mainContent")
-				.append("div")
-				.attr("class", "panel panel-info")
-				.attr("id",currentTargetName + "ProtInfo");
+					.append("div")
+					.attr("class", "panel panel-info")
+					.attr("id",currentTargetName + "ProtInfo");
 				pan.append("div").attr("class","panel-heading" ).append("h1").text(currentTargetName + " Protein AA Changes");
 				pan.append("div").attr("class", "panel-body").attr("id", currentTargetName + "ProtTab");
 				var currentTable = new njhTable("#" + currentTargetName + "ProtTab", proteinSnps[prot], geneName + "_" + sampName + "_" + currentTargetName  + "_SeqAAChangesInfo", false);
 			}
+			createNavBar("#topNav", rName, geneName, sampName, "");
 		});
-		/*
-		 * 		var uniqueClusterTable = new njhTable("#uniClusTab", allBarcodeInfo["uniqueCluster"], currentPopName + "_" + currentSampName + "_uniqueClusterInfo", false);
-		    <div class = "panel panel-info" id = "uniClusInfo">
-    	<div class = "panel-heading"><h1>Unique Seqs, After Clustering</h1></div>
-    	<div class = "panel-body" id = "uniClusTab">
-    		<div id = "uniClusTabMenu"></div>
-    	</div>
-    </div>
-		 */
     </script>
-            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-	      <div class="container">
-	        <div class="navbar-header">
-	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-	            <span class="sr-only">Toggle navigation</span>
-	            <span class="icon-bar"></span>
-	            <span class="icon-bar"></span>
-	            <span class="icon-bar"></span>
-	          </button>
-	          
-	        </div>
-	        <div id="navbar" class="navbar-collapse collapse">
-	          <ul class="nav navbar-nav">
-	            <li class=""><a href="/ssv">Home</a></li>
-	            <li class=""><a id = "mipGeneLink" href="">Mip Targets</a></li>
-	          </ul>
-	        </div><!--/.nav-collapse -->
-	      </div>
-	    </nav>
+    <div id="topNav"></div>
     <div id = "mainContent" class="container theme-showcase" role="main">
 		<div class="jumbotron">
 			<h1 id="titleName"></h1>
