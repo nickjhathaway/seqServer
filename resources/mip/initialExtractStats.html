@@ -1,8 +1,6 @@
-
 <!DOCTYPE HTML>
 <html>
   <head>
-	<title>All Samples Info</title>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -14,22 +12,24 @@
 	<link rel="stylesheet" href="/ssv/cssMiv">
   </head>
   <body>
-
-	
     <script>
     	$(document).ready(function(){
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
+			//Set Up Page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", "", "");
+			addMainDiv("body", true);
 			//change title to current name
-			$("title", "head").html("Initial Read Stats");
+			setHeadTitle("Initial Read Stats");
+			$("#jumboTitle").html("Initial Read Extraction Info");
+			addDiv("#mainContent", "sampStatsTable");
+			addDiv("#mainContent", "sampNameMenu");
 			//get sample names and the table with the sample names
 			var mainSampStatsInfoTab;
-			var sampNames;
-			ajax("/" + rName + "/allSampNames", function(mn) {sampNames = mn; });
-			//ajax('/' + rName + '/getInitialReadStats/' + sampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
+			var sampNames = ajaxRet("/" + rName + "/allSampNames");
 			ajaxPost('/' + rName + '/getInitialReadStats', {"sampNames": sampNames}, function(tab){ mainSampStatsInfoTab = tab; });
-
 			//create sample table 
 			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab, rName + "_allSampExtractInfo", true);	
 			function updateChartOnClick() { 
@@ -42,27 +42,13 @@
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	//ajax('/' + rName + '/getInitialReadStats/' + currentSampNames.join("DELIM"), function(tab){ mainSampStatsInfoTab = tab; });
 			    	ajaxPost('/' + rName + '/getInitialReadStats', {"sampNames": currentSampNames}, function(tab){ mainSampStatsInfoTab = tab; });
 			    }
 			 	sampleTable.updateWithData(mainSampStatsInfoTab);
 			};
 			//create samp menu 
-			
 			var sampMenu = new njhCheckboxMenu("#sampNameMenu", sampNames, updateChartOnClick);
-			createNavBar("#topNav", rName, "", "", "");
 		});
-		//"assembled", "discarded", "unassembled", "matchingExtArm", "UnmatachedExtArm", "FailedLigationArm", "readsFailingBarcodeFiltering", "readsFailingMinlen", "readsFailingQuality"
-		
     </script>
-		<div id = "topNav"></div>
-    	<div class="container theme-showcase" role="main">
-			<div class="jumbotron">
-				<h1>Initial Read Extraction Info</h1>
-			</div>
-			 <div id = "sampStatsTable"></div>
-   			<div id = "sampNameMenu"></div>
-    	
-    </div>
   </body>
 </html>

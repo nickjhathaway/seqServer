@@ -2,7 +2,7 @@ function createNavBarSkeleton(wrappingNavSelector, rName){
 	addFixedTopNavSkeleton(wrappingNavSelector, "mips", "mainNav", "projectNav");
  	addNavLink("#mainNav", "Home", "/" + rName, "#siteHomeLink");
 	addNavDrop("#mainNav", "Genes", "geneDrop");
-	addNavDrop("#mainNav", "Samples", "samplesDrop");
+	addNavDrop("#mainNav", "Samples All Mips", "samplesDrop");
 	addNavDrop("#mainNav", "Pre-clustering Extraction Stats", "extractionDrop");
 }
 

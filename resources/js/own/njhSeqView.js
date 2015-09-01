@@ -704,3 +704,13 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
     });
    };
 
+   
+function initSeqViewer(SeqViewer){
+	$(window).bind("resize", function(){
+		SeqViewer.updateCanvas();
+		SeqViewer.setUpSliders();
+		SeqViewer.paint();
+	});
+	SeqViewer.setUp();
+	SeqViewer.paint();
+}

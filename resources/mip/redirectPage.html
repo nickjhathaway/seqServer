@@ -21,16 +21,13 @@
 			//make sure there isn't a # at the end of rName or the links created from it won't work
 			rName = rName.replace(new RegExp("#" + "$"), "");
 			$("title", "head").html(rName);
+			addDiv("body", "topNav");
 			createNavBar("#topNav", rName);
+			addMainDiv("body", true);
+			$("#jumboTitle").html("Ruh Roh");
+			$(".jumbotron", "#mainContent").append("<h3>You attempted to go to a page that doesn't exist, or it could be there is no data for where you attempted to go.</h3>");
 		});
 		
     </script>
-	<div id="topNav"></div>
-    <div class="container theme-showcase" role="main">
-    	<div class="jumbotron">
-			<h1> Ruh Roh</h1>
-			<h3>You attempted to go to a page that doesn't exist, or it could be there is no data for where you attempted to go.  Either hit back or click <a href="/pcv">here</a> to go home</h3>
-		</div>
-    </div>
   </body>
 </html>

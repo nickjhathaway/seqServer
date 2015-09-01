@@ -1,8 +1,6 @@
-
 <!DOCTYPE HTML>
 <html>
   <head>
-	<title>All Samples Info</title>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -14,32 +12,29 @@
 	<link rel="stylesheet" href="/ssv/cssMiv">
   </head>
   <body>
-
-	
     <script>
     	$(document).ready(function(){
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
-			var currentSampName = locSplit.pop();
-			//change title to current name
-			$("title", "head").html(currentSampName);
-			
-			$("#titleName").html(currentSampName);
+			var sampName = locSplit.pop();
+			//Set up Page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", sampName, "");
+			addMainDiv("body", true);
+			setHeadTitle(sampName);
+			$("#jumboTitle").html(sampName);
+			addDiv("#mainContent", "sampTable");
+			addDiv("#mainContent", "sampNameMenu");
+			addDiv("#mainContent", "sampleChartMaster");
 			//get sample names and the table with the sample names
-			var allMipNames;
+			var mipNames = ajaxRet("/" + rName + "/sampMipNames/" + sampName);
 			var mainSampInfoTab;
-			ajax("/" + rName + "/sampMipNames/" + currentSampName, function(mn){ allMipNames = mn["mipNames"]; });
-			//console.log(allMipNames);
-			//console.log(allMipNames.join("DELIM"));
-			//ajax('/' + rName + '/oneSampAllMipData/' + currentSampName + "/" + allMipNames.join("DELIM"), function(tab){ mainSampInfoTab = tab; });
-			ajaxPost('/' + rName + '/oneSampAllMipData/' + currentSampName, {"mipNames":allMipNames}, function(tab){ mainSampInfoTab = tab; });
-
+			ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":mipNames}, function(tab){ mainSampInfoTab = tab; });
 			//sample table
-			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, currentSampName + "_sampInfo", false);	
+			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, sampName + "_sampInfo", false);	
 			// bar graph for the sample info
-			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, currentSampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
-			//var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, currentSampName +  "_sampChart","mipName", "c_barcodeCnt","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeFrac", "c_barcodeCnt"]);
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
 			//update the chart and table on click of the sample checkboxes
 			function updateChartOnClick() { 
 				//get all currently checked sample boxes and then update the current samples  
@@ -47,33 +42,18 @@
 			    $('#sampNameMenu :checked').each(function() {
 			      allVals.push($(this).val());
 			    });
-			    var currentMipNames = _.intersection(allMipNames, allVals);
+			    var currentMipNames = _.intersection(mipNames, allVals);
 			    if(currentMipNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + currentSampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
+			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
 			    }
 			 	sampleTable.updateWithData(mainSampInfoTab);
 			 	sampleChart.updateWithData(mainSampInfoTab);
 			};
 			//create samp menu 
-			//var sampMenu = new njhCheckboxMenu("#sampNameMenu", allMipNames, updateChartOnClick);
-			var sampMenu = new njhCheckboxMenuOrganized("#sampNameMenu", allMipNames, updateChartOnClick);
-			createNavBar("#topNav", rName, "", currentSampName, "");
+			var sampMenu = new njhCheckboxMenuOrganized("#sampNameMenu", mipNames, updateChartOnClick);
 		});
-		
     </script>
-    <div id = "topNav"></div>
-    <div class="container theme-showcase" role="main">
-		<div class="jumbotron">
-			<h1 id = "titleName"></h1>
-		</div>
-		<div id = "sampTable"> </div>
-	    
-	    <div id = "sampNameMenu"></div>
-	    
-	    <div id = "sampleChartMaster"></div>
-   
-    </div>
   </body>
 </html>

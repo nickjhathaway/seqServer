@@ -33,6 +33,12 @@ function ajax(url, func) {
 	});
 }
 
+function ajaxRet(url){
+	var data;
+	ajax(url, function(d){ data = d});
+	return data;
+}
+
 function ajaxPost(url, data, func) {
 	$.ajax({
 		type: 'POST',
@@ -152,6 +158,9 @@ function addDiv(parentId, childName) {
 	$("<div id =\"" + childName + "\"></div>").appendTo(parentId);
 };
 
+function addH1(selector, text){
+	d3.select(selector).append("h1").text(text);
+}
 
 var sort_by = function(field, reverse, primer){
 	//from http://stackoverflow.com/questions/979256/sorting-an-array-of-javascript-objects
@@ -162,6 +171,10 @@ var sort_by = function(field, reverse, primer){
 	  return ( (A < B) ? -1 : ((A > B) ? 1 : 0) ) * [-1,1][+!!reverse];                  
    };
 };
+
+function arrayContains(arr, val){
+	return (arr.indexOf(val) > -1);
+}
 
 
 function addSvgSaveButton(buttonId, topSvg) {
@@ -182,4 +195,11 @@ function addSvgSaveButton(buttonId, topSvg) {
 				var a = $("#imgDownload")[0];
 				a.click();
 			});
+}
+
+function setHeadTitle(title){
+	if(!$("title", "head").length){
+		$("head").append("<title></title>");
+	}
+	$("title", "head").html(title);
 }

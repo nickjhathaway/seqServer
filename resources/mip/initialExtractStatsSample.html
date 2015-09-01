@@ -21,18 +21,22 @@
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
-			var currentSampName = locSplit.pop();
+			var sampName = locSplit.pop();
+			//Set Up Page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", sampName);
+			addMainDiv("body", true);
 			//change title to current name
-			$("title", "head").html("Initial Read Stats");
+			setHeadTitle(sampName + " Stats");
+			$("#jumboTitle").html(sampName + " Extraction Info");
+			addDiv("#mainContent", "sampStatsTable");
+			addDiv("#mainContent", "mipNameMenu");
 			//get sample names and the table with the sample names
 			var mainSampStatsInfoTab;
-			var allMipNames;
-			ajax("/" + rName + "/mipNamesForSample/" + currentSampName, function(mn){ allMipNames = mn; });
-			
-			ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName ,{"mipNames": allMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
-			$("#titleName").html(currentSampName + " Extraction Info");
+			var allMipNames = ajaxRet("/" + rName + "/mipNamesForSample/" + sampName);
+			ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + sampName ,{"mipNames": allMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
 			//sample table
-			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab,  currentSampName + "_sampExtractInfo", true);	
+			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab,  sampName + "_sampExtractInfo", true);	
 			
 			function updateChartOnClick() { 
 				//get all currently checked sample boxes and then update the current samples  
@@ -45,24 +49,15 @@
 			    if(currentMipNames.length == 0){
 			    	mainSampStatsInfoTab = {};
 			    }else{
-			    	ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + currentSampName, {"mipNames": currentMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
+			    	ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + sampName, {"mipNames": currentMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
 			    }
 			    sampleTable.updateWithData(mainSampStatsInfoTab);
 			};
 			
 			var sampMenu = new njhCheckboxMenuOrganized("#mipNameMenu", allMipNames, updateChartOnClick);
-			createNavBar("#topNav", rName, "", currentSampName);
+
 		});
 		
     </script>
-		<div id = "topNav"></div>
-        <div class="container theme-showcase" role="main">
-			<div class="jumbotron">
-				<h1 id = "titleName"></h1>
-			</div>
-	    	<div id = "sampStatsTable"></div>
-	    	<div id = "mipNameMenu"></div>
-	   	</div>
-
   </body>
 </html>

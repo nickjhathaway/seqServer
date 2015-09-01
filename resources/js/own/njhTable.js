@@ -44,31 +44,6 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 		downLink.attr("href", dataSrc);
 		downLink.node().click();
 	});
-	/*menu.append("br");
-	menu.append("button").text("Download Table").attr("class", "njhTabSaveButton");
-	menu.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
-	menu.select(".njhTabSaveButton").on("click", function() {
-		var allVals = [];
-		menu.selectAll("input:checked").each(function() {
-			allVals.push($(this).val());
-		});
-		var currentColumnNames = _.intersection(self.tableMasterData["columnNames"], allVals);
-		var mainTable = [];
-		mainTable.push(currentColumnNames);
-		//
-		for ( i = 0; i < self.tableMasterData["tab"].length; i++) {
-			var currentRow = [];
-			for (colNum in currentColumnNames) {
-				currentRow.push(self.tableMasterData["tab"][i][currentColumnNames[colNum]]);
-			}
-			mainTable.push(currentRow);
-		}
-		var dataSrc = 'data:text/csv;base64,' + btoa(d3.tsv.format(mainTable));
-		var downLink = menu.select(".njhTabDownLink");
-		downLink.attr("download", self.tableDownloadStubName + ".tab.csv");
-		downLink.attr("href", dataSrc);
-		downLink.node().click();
-	}); */
 	//create chart of numeric columns if needed
 	this.chart;
 	if (addChart) {
@@ -76,14 +51,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	}
 }
 
-/*njhTable.prototype.updateTableOnClick = function() {
-	var allVals = [];
-	d3.selectAll(this.masterDivId + " .njhTableMenu input:checked").each(function() {
-		allVals.push($(this).val());
-	});
-	var currentColumnNames = _.intersection(this.tableMasterData["columnNames"], allVals);
-	updateTable(this.tabDiv, this.tableMasterData["tab"], currentColumnNames);
-}; */
+
 
 njhTable.prototype.updateTableOnClickOrganized = function() {
 	var allVals = [];
@@ -91,7 +59,24 @@ njhTable.prototype.updateTableOnClickOrganized = function() {
 		allVals.push($(this).val());
 	});
 	var currentColumnNames = _.intersection(this.tableMasterData["columnNames"], allVals);
+	
 	updateTable(this.tabDiv, this.tableMasterData["tab"], currentColumnNames);
+	if(this.chart){
+		var showCols = [];
+		var hidCols = [];
+		for(col in this.tableMasterData["numericColNames"]){
+			//console.log(this.tableMasterData["numericColNames"][col]);
+			if(arrayContains(currentColumnNames,this.tableMasterData["numericColNames"][col])){
+				showCols.push(this.tableMasterData["numericColNames"][col]);
+				//this.chart.show([this.tableMasterData["numericColNames"][col]]);
+			}else{
+				hidCols.push(this.tableMasterData["numericColNames"][col]);
+				//this.chart.hide([this.tableMasterData["numericColNames"][col]]);
+			}
+		}
+		this.chart.show(showCols);
+		this.chart.hide(hidCols);
+	}
 }; 
 
 njhTable.prototype.addChart = function(){

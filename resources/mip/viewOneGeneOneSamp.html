@@ -19,72 +19,58 @@
 	
     <script>
     	$(document).ready(function(){
-	    	var mainData;
-	        var baseColors = {};
-			var locSplit = window.location.toString().split(/[\/]+/);
+    		//get current name from window location
+    		var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			var sampName = locSplit.pop();
 			var geneName = locSplit.pop();
-			$("#titleName").html(sampName + ":" + geneName);
-			ajax('/' + rName + '/oneGeneOneSampAlnData/' + geneName + "/" + sampName, function(md){ mainData = md; });
-			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
-			
-			d3.select("#mipGeneLink").attr("href","/" + rName + "/geneInfo/" + geneName );
-			
-			var cellWidth = 20;
-			var cellHeight = 25;
-			var SeqViewer = new njhSeqView("#seqView",  mainData, cellWidth, cellHeight, baseColors, false);
-			
-			function init(){
-				$(window).bind("resize", function(){
-					SeqViewer.updateCanvas();
-					SeqViewer.setUpSliders();
-					SeqViewer.paint();
-				});
-				SeqViewer.setUp();
-				SeqViewer.paint();
-			}
-			init();
-			var snpData;
-			ajax('/' + rName + '/oneGeneOneSampSnpData/' + geneName + "/" + sampName, function(md){ snpData = md; });
-			//console.log(snpData);
-			//add seq snps
-			seqSnps = snpData["seqSnps"];
-			for (seq in seqSnps){
-				var currentTargetName =seq;
-				console.log(currentTargetName);
-				var pan = d3.select("#mainContent")
-				.append("div")
-				.attr("class", "panel panel-info")
-				.attr("id",currentTargetName + "Info");
-				pan.append("div").attr("class","panel-heading" ).append("h1").text(currentTargetName + " Seq Snps");
-				pan.append("div").attr("class", "panel-body").attr("id", currentTargetName + "Tab");
-				var currentTable = new njhTable("#" + currentTargetName + "Tab", seqSnps[seq], geneName + "_" + sampName + "_" + currentTargetName  + "_SeqSnpInfo", false);
-			}
-			//add protein snps
-			proteinSnps = snpData["proteinSnps"];
-			for (prot in proteinSnps){
-				var currentTargetName =prot;
-				console.log(currentTargetName);
-				var pan = d3.select("#mainContent")
-					.append("div")
-					.attr("class", "panel panel-info")
-					.attr("id",currentTargetName + "ProtInfo");
-				pan.append("div").attr("class","panel-heading" ).append("h1").text(currentTargetName + " Protein AA Changes");
-				pan.append("div").attr("class", "panel-body").attr("id", currentTargetName + "ProtTab");
-				var currentTable = new njhTable("#" + currentTargetName + "ProtTab", proteinSnps[prot], geneName + "_" + sampName + "_" + currentTargetName  + "_SeqAAChangesInfo", false);
-			}
-			createNavBar("#topNav", rName, geneName, sampName, "");
+			//set up page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", sampName, "");
+			addMainDiv("body", true);
+			addPanelWithDiv("#mainContent", "snpsDiv", "View Snps and Sequence Info");
+			addDiv("#mainContent", "sampTable");
+			addDiv("#mainContent", "sampNameMenu");
+			addDiv("#mainContent", "sampleChartMaster");
+			//change title to current name
+			$("title", "head").html(sampName);
+			$("#jumboTitle").html(geneName + ":" + sampName);
+			d3.select("#snpsDiv")
+				.append("a")
+					.attr("href", "/" + rName + "/showOneGeneOneSampSnps/" + geneName + "/" + sampName)
+					.text("View Snps and Sequence Info");
+			//get sample names and the table with the sample names
+			var allMipNames;
+			var mainSampInfoTab;
+			ajax("/" + rName + "/mipNamesForGene/" + geneName, function(mn){ allMipNames = mn; });
+			ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":allMipNames}, function(tab){ mainSampInfoTab = tab; });
+
+			//sample table
+			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, sampName + "_sampInfo", true);	
+			// bar graph for the sample info
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
+			//var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeCnt","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeFrac", "c_barcodeCnt"]);
+			//update the chart and table on click of the sample checkboxes
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#sampNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentMipNames = _.intersection(allMipNames, allVals);
+			    if(currentMipNames.length == 0){
+			    	mainPopInfoTab = {};
+			    }else{
+			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
+			    }
+			 	sampleTable.updateWithData(mainSampInfoTab);
+			 	sampleChart.updateWithData(mainSampInfoTab);
+			};
+			//create samp menu 
+			//var sampMenu = new njhCheckboxMenu("#sampNameMenu", allMipNames, updateChartOnClick);
+			var sampMenu = new njhCheckboxMenuOrganized("#sampNameMenu", allMipNames, updateChartOnClick);
+
 		});
     </script>
-    <div id="topNav"></div>
-    <div id = "mainContent" class="container theme-showcase" role="main">
-		<div class="jumbotron">
-			<h1 id="titleName"></h1>
-		</div>
-		<div id = "seqView"></div>
-	</div>
-	
-
   </body>
 </html>
