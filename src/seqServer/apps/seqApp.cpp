@@ -164,6 +164,7 @@ void seqApp::getProteinColors(){
   ret["W"] = "#fed65f";
   ret["Y"] = "#ffff66";
 	ret["-"] = "#e6e6e6";
+	ret["X"] = "#999999";
 	response().out() << ret;
 }
 
