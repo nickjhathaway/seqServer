@@ -293,7 +293,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 				postData["selected"] = setToArray(self.selected);
 			}
 			ajaxPost('/' + rName + '/sort/seq',postData, function(md){ mainData = md; });
-		    console.log(self.uid);
+		    //console.log(self.uid);
 		    self.updateData(mainData);
 		}));
 		sortOptions.push(new njhMenuItem("sortSeqCondensed", "Sequence Condensed",function(){
@@ -375,15 +375,15 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			var translateOptions = [];
 			translateOptions.push(new njhMenuItem("translate", "Translate",function(){
 				var mainData;
-				console.log($("#startSiteInput", self.topDivName).val());
+				//console.log($("#startSiteInput", self.topDivName).val());
 				var postData = {"uid" : self.uid, "start" : $("#startSiteInput", self.topDivName).val()};
 				if (self.selected.size > 0){
 					postData["selected"] = setToArray(self.selected);
 				}
 				var ar = setToArray(self.selected);
 				ajaxPost( '/' + rName + '/translate',postData, function(md){ mainData = md; });
-			    console.log(mainData);
-			    console.log(self.topDivName.substring(1) + "_protein");
+			    //console.log(mainData);
+			    //console.log(self.topDivName.substring(1) + "_protein");
 			    if($("#" + self.topDivName.substring(1) + "_protein").length){
 			    	self.proteinViewer.updateData(mainData);
 			    }else{
@@ -426,7 +426,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 				.attr("value", "0");
 			$('#startSiteForm').submit(function(e){
 		        e.preventDefault();
-		        console.log($("#startSiteInput").val());
+		        //console.log($("#startSiteInput").val());
 		    });
 		}	
 	};
