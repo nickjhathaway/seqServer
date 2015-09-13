@@ -30,18 +30,6 @@
 
 namespace bibseq {
 
-template<typename T>
-uint32_t getMismatches(const T & read1,
-				const T & read2,
-				aligner alignerObj, bool weightHomopolymers){
-	alignerObj.alignVec(read1.seqBase_,read2.seqBase_, false);
-	alignerObj.profilePrimerAlignment(read1.seqBase_, read2.seqBase_, weightHomopolymers);
-	return alignerObj.comp_.hqMismatches_;
-};
-
-std::unordered_map<std::string,bib::color> getColorsForNames(const VecStr & popNames);
-Json::Value genMinTreeData(const std::vector<readObject> & reads);
-Json::Value genMinTreeData(const std::vector<readObject> & reads, aligner & alignerObj);
 
 class seqCache {
 public:

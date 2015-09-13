@@ -29,59 +29,7 @@
 
 namespace bibseq {
 
-std::unordered_map<std::string,bib::color> getColorsForNames(const VecStr & popNames){
-	auto popColors = bib::njhColors(popNames.size());
-	bibseq::VecStr popColorsStrs(popColors.size());
-	uint32_t count = 0;
-	uint32_t halfCount = 0;
-	for(const auto & cPos : iter::range(popColors.size())) {
-		uint32_t pos = 0;
-		if(cPos %2 == 0) {
-			pos = popColors.size()/2 + halfCount;
-			++halfCount;
-		} else {
-			pos = count;
-			++count;
-		}
-		popColorsStrs[cPos] = "#" + popColors[pos].hexStr_;
-	}
-	std::unordered_map<std::string,bib::color> nameColors;
-	for(auto pos : iter::range(popNames.size())){
-		nameColors[popNames[pos]] = popColorsStrs[pos];
-	}
-	return nameColors;
-}
 
-Json::Value genMinTreeData(const std::vector<readObject> & reads, aligner & alignerObj){
-  std::function<uint32_t(const readObject & ,
-  		const readObject &, aligner, bool)> misFun = getMismatches<readObject>;
-	auto misDistances = getDistanceCopy(reads, 2, misFun,
-			alignerObj, true);
-  readDistGraph<uint32_t> graphMis(misDistances, reads);
-	std::vector<std::string> popNames;
-  for(const auto & n : graphMis.nodes_){
-  	popNames.emplace_back(n->name_);
-  }
-  auto nameColors = getColorsForNames(popNames);
-	return graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
-}
-
-Json::Value genMinTreeData(const std::vector<readObject> & reads) {
-	uint64_t maxLength = 0;
-	readVec::getMaxLength(reads, maxLength);
-	aligner alignerObj(maxLength, gapScoringParameters(5, 1),
-			substituteMatrix::createDegenScoreMatrix(2, -2));
-	std::function<uint32_t(const readObject &, const readObject &, aligner, bool)> misFun =
-			getMismatches<readObject>;
-	auto misDistances = getDistanceCopy(reads, 2, misFun, alignerObj, true);
-	readDistGraph<uint32_t> graphMis(misDistances, reads);
-	std::vector<std::string> popNames;
-	for (const auto & n : graphMis.nodes_) {
-		popNames.emplace_back(n->name_);
-	}
-	auto nameColors = getColorsForNames(popNames);
-	return graphMis.toJsonMismatchGraphAll(bib::color("#000000"), nameColors);
-}
 
 cppcms::json::value seqCache::getJson(const std::string & uid){
 	return seqToJsonFactory::seqsToJson(*(cache_.at(uid).reads_), uid);
