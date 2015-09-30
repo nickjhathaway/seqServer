@@ -176,10 +176,10 @@ protected:
 
 	std::map<std::string, bib::FilesCache> jsAndCss_;
 
-	const std::string wordWithDash_ =  "([A-Za-z0-9\\-\\_]+)";
-	const std::string twoWordArgs_ =   "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
-	const std::string threeWordArgs_ = "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
-	const std::string fourWordArgs_ =  "([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)/([A-Za-z0-9\\-\\_]+)";
+	const std::string wordWithDash_ =  "([A-Za-z0-9\\-\\_\\.]+)";
+	const std::string twoWordArgs_ =   "([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)";
+	const std::string threeWordArgs_ = "([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)";
+	const std::string fourWordArgs_ =  "([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)";
 
 
 public:
