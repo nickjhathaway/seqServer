@@ -134,10 +134,11 @@ std::shared_ptr<std::vector<readObject>> seqCache::getRecord(const std::string &
 	return cache_.find(uid)->second.reads_;
 }
 
-void seqCache::updateAddCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads){
-	if(containsRecord(uid)){
-		updateCache(uid,reads);
-	}else{
+void seqCache::updateAddCache(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads) {
+	if (containsRecord(uid)) {
+		updateCache(uid, reads);
+	} else {
 		addToCache(uid, reads);
 	}
 }
