@@ -1,0 +1,63 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>All Samples Info</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
+  </head>
+  <body>
+
+	
+    <script>
+    	$(document).ready(function(){
+    		//get current name from window location
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var sampName = locSplit.pop();
+			//Set Up Page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", sampName);
+			addMainDiv("body", true);
+			//change title to current name
+			setHeadTitle(sampName + " Stats");
+			$("#jumboTitle").html(sampName + " Extraction Info");
+			addDiv("#mainContent", "sampStatsTable");
+			addDiv("#mainContent", "mipNameMenu");
+			//get sample names and the table with the sample names
+			var mainSampStatsInfoTab;
+			var allMipNames = ajaxRet("/" + rName + "/mipNamesForSample/" + sampName);
+			ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + sampName ,{"mipNames": allMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
+			//sample table
+			var sampleTable =  new njhTable("#sampStatsTable", mainSampStatsInfoTab,  sampName + "_sampExtractInfo", true);	
+			
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#mipNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentMipNames = _.intersection(allMipNames, allVals);
+			    console.log("currentMipName" + currentMipNames);
+			    if(currentMipNames.length == 0){
+			    	mainSampStatsInfoTab = {};
+			    }else{
+			    	ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + sampName, {"mipNames": currentMipNames}, function(tab){ mainSampStatsInfoTab = tab; });
+			    }
+			    sampleTable.updateWithData(mainSampStatsInfoTab);
+			};
+			
+			var sampMenu = new njhCheckboxMenuOrganized("#mipNameMenu", allMipNames, updateChartOnClick);
+
+		});
+		
+    </script>
+  </body>
+</html>

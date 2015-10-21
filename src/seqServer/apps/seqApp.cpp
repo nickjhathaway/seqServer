@@ -54,7 +54,7 @@ VecStr seqApp::requiredOptions()const{
 }
 
 seqApp::seqApp(cppcms::service& srv,
-		std::map<std::string, std::string>  config):cppcms::application(srv)
+		std::map<std::string, std::string>  config):cppcms::application(srv), seqs_(std::make_shared<seqCache>())
 				{
 	//check configuration
 	configTest(config, requiredOptions(), "seqApp");
@@ -70,11 +70,12 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::cssLibs,this, "cssLibs");
 	dispMap(&seqApp::cssOwn,this, "cssOwn");
 
-	dispMap_2arg(&seqApp::sort,this, "sort", "(\\w+)/(\\w+)");
-	dispMap_1arg(&seqApp::muscleAln,this, "muscle", "(\\w+)");
-	dispMap_1arg(&seqApp::removeGaps,this, "removeGaps", "(\\w+)");
-	dispMap_1arg(&seqApp::complementSeqs,this, "complement", "(\\w+)");
-
+	dispMap_1word(&seqApp::sort,this, "sort");
+	dispMap(&seqApp::muscleAln,this, "muscle");
+	dispMap(&seqApp::removeGaps,this, "removeGaps");
+	dispMap(&seqApp::complementSeqs,this, "complement");
+	dispMap(&seqApp::translate,this, "translate");
+	dispMap(&seqApp::minTreeData,this, "minTreeData");
 
 	//general information
 	dispMap(&seqApp::colorsData,this, "baseColors");
@@ -87,6 +88,8 @@ seqApp::seqApp(cppcms::service& srv,
 seqApp::~seqApp() {
 
 }
+
+
 
 void seqApp::jsLibs() {
 	ret_js();
@@ -129,6 +132,9 @@ void seqApp::colorsData() {
 
 	r["-"] = "#e6e6e6";
 
+	r["N"] = "#AFAFAF";
+	r["n"] = "#7D7D7D";
+
 	response().out() << r;
 }
 
@@ -158,15 +164,35 @@ void seqApp::getProteinColors(){
   ret["W"] = "#fed65f";
   ret["Y"] = "#ffff66";
 	ret["-"] = "#e6e6e6";
+	ret["X"] = "#999999";
 	response().out() << ret;
 }
 
-void seqApp::sort(std::string uid, std::string sortBy){
-	bib::scopedMessage mess("sort", std::cout, debug_);
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+void seqApp::sort(std::string sortBy){
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
+	//bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [sortBy=" + sortBy +  "]"), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
-			auto ret = seqs_.sort(uid, sortBy);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->sort(uid, sortBy);
+			}else{
+				/**@todo implement sort only on selected seqs */
+				ret = seqs_->sort(uid, sortBy);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -176,12 +202,32 @@ void seqApp::sort(std::string uid, std::string sortBy){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
-void seqApp::muscleAln(std::string uid){
-	bib::scopedMessage mess("muscleAln", std::cout, debug_);
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+
+void seqApp::muscleAln(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
-			auto ret = seqs_.muscle(uid);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->muscle(uid);
+			}else{
+				ret = seqs_->muscle(uid, selected);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -191,12 +237,30 @@ void seqApp::muscleAln(std::string uid){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
-void seqApp::removeGaps(std::string uid){
-	bib::scopedMessage mess("removeGaps", std::cout, debug_);
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+
+void seqApp::removeGaps(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
-			auto ret =  seqs_.removeGaps(uid);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->removeGaps(uid);
+			}else{
+				ret = seqs_->removeGaps(uid, selected);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -206,12 +270,101 @@ void seqApp::removeGaps(std::string uid){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
-void seqApp::complementSeqs(std::string uid){
-	bib::scopedMessage mess("complementSeqs", std::cout, debug_);
-	if(seqs_.containsRecord(uid)){
-		if(seqs_.recordValid(uid)){
+void seqApp::complementSeqs(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
 			ret_json();
-			auto ret =  seqs_.rComplement(uid);
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->rComplement(uid);
+			}else{
+				//printVector(selected);
+				ret = seqs_->rComplement(uid, selected);
+				ret["selected"] = selected;
+			}
+			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+
+void seqApp::translate(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+  uint64_t start =  bib::lexical_cast<uint64_t>(postJson["start"].asString());
+  bool complement = false;
+  bool reverse = false;
+
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
+			ret_json();
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->translate(uid,           complement, reverse, start);
+			}else{
+				ret = seqs_->translate(uid, selected, complement, reverse, start);
+				ret["selected"] = std::vector<uint32_t>{};
+			}
+			ret["uid"] = uid + "_protein";
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+
+void seqApp::minTreeData(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if(kv.first == "selected[]"){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
+			ret_json();
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->minTreeData(uid);
+			}else{
+				ret = seqs_->minTreeData(uid, selected);
+				ret["selected"] = selected;
+			}
 			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
@@ -223,6 +376,7 @@ void seqApp::complementSeqs(std::string uid){
 }
 
 void seqApp::getColors(std::string num) {
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [num=" + estd::to_string(num) +  "]"), std::cout, debug_);
 	ret_json();
 	cppcms::json::value ret;
 	auto outColors = bib::njhColors(std::stoi(num));
@@ -233,6 +387,19 @@ void seqApp::getColors(std::string num) {
 	}
 	ret["colors"] = outColorsStrs;
 	response().out() << ret;
+}
+
+std::string seqApp::messStrFactory(const std::string & funcName){
+	return bib::err::F() << "[" << getCurrentDate() << "] " << funcName;
+}
+
+std::string seqApp::messStrFactory(const std::string & funcName, const MapStrStr & args){
+	VecStr argsVec;
+	for(const auto & kv : args){
+		argsVec.emplace_back(kv.first + " = " + kv.second);
+	}
+	std::string argStrs = messStrFactory(funcName) + " [" + vectorToString(argsVec, ", ") + "]";
+	return argStrs;
 }
 
 } /* namespace bibseq */

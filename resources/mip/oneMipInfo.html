@@ -8,54 +8,37 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<link rel="stylesheet" href="/ssv/cssLibs"></script>
-	<link rel="stylesheet" href="/ssv/cssOwn"></script>
-	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
-	<style>
-		.container {
-			padding-right: 15px;
-			padding-left: 15px;
-			margin-right: auto;
-			margin-left: 15px;
-			}
-		a:visited {
-			color:#8844CC;
-		}
-	</style>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
   </head>
   <body>
-
-	
-	
     <script>
     	$(document).ready(function(){
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
-			var currentPopName = locSplit.pop();
-			var sampNames;
-			ajax("/" + rName + "/mipSampleNames/" + currentPopName, function(mn){ sampNames = mn; });
-			
-			var geneName;
-			ajax("/" + rName + "/getGeneForMipName/" + currentPopName, function(gn){ geneName = gn; });
-			d3.select("#mipGeneLink").attr("href","/" + rName + "/geneInfo/" + geneName );
-			
-			//getGeneForMipName
-			$("title", "head").html(currentPopName);
-			$("#jTitle").html(currentPopName);
-			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"linkPanel\"></div>");
-			$("#linkPanel").append("<div class=\"panel-heading\"><h3></h3></div>");
-			$("#linkPanel").append("<div class=\"panel-body\" id =\"linkPanelBody\"></div></div>");
+			var mipName = locSplit.pop();
+			var geneName = ajaxRet("/" + rName + "/getGeneForMipName/" + mipName);
+			var sampNames = ajaxRet("/" + rName + "/mipSampleNames/" + mipName);
+			//Set up Page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, geneName, "", mipName);
+			addMainDiv("body", true);
+			setHeadTitle(mipName);
+			$("#jumboTitle").html(mipName);
+			addPanelWithDiv("#mainContent","linkPanelBody", "Data Across all Samples");
+			addPanelWithDiv("#mainContent","sampLinks", "Per Sample");
+
 			$('<a>',{
 			    text: 'See All Sample Data',
 			    title: 'Sample Data',
-			    href: "/" + rName + "/allSamps/" + currentPopName,
+			    href: "/" + rName + "/allSamps/" + mipName,
 			    id: "samp"
 			}).appendTo('#linkPanelBody');
-			$(".container.theme-showcase").append("<div class=\"panel panel-primary\" id=\"sPanel\"></div>");
-			$("#sPanel").append("<div class=\"panel-heading\"><h3>Each Sample</h3></div>");
-			$("#sPanel").append("<div class=\"panel-body\"><div id=\"sampLinks\"></div></div>");
+
 			var cols = 10;
-			var linkPre = "/" + rName + "/oneSampInfo/" + currentPopName + "/" ;
+			var linkPre = "/" + rName + "/oneSampInfo/" + mipName + "/" ;
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";
 			var addTo = "#sampLinks";
@@ -63,29 +46,5 @@
 		});
 		
     </script>
-            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-	      <div class="container">
-	        <div class="navbar-header">
-	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-	            <span class="sr-only">Toggle navigation</span>
-	            <span class="icon-bar"></span>
-	            <span class="icon-bar"></span>
-	            <span class="icon-bar"></span>
-	          </button>
-	          
-	        </div>
-	        <div id="navbar" class="navbar-collapse collapse">
-	          <ul class="nav navbar-nav">
-	            <li class=""><a href="/ssv">Home</a></li>
-	            <li class=""><a id = "mipGeneLink" href="">Mip Targets</a></li>
-	        </div><!--/.nav-collapse -->
-	      </div>
-	       </nav>
-		<div class="container theme-showcase" role="main">
-			<div class="jumbotron">
-				<h1 id="jTitle"></h1>
-			</div>
-		</div>
-
   </body>
 </html>

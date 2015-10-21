@@ -3,32 +3,15 @@
 <html>
   <head>
 	<title>All Samples Info</title>
-	<style>	
-	
-		
-
-		#qualChart, #popTable, #popChart {
-			position: relative;
-			clear: both;
-			top: 80px;
-		}
-	</style>
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<link rel="stylesheet" href="/ssv/cssLibs"></script>
-	<link rel="stylesheet" href="/ssv/cssOwn"></script>
-	<link href="http://getbootstrap.com/examples/theme/theme.css" rel="stylesheet">
-	<style>
-		.container {
-			padding-right: 15px;
-			padding-left: 15px;
-			margin-right: auto;
-			margin-left: 15px;
-			}
-	</style>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
   </head>
   <body>
 
@@ -38,29 +21,30 @@
     		//get current name from window location
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
-			var currentPopName = locSplit.pop();
-			//change title to current name
-			$("title", "head").html(currentPopName);
-			$("#titleName").html(currentPopName);
-			//get sample names and the table with the sample names
-			var sampNames;
-			ajax("/" + rName + "/mipSampleNames/" + currentPopName, function(mn){ sampNames = mn; });
-			ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + sampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
-			//get the seq and color data for the sequence view of the population sequences 
-			var mainData;
-	        var baseColors = {};
-			ajax('/' + rName + '/popSeqData/' + currentPopName, function(md){ mainData = md; });
-			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
-			
+			var mipName = locSplit.pop();
 			var geneName;
-			ajax("/" + rName + "/getGeneForMipName/" + currentPopName, function(gn){ geneName = gn; });
-			d3.select("#mipGeneLink").attr("href","/" + rName + "/geneInfo/" + geneName );
-			d3.select("#mipTargetLink").attr("href","/" + rName + "/mipInfo/" + currentPopName ).text(currentPopName);
-						
+			ajax("/" + rName + "/getGeneForMipName/" + mipName, function(gn){ geneName = gn; });
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, geneName, "", mipName);
+			addMainDiv("body", true);
+			//change title to current name
+			setHeadTitle(mipName);
+			$("#jumboTitle").html(mipName);
+			addDiv("#mainContent", "sampTable");
+			addDiv("#mainContent", "sampNameMenu");
+			addDiv("#mainContent", "sampleChartMaster");
+			addDiv("#mainContent", "dnaViewer");
+			addDiv("#mainContent", "popTable");
+			//get sample names and the table with the sample names
+			var sampNames = ajaxRet("/" + rName + "/mipSampleNames/" + mipName);
+			ajaxPost('/' + rName + '/allSampsInfo/' + mipName , {"sampNames": sampNames}, function(tab){ mainPopInfoTab = tab; });
+			//get the seq and color data for the sequence view of the population sequences 
+			var mainData = ajaxRet('/' + rName + '/popSeqData/' + mipName);
+	        var baseColors = ajaxRet('/' + rName + '/baseColors');	
 			//sample table
-			var sampleTable =  new njhTable("#sampTable", mainPopInfoTab, currentPopName + "_sampInfo", false);	
+			var sampleTable =  new njhTable("#sampTable", mainPopInfoTab, mipName + "_sampInfo", false);	
 			// bar graph for the sample info
-			var sampleChart = new njhSampleChart("#sampleChartMaster", mainPopInfoTab, currentPopName +  "_sampChart","s_Sample", "c_barcodeFrac","h_popUID", ["s_Sample", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainPopInfoTab, mipName +  "_sampChart","s_Sample", "c_barcodeFrac","h_popUID", ["s_Sample", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
 			//update the chart and table on click of the sample checkboxes
 			function updateChartOnClick() { 
 				//get all currently checked sample boxes and then update the current samples  
@@ -72,70 +56,24 @@
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajax('/' + rName + '/allSampsInfo/' + currentPopName + "/" + currentSampNames.join("DELIM"), function(tab){ mainPopInfoTab = tab; });
+			    	ajaxPost('/' + rName + '/allSampsInfo/' + mipName, {"sampNames": currentSampNames}, function(tab){ mainPopInfoTab = tab; });
 			    }
 			 	sampleTable.updateWithData(mainPopInfoTab);
 			 	sampleChart.updateWithData(mainPopInfoTab);
 			};
 			//create samp menu 
 			var sampMenu = new njhCheckboxMenu("#sampNameMenu", sampNames, updateChartOnClick);
-
 			//create SeqViewer for the population final sequences 
 			var cellWidth = 20;
 			var cellHeight = 25;
 			var SeqViewer = new njhSeqView("#dnaViewer",  mainData, cellWidth, cellHeight, baseColors, true);
-			function init(){
-				$(window).bind("resize", function(){
-					SeqViewer.updateCanvas();
-					SeqViewer.setUpSliders();
-					SeqViewer.paint();
-				});
-				SeqViewer.setUp();
-				SeqViewer.paint();
-			}
-			init();
+			initSeqViewer(SeqViewer);
 			//get the population information table from server
-			var popInfoTab;
-			ajax('/' + rName + '/popInfo/' + currentPopName, function(tab){ popInfoTab = tab; });
+			var popInfoTab = ajaxRet('/' + rName + '/popInfo/' + mipName);
 			//create the population table and populate it 
-			var popTable = new njhTable("#popTable", popInfoTab, currentPopName + "_popInfo", true);
+			var popTable = new njhTable("#popTable", popInfoTab, mipName + "_popInfo", true);
 		});
 		
     </script>
-        	<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-	      <div class="container">
-	        <div class="navbar-header">
-	          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-	            <span class="sr-only">Toggle navigation</span>
-	            <span class="icon-bar"></span>
-	            <span class="icon-bar"></span>
-	            <span class="icon-bar"></span>
-	          </button>
-	          
-	        </div>
-	        <div id="navbar" class="navbar-collapse collapse">
-	          <ul class="nav navbar-nav">
-	            <li class=""><a href="/ssv">Home</a></li>
-				<li class=""><a id = "mipGeneLink" href="">Mip Targets</a></li>
-				<li class=""><a id = "mipTargetLink" href=""></a></li>
-	          </ul>
-	        </div><!--/.nav-collapse -->
-	      </div>
-	    </nav>
-    <div class="container theme-showcase" role="main">
-		<div class="jumbotron">
-			<h1 id="titleName"></h1>
-		</div>
-		<div id = "sampTable"> </div>
-	    
-	    <div id = "sampNameMenu"></div>
-	    
-	    <div id = "sampleChartMaster"></div>
-	    
-	    <div id = "dnaViewer"></div>
-	    
-	   	<div id = "popTable"> </div>
-		
-    </div>
   </body>
 </html>
