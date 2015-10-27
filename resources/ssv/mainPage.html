@@ -17,13 +17,20 @@
 	
     <script>
     	$(document).ready(function(){
-	    	var mainData;
+	    	
 	        var baseColors = {};
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			var currentPopName = locSplit.pop();
-			ajax('/' + rName + '/seqData', function(md){ mainData = md; });
-			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			var mainData = ajaxRet('/' + rName + '/seqData');
+			var seqType =  ajaxRet('/' + rName + '/seqType');
+			console.log(seqType);
+			if(seqType == "dna"){
+				baseColors = ajaxRet('/' + rName + '/baseColors');
+			}else if (seqType == "protein"){
+				baseColors = ajaxRet('/' + rName + '/proteinColors');
+			}
+			
 			
 			var cellWidth = 20;
 			var cellHeight = 25;
