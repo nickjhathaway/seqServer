@@ -37,14 +37,18 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	pages_.emplace("mainPageHtml",make_path(config["resources"] + "ssv/mainPage.html") );
 	rootName_ = config["name"];
 	debug_ = config["debug"] == "true";
+	protein_ = config["protein"] == "true";
+
 	for(auto & fCache : pages_){
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
+
 
 	//main page
 	dispMapRoot(&ssv::mainPage, this);
 
 	dispMap(&ssv::seqData,this, "seqData");
+	dispMap(&ssv::seqType,this, "seqType");
 
 	//general information
 	dispMap(&ssv::rootName,this, "rootName");
@@ -64,13 +68,26 @@ VecStr ssv::requiredOptions() const {
 }
 
 void ssv::seqData() {
-	bib::scopedMessage run("seqData", std::cout, debug_);
+	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	ret_json();
 	response().out() << seqs_->getJson(rootName_.substr(1));
 }
 
+void ssv::seqType() {
+	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	ret_json();
+	cppcms::json::value r;
+	if(protein_){
+		r = "protein";
+	}else{
+		r = "dna";
+	}
+	response().out() << r;
+}
+
 void ssv::rootName() {
-	//std::cout << "rootName" << std::endl;
+	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+
 	ret_json();
 	cppcms::json::value r;
 	r = rootName_;
@@ -78,10 +95,12 @@ void ssv::rootName() {
 }
 
 void ssv::showMinTree() {
+	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 
 }
 
 void ssv::mainPage() {
+	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto search = pages_.find("mainPageHtml");
 	response().out() << search->second.get("/ssv", rootName_);
 }
@@ -93,10 +112,10 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
 	uint32_t port = 8881;
 	std::string name = "ssv";
 	std::string resourceDirName = "";
+	bool protein = false;
+	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
-	if(resourceDirName.back() != '/'){
-		resourceDirName.append("/");
-	}
+	bib::files::appendAsNeeded(resourceDirName, "/");
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
@@ -114,6 +133,7 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
   appConfig["debug"] = bib::boolToStr(setUp.debug_);
+  appConfig["protein"] = bib::boolToStr(protein);
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);

@@ -130,6 +130,9 @@ void seqApp::colorsData() {
 	r["T"] = "#87afff";
 	r["t"] = "#6e96e6";
 
+	r["U"] = "#87afff";
+	r["u"] = "#6e96e6";
+
 	r["-"] = "#e6e6e6";
 
 	r["N"] = "#AFAFAF";

@@ -37,7 +37,7 @@ private:
 	typedef bibseq::seqApp super;
 
 	std::string rootName_;
-
+	bool protein_;
 
 
 
@@ -53,6 +53,8 @@ public:
 	void showMinTree();
 
 	void mainPage();
+
+	void seqType();
 
 };
 
