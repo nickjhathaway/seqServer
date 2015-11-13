@@ -24,7 +24,7 @@
 			$("#jumboTitle").html("Mip Targets for " + geneName);
 			addPanelWithDiv("#mainContent","mipLinks", geneName);
 			addPanelWithDiv("#mainContent","sampLinks", "Samples");
-			var mNames = ajaxRet("/" + rName + "/mipNames/" + geneName);
+			var mNames = ajaxRet("/" + rName + "/mipNamesForGene/" + geneName);
 			var cols = 10;
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";

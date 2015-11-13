@@ -4,8 +4,6 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
 	this.tableDownloadStubName = tableDownloadStubName;
-	var element = document.getElementById(this.masterDivId);
-	element.className += " njhTable";
 	d3.select(masterDivId).attr("style", "margin-top:10px; margin-bottom:10px;")
 		.attr("class", "njhTable");
 	//create internal table divs
