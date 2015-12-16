@@ -20,33 +20,48 @@
 // along with seqServer.  If not, see <http://www.gnu.org/licenses/>.
 //
 /*
- * jsonUtils.hpp
+ * viewTable.hpp
  *
- *  Created on: Dec 25, 2014
+ *  Created on: Jun 18, 2015
  *      Author: nickhathaway
  */
 
-#include <bibseq.h>
-#include <bibcpp.h>
-#include <cppitertools/range.hpp>
-#include <cppcms/json.h>
+#include "seqServer/apps/seqApp.hpp"
+
 
 namespace bibseq {
 
+class bamBaseViewer: public bibseq::seqApp {
+private:
 
-cppcms::json::value dotToJson(const std::string& dotFilename);
-cppcms::json::value tableToJsonRowWise(const bibseq::table & tab,
-		const std::string mainColName, const VecStr & hideOnStartColNames,
-		const VecStr & excludeFromNum = VecStr { });
-cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab);
+	typedef bibseq::seqApp super;
 
-cppcms::json::object server_config(std::string name, uint32_t port);
-Json::Value cppcmsJsonToJson(const cppcms::json::object& obj);
-Json::Value cppcmsJsonToJson(const cppcms::json::value& val);
-cppcms::json::value jsonToCppcmsJson(const Json::Value & val);
+	std::string rootName_;
+	std::string filename_;
+	table originalTable_;
+
+	static bfs::path make_path(const bfs::path fn) {
+		return fn;
+	}
+
+public:
+	bamBaseViewer(cppcms::service& srv, std::map<std::string, std::string> config);
+
+	virtual VecStr requiredOptions() const ;
+
+	void tableData();
+
+	void getFilename();
+
+	void rootName();
+
+	void mainPage();
 
 
 
+};
+
+int bamBaseViewerMain(std::map<std::string, std::string> inputCommands);
 
 } /* namespace bibseq */
 

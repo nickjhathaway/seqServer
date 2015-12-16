@@ -46,18 +46,21 @@ public:
 
 	};
 
-	std::unordered_map<std::string, cacheRecord > cache_;
+	std::unordered_map<std::string, cacheRecord> cache_;
 
 	VecStr currentCache_;
 	uint32_t cachePos_ = 0;
 	uint32_t cacheSizeLimit_ = 10;
 
-	bool recordValid(const std::string & uid)const;
-	bool containsRecord(const std::string & uid)const;
+	bool recordValid(const std::string & uid) const;
+	bool containsRecord(const std::string & uid) const;
 
-	void addToCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads);
-	void updateCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads);
-	void updateAddCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads);
+	void addToCache(const std::string & uid,
+			const std::shared_ptr<std::vector<readObject>> & reads);
+	void updateCache(const std::string & uid,
+			const std::shared_ptr<std::vector<readObject>> & reads);
+	void updateAddCache(const std::string & uid,
+			const std::shared_ptr<std::vector<readObject>> & reads);
 
 	std::shared_ptr<std::vector<readObject>> getRecord(const std::string & uid);
 
@@ -197,10 +200,14 @@ public:
 	template<typename T>
 	static cppcms::json::value translate(
 			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid, bool complement, bool reverse, uint64_t start) {
+			const std::vector<uint64_t> & selected, const std::string & uid,
+			bool complement, bool reverse, uint64_t start) {
 		std::vector<baseReadObject> ret;
-		for(const auto & readPos : selected){
-			ret.emplace_back(baseReadObject((*reads)[readPos].seqBase_.translateRet(complement, reverse, start)));
+		for (const auto & readPos : selected) {
+			ret.emplace_back(
+					baseReadObject(
+							(*reads)[readPos].seqBase_.translateRet(complement, reverse,
+									start)));
 		}
 		return seqsToJson(ret, uid);
 	}
@@ -225,7 +232,7 @@ public:
 			const std::shared_ptr<std::vector<T>> & reads,
 			const std::vector<uint64_t> & selected, const std::string & uid) {
 		std::vector<readObject> selReads;
-		for(const auto & pos : selected){
+		for (const auto & pos : selected) {
 			selReads.emplace_back((*reads)[pos]);
 		}
 		return jsonToCppcmsJson(genMinTreeData(selReads));
