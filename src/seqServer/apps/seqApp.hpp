@@ -172,9 +172,9 @@ protected:
 
 	void getColors(std::string num);
 
-	std::map<std::string, bib::FileCache> pages_;
+	std::map<std::string, bib::files::FileCache> pages_;
 
-	std::map<std::string, bib::FilesCache> jsAndCss_;
+	std::map<std::string, bib::files::FilesCache> jsAndCss_;
 
 	const std::string wordWithDash_ =  "([A-Za-z0-9\\-\\_\\.]+)";
 	const std::string twoWordArgs_ =   "([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)";
