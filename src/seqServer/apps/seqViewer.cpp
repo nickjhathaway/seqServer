@@ -115,7 +115,7 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
 	bool protein = false;
 	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
-	bib::files::appendAsNeeded(resourceDirName, "/");
+	bib::appendAsNeeded(resourceDirName, "/");
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");

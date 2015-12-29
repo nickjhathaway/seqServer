@@ -39,8 +39,13 @@ serverRunner::serverRunner()
 
 
 int main(int argc, char** argv){
-  serverRunner serRunner;
-  return serRunner.run(argc, argv);
+	try{
+	  serverRunner serRunner;
+	  return serRunner.run(argc, argv);
+	}catch (std::exception & e) {
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
 }
 
 
