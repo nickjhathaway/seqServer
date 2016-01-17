@@ -55,7 +55,7 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 
 	mapper().root(rootName_);
 	//read in data and set to the json
-	readObjectIOOptions options(config["ioOptions"]);
+	SeqIOOptions options(config["ioOptions"]);
 	readObjectIO reader;
 	reader.read(options);
 	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reader.reads));
@@ -127,12 +127,12 @@ int seqViewer(std::map<std::string, std::string> inputCommands){
   std::map<std::string, std::string> appConfig;
   appConfig["name"] = name;
   appConfig["port"] = estd::to_string(port);
-  auto optsJson = setUp.ioOptions_.toJson();
+  auto optsJson = setUp.pars_.ioOptions_.toJson();
   appConfig["ioOptions"] = optsJson.toStyledString();
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
-  appConfig["debug"] = bib::boolToStr(setUp.debug_);
+  appConfig["debug"] = bib::boolToStr(setUp.pars_.debug_);
   appConfig["protein"] = bib::boolToStr(protein);
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
