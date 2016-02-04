@@ -66,7 +66,7 @@ public:
 
 };
 
-int tableViewerMain(std::map<std::string, std::string> inputCommands);
+int tableViewerMain(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
 

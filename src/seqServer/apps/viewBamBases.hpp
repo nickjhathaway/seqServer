@@ -61,7 +61,7 @@ public:
 
 };
 
-int bamBaseViewerMain(std::map<std::string, std::string> inputCommands);
+int bamBaseViewerMain(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
 

@@ -58,7 +58,7 @@ public:
 
 };
 
-int seqViewer(std::map<std::string, std::string> inputCommands);
+int seqViewer(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
 

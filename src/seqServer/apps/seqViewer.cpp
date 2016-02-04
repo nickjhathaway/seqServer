@@ -106,7 +106,7 @@ void ssv::mainPage() {
 }
 
 
-int seqViewer(std::map<std::string, std::string> inputCommands){
+int seqViewer(const bib::progutils::CmdArgs & inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	uint32_t port = 8881;

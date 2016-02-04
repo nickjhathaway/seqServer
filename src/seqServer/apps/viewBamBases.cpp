@@ -111,7 +111,7 @@ void bamBaseViewer::mainPage() {
 }
 
 
-int bamBaseViewerMain(std::map<std::string, std::string> inputCommands){
+int bamBaseViewerMain(const bib::progutils::CmdArgs & inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	std::string tableName = "";
