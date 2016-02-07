@@ -59,7 +59,7 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	SeqInput reader(options);
 	reader.openIn();
 	auto reads = reader.readAllReads<readObject>();
-	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>());
+	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reads));
 	std::cout << "Finished set up" << std::endl;
 
 }
