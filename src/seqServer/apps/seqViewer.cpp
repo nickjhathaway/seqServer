@@ -56,9 +56,10 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
 	mapper().root(rootName_);
 	//read in data and set to the json
 	SeqIOOptions options(config["ioOptions"]);
-	readObjectIO reader;
-	reader.read(options);
-	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reader.reads));
+	SeqInput reader(options);
+	reader.openIn();
+	auto reads = reader.readAllReads<readObject>();
+	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>());
 	std::cout << "Finished set up" << std::endl;
 
 }
