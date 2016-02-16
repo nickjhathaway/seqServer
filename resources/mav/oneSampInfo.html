@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Sample Info</title>
+
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
+  </head>
+  <body >
+    <script>
+    	$(document).ready(function(){
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var sampName = locSplit.pop();
+			var mipName = locSplit.pop();
+			var geneName;
+			ajax("/" + rName + "/getGeneForMipName/" + mipName, function(gn){ geneName = gn; });
+
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, geneName, sampName, mipName);
+			addMainDiv("body", true);
+			setHeadTitle(mipName);
+			$("#jumboTitle").html(mipName + ":" + sampName);
+			addH1 ("#mainContent", "Initial Clustering");
+			addDiv("#mainContent", "initialSeqs");
+			addH1 ("#mainContent", "Final Clusters with Filtering for chimeras and low freq");
+			addDiv("#mainContent", "finalSeqs");
+			addDiv("#mainContent", "popTable");
+
+	    	var mainData;
+	    	var mainFinalData;
+	        var baseColors = {};
+			ajax('/' + rName + '/oneSampInitSeqData/' +mipName + "/" + sampName, function(md){ mainData = md; });
+			ajax('/' + rName + '/oneSampFinalSeqData/' +mipName + "/" + sampName, function(md){ mainFinalData = md; });
+			ajax('/' + rName + '/baseColors', function(bc){ baseColors = bc; });
+			d3.select("#mipGeneLink").attr("href","/" + rName + "/geneInfo/" + geneName );
+			d3.select("#mipTargetLink").attr("href","/" + rName + "/mipInfo/" + mipName ).text(mipName);
+				
+			var cellWidth = 20;
+			var cellHeight = 25;
+			var SeqViewerInitial = new njhSeqView("#initialSeqs", mainData, cellWidth, cellHeight, baseColors, true);
+			var SeqViewerFinal = new njhSeqView("#finalSeqs", mainFinalData, cellWidth, cellHeight, baseColors, true,"/" + rName + "/showMinTree/" + mipName + "/" + sampName);
+			initSeqViewer(SeqViewerInitial);
+			initSeqViewer(SeqViewerFinal);
+
+			var mainPopInfoTab;
+			ajax('/' + rName + '/oneSampTabData/'+ mipName + "/" + sampName, function(tab){ mainPopInfoTab = tab; });
+			var popTable = new njhTable("#popTable", mainPopInfoTab, mipName + "_" + sampName + "_popInfo", true);
+			var allBarcodeInfo;
+			ajax('/' + rName + '/barcodeInfo/' +mipName + "/" + sampName, function(tab){ allBarcodeInfo = tab; });
+			//final cluster info
+			addPanelWithDiv("#mainContent", "clusBarTab", "Barcode Info Per Cluster", "panel-info");
+			var clusBarTable = new njhTable("#clusBarTab", allBarcodeInfo["clusterBarInfo"], mipName + "_" + sampName + "_clusBarInfo", false);
+			//barcode coverage after
+			addPanelWithDiv("#mainContent", "covAfterTab", "Barcode Coverage After Filtering", "panel-info");
+			var coverageAfterTable = new njhTable("#covAfterTab", allBarcodeInfo["coverageAfter"], mipName + "_" + sampName + "_coverageAfterInfo", false);
+			//barcode performance
+			addPanelWithDiv("#mainContent", "barPerTab", "Barcode Performance", "panel-info");
+			//var performanceTable = new njhTable("#barPerTab", allBarcodeInfo["performance"], mipName + "_" + sampName + "_performanceInfo", false);
+			//barcode coverage before  coverageBefore
+			addPanelWithDiv("#mainContent", "covBeforeTab", "Barcode Coverage Before Filtering", "panel-info");
+			var coverageBeforeTable = new njhTable("#covBeforeTab", allBarcodeInfo["coverageBefore"], mipName + "_" + sampName + "_coverageBeforeInfo", false);
+			//barcode afterIden uniqueIdentical	
+			addPanelWithDiv("#mainContent", "uniIdenTab", "Unique Seqs, Perfect match", "panel-info");
+			var uniqueIdenticalTable = new njhTable("#uniIdenTab", allBarcodeInfo["uniqueIdentical"], mipName + "_" + sampName + "_uniqueIdenticalInfo", false);	
+			//barcode afterClus uniqueCluster
+			addPanelWithDiv("#mainContent", "uniClusTab", "Unique Seqs, After Clustering", "panel-info");
+			var uniqueClusterTable = new njhTable("#uniClusTab", allBarcodeInfo["uniqueCluster"], mipName + "_" + sampName + "_uniqueClusterInfo", false);
+			
+		});
+
+    </script>
+  </body>
+</html>

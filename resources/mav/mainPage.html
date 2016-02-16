@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMav"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMav">
+  </head>
+  <body>
+	<script>
+		$(document).ready(function() {
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", "", "");
+			addMainDiv("body", true);
+			setHeadTitle("Mips!");
+			$("#jumboTitle").html("Mips");
+			addPanelWithDiv(".container.theme-showcase","geneLinks", "Mip Groups");
+			addPanelWithDiv(".container.theme-showcase","sampLinks", "Samples");
+			addPanelWithDiv(".container.theme-showcase","sampStatsLinks", "Initial Sample Read Amount Stats", "panel-info");
+			var gNames = ajaxRet("/" + rName + "/allGroupingNames");
+			var cols = 10;
+			var linkPre = "/" + rName + "/geneInfo/";
+			var mouseOverC = "#999";
+			var mouseLeaveC = "#FFF";
+			var addTo = "#geneLinks";
+			createLinksTable(addTo, linkPre, gNames,cols, mouseOverC, mouseLeaveC);
+			var sampNames = ajaxRet("/" + rName + "/allSampNames");
+			var linkPreSamp = "/" + rName + "/oneSampAllMipInfo/";
+			var addToSamp = "#sampLinks";
+			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
+			$( "<a href=" + rName + "/showInitialReadStats>OverView of all Samples</a><p></p>" ).insertBefore( "#sampStatsLinks" );
+			var linkPreSampStats = "/" + rName + "/showInitialReadStatsPerSample/";
+			var addToSampStats = "#sampStatsLinks";
+			createLinksTable(addToSampStats, linkPreSampStats, sampNames,cols, mouseOverC, mouseLeaveC);
+		});
+	</script>
+  </body>
+</html>

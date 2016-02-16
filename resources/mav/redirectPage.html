@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Page</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
+  </head>
+  <body>
+    <script>
+    	$(document).ready(function(){
+    		//get current name from window location
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			//make sure there isn't a # at the end of rName or the links created from it won't work
+			rName = rName.replace(new RegExp("#" + "$"), "");
+			$("title", "head").html(rName);
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName);
+			addMainDiv("body", true);
+			$("#jumboTitle").html("Ruh Roh");
+			$(".jumbotron", "#mainContent").append("<h3>You attempted to go to a page that doesn't exist, or it could be there is no data for where you attempted to go.</h3>");
+		});
+		
+    </script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Overlap View</title>
+
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMiv"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMiv">
+  </head>
+  <body>
+
+	
+    <script>
+    	$(document).ready(function(){
+    		//get current name from window location
+    		var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var sampName = locSplit.pop();
+			var geneName = locSplit.pop();
+			//set up page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", sampName, "");
+			addMainDiv("body", true);
+			addPanelWithDiv("#mainContent", "snpsDiv", "View Snps and Sequence Info");
+			addDiv("#mainContent", "sampTable");
+			addDiv("#mainContent", "sampNameMenu");
+			addDiv("#mainContent", "sampleChartMaster");
+			//change title to current name
+			$("title", "head").html(sampName);
+			$("#jumboTitle").html(geneName + ":" + sampName);
+			d3.select("#snpsDiv")
+				.append("a")
+					.attr("href", "/" + rName + "/showOneGeneOneSampSnps/" + geneName + "/" + sampName)
+					.text("View Snps and Sequence Info");
+			//get sample names and the table with the sample names
+			var allMipNames;
+			var mainSampInfoTab;
+			ajax("/" + rName + "/mipNamesForGene/" + geneName, function(mn){ allMipNames = mn; });
+			ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":allMipNames}, function(tab){ mainSampInfoTab = tab; });
+
+			//sample table
+			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, sampName + "_sampInfo", true);	
+			// bar graph for the sample info
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
+			//var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeCnt","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeFrac", "c_barcodeCnt"]);
+			//update the chart and table on click of the sample checkboxes
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#sampNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentMipNames = _.intersection(allMipNames, allVals);
+			    if(currentMipNames.length == 0){
+			    	mainPopInfoTab = {};
+			    }else{
+			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
+			    }
+			 	sampleTable.updateWithData(mainSampInfoTab);
+			 	sampleChart.updateWithData(mainSampInfoTab);
+			};
+			//create samp menu 
+			//var sampMenu = new njhCheckboxMenu("#sampNameMenu", allMipNames, updateChartOnClick);
+			var sampMenu = new njhCheckboxMenuOrganized("#sampNameMenu", allMipNames, updateChartOnClick);
+
+		});
+    </script>
+  </body>
+</html>
