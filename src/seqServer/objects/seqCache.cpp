@@ -59,6 +59,14 @@ cppcms::json::value seqCache::minTreeData(const std::string & uid, const std::ve
 	return seqToJsonFactory::minTreeData(cache_.at(uid).reads_,positions, uid);
 }
 
+cppcms::json::value seqCache::minTreeDataDetailed(const std::string & uid, uint32_t numDiff){
+	return seqToJsonFactory::minTreeDataDetailed(cache_.at(uid).reads_, uid, numDiff);
+}
+
+cppcms::json::value seqCache::minTreeDataDetailed(const std::string & uid, const std::vector<uint64_t> & positions, uint32_t numDiff){
+	return seqToJsonFactory::minTreeDataDetailed(cache_.at(uid).reads_,positions, uid, numDiff);
+}
+
 cppcms::json::value seqCache::muscle(const std::string & uid,const std::vector<uint64_t> & positions){
 	return seqToJsonFactory::muscle(cache_.at(uid).reads_, positions, uid);
 }

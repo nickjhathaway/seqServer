@@ -210,16 +210,13 @@ public:
 	void muscleAln();
 	void removeGaps();
 	void complementSeqs();
-	void translate();
+	void translateToProtein();
 	void minTreeData();
+	void minTreeDataDetailed();
 
 	std::string messStrFactory(const std::string & funcName);
-	std::string messStrFactory(const std::string & funcName, const MapStrStr & args);
-
-	static bfs::path make_path(const bfs::path fn) {
-		return fn;
-	}
-
+	std::string messStrFactory(const std::string & funcName,
+			const MapStrStr & args);
 };
 
 } /* namespace bibseq */

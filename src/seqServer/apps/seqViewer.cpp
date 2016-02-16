@@ -30,16 +30,16 @@
 
 namespace bibseq {
 
-ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config)
-: bibseq::seqApp(srv, config)
-{
+ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
+		bibseq::seqApp(srv, config) {
 	configTest(config, requiredOptions(), "ssv");
-	pages_.emplace("mainPageHtml",make_path(config["resources"] + "ssv/mainPage.html") );
+	pages_.emplace("mainPageHtml",
+			bib::files::make_path(config["resources"], "ssv/mainPage.html"));
 	rootName_ = config["name"];
 	debug_ = config["debug"] == "true";
 	protein_ = config["protein"] == "true";
 
-	for(auto & fCache : pages_){
+	for (auto & fCache : pages_) {
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
 

@@ -73,6 +73,7 @@ public:
 	cppcms::json::value translate(const std::string & uid, bool complement,
 			bool reverse, uint64_t start);
 	cppcms::json::value minTreeData(const std::string & uid);
+	cppcms::json::value minTreeDataDetailed(const std::string & uid, uint32_t numDiff);
 	cppcms::json::value getJson(const std::string & uid);
 
 	cppcms::json::value muscle(const std::string & uid,
@@ -86,6 +87,8 @@ public:
 			const std::vector<uint64_t> & positions);
 	cppcms::json::value minTreeData(const std::string & uid,
 			const std::vector<uint64_t> & positions);
+	cppcms::json::value minTreeDataDetailed(const std::string & uid,
+			const std::vector<uint64_t> & positions, uint32_t numDiff);
 	cppcms::json::value getJson(const std::string & uid,
 			const std::vector<uint64_t> & positions);
 
@@ -144,7 +147,11 @@ public:
 	template<typename T>
 	static cppcms::json::value sort(const std::shared_ptr<std::vector<T>> & reads,
 			const std::string & sortOption, const std::string & uid) {
-		readVecSorter::sortReadVector(*reads, sortOption);
+		if ("reverse" == sortOption) {
+			bib::reverse(*reads);
+		} else {
+			readVecSorter::sortReadVector(*reads, sortOption);
+		}
 		return seqsToJson(*reads, uid);
 	}
 	template<typename T>
@@ -236,6 +243,37 @@ public:
 			selReads.emplace_back((*reads)[pos]);
 		}
 		return jsonToCppcmsJson(genMinTreeData(selReads));
+	}
+
+	template<typename T>
+	static cppcms::json::value minTreeDataDetailed(
+			const std::shared_ptr<std::vector<T>> & reads,
+			const std::string & uid, uint32_t numDiff) {
+		if(numDiff > 0){
+			comparison cutOff;
+			cutOff.distances_.overLappingEvents_ = numDiff + 1;
+			return jsonToCppcmsJson(genDetailMinTreeData(*reads,2, false, cutOff, true));
+		}else{
+			return jsonToCppcmsJson(genDetailMinTreeData(*reads,2, false));
+		}
+	}
+
+	template<typename T>
+	static cppcms::json::value minTreeDataDetailed(
+			const std::shared_ptr<std::vector<T>> & reads,
+			const std::vector<uint64_t> & selected, const std::string & uid,
+			uint32_t numDiff) {
+		std::vector<readObject> selReads;
+		for (const auto & pos : selected) {
+			selReads.emplace_back((*reads)[pos]);
+		}
+		if(numDiff > 0){
+			comparison cutOff;
+			cutOff.distances_.overLappingEvents_ = numDiff + 1;
+			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2, false, cutOff, true));
+		}else{
+			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2, false));
+		}
 	}
 
 };
