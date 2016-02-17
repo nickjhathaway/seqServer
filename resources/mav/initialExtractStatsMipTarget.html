@@ -51,6 +51,7 @@
 			    	ajaxPost('/' + rName + '/getInitialReadStatsPerMipTar/' + mipTar, {"samples": currentSamples}, function(tab){ mainMipTarStatsInfoTab = tab; });
 			    }
 			    mipTarTable.updateWithData(mainMipTarStatsInfoTab);
+			    $("#sampNameMenu").scrollView();
 			};
 			
 			var sampMenu = new njhCheckboxMenu("#samplesNameMenu", allSamples, updateChartOnClick);

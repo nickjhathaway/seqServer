@@ -52,6 +52,7 @@
 			    	ajaxPost('/' + rName + '/getInitialReadStatsPerSample/' + sampName, {"mipTargets": currentMipTargets}, function(tab){ mainSampStatsInfoTab = tab; });
 			    }
 			    sampleTable.updateWithData(mainSampStatsInfoTab);
+			    $("#mipNameMenu").scrollView();
 			};
 			
 			var sampMenu = new njhCheckboxMenuOrganized("#mipNameMenu", allMipTargets, updateChartOnClick);

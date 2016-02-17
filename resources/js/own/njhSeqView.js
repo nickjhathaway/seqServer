@@ -424,6 +424,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			    	self.proteinViewer.setUp();
 			    	self.proteinViewer.paint();
 			    }
+			    $("#" + self.topDivName.substring(1) + "_protein").scrollView();
+			    
 			}));
 			menuItems["Translate"] = translateOptions;
 		}
