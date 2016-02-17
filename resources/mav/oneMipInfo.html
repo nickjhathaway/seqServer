@@ -8,10 +8,10 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<script src="/ssv/jsMiv"></script>
+	<script src="/ssv/jsMav"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
-	<link rel="stylesheet" href="/ssv/cssMiv">
+	<link rel="stylesheet" href="/ssv/cssMav">
   </head>
   <body>
     <script>
@@ -19,8 +19,8 @@
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			var mipName = locSplit.pop();
-			var geneName = ajaxRet("/" + rName + "/getGeneForMipName/" + mipName);
-			var sampNames = ajaxRet("/" + rName + "/mipSampleNames/" + mipName);
+			var geneName = ajaxRet("/" + rName + "/getGeneNameForMipName/" + mipName);
+			var sampNames = ajaxRet("/" + rName + "/getSampNamesForMipName/" + mipName);
 			//Set up Page
 			addDiv("body", "topNav");
 			createNavBar("#topNav", rName, geneName, "", mipName);
@@ -33,12 +33,12 @@
 			$('<a>',{
 			    text: 'See All Sample Data',
 			    title: 'Sample Data',
-			    href: "/" + rName + "/allSamps/" + mipName,
+			    href: "/" + rName + "/showOneMipAllSampsData/" + mipName,
 			    id: "samp"
 			}).appendTo('#linkPanelBody');
 
 			var cols = 10;
-			var linkPre = "/" + rName + "/oneSampInfo/" + mipName + "/" ;
+			var linkPre = "/" + rName + "/showOneMipOneSampsData/" + mipName + "/" ;
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";
 			var addTo = "#sampLinks";

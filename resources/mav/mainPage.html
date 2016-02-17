@@ -23,22 +23,28 @@
 			$("#jumboTitle").html("Mips");
 			addPanelWithDiv(".container.theme-showcase","geneLinks", "Mip Groups");
 			addPanelWithDiv(".container.theme-showcase","sampLinks", "Samples");
-			addPanelWithDiv(".container.theme-showcase","sampStatsLinks", "Initial Sample Read Amount Stats", "panel-info");
+			addPanelWithDiv(".container.theme-showcase","sampStatsLinks", "Initial Read Extraction Amounts Per Sample", "panel-info");
+			addPanelWithDiv(".container.theme-showcase","mipStatsLinks", "Initial Read Extraction Amounts Per Mip Target", "panel-info");
+			
 			var gNames = ajaxRet("/" + rName + "/allGroupingNames");
 			var cols = 10;
-			var linkPre = "/" + rName + "/geneInfo/";
+			var linkPre = "/" + rName + "/showGeneInfo/";
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";
 			var addTo = "#geneLinks";
 			createLinksTable(addTo, linkPre, gNames,cols, mouseOverC, mouseLeaveC);
 			var sampNames = ajaxRet("/" + rName + "/allSampNames");
-			var linkPreSamp = "/" + rName + "/oneSampAllMipInfo/";
+			var linkPreSamp = "/" + rName + "/showOneSampAllMipData/";
 			var addToSamp = "#sampLinks";
 			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
 			$( "<a href=" + rName + "/showInitialReadStats>OverView of all Samples</a><p></p>" ).insertBefore( "#sampStatsLinks" );
 			var linkPreSampStats = "/" + rName + "/showInitialReadStatsPerSample/";
 			var addToSampStats = "#sampStatsLinks";
 			createLinksTable(addToSampStats, linkPreSampStats, sampNames,cols, mouseOverC, mouseLeaveC);
+			var mipTargets = ajaxRet("/" + rName + "/allMipTargetNames");
+			var linkPreMipStats = "/" + rName + "/showInitialReadStatsPerMipTar/";
+			var addToMipStats = "#mipStatsLinks";
+			createLinksTable(addToMipStats, linkPreMipStats, mipTargets,5, mouseOverC, mouseLeaveC);
 		});
 	</script>
   </body>

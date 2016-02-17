@@ -8,10 +8,10 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<script src="/ssv/jsMiv"></script>
+	<script src="/ssv/jsMav"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
-	<link rel="stylesheet" href="/ssv/cssMiv">
+	<link rel="stylesheet" href="/ssv/cssMav">
   </head>
   <body>
 
@@ -23,7 +23,7 @@
 			var rName = locSplit[2];
 			var mipName = locSplit.pop();
 			var geneName;
-			ajax("/" + rName + "/getGeneForMipName/" + mipName, function(gn){ geneName = gn; });
+			ajax("/" + rName + "/getGeneNameForMipName/" + mipName, function(gn){ geneName = gn; });
 			addDiv("body", "topNav");
 			createNavBar("#topNav", rName, geneName, "", mipName);
 			addMainDiv("body", true);
@@ -36,10 +36,10 @@
 			addDiv("#mainContent", "dnaViewer");
 			addDiv("#mainContent", "popTable");
 			//get sample names and the table with the sample names
-			var sampNames = ajaxRet("/" + rName + "/mipSampleNames/" + mipName);
-			ajaxPost('/' + rName + '/allSampsInfo/' + mipName , {"sampNames": sampNames}, function(tab){ mainPopInfoTab = tab; });
+			var sampNames = ajaxRet("/" + rName + "/getSampNamesForMipName/" + mipName);
+			ajaxPost('/' + rName + '/getOneMipAllSampsData/' + mipName , {"sampNames": sampNames}, function(tab){ mainPopInfoTab = tab; });
 			//get the seq and color data for the sequence view of the population sequences 
-			var mainData = ajaxRet('/' + rName + '/popSeqData/' + mipName);
+			var mainData = ajaxRet('/' + rName + '/getMipPopSeqs/' + mipName);
 	        var baseColors = ajaxRet('/' + rName + '/baseColors');	
 			//sample table
 			var sampleTable =  new njhTable("#sampTable", mainPopInfoTab, mipName + "_sampInfo", false);	
@@ -56,7 +56,7 @@
 			    if(currentSampNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajaxPost('/' + rName + '/allSampsInfo/' + mipName, {"sampNames": currentSampNames}, function(tab){ mainPopInfoTab = tab; });
+			    	ajaxPost('/' + rName + '/getOneMipAllSampsData/' + mipName, {"sampNames": currentSampNames}, function(tab){ mainPopInfoTab = tab; });
 			    }
 			 	sampleTable.updateWithData(mainPopInfoTab);
 			 	sampleChart.updateWithData(mainPopInfoTab);
@@ -69,7 +69,7 @@
 			var SeqViewer = new njhSeqView("#dnaViewer",  mainData, cellWidth, cellHeight, baseColors, true);
 			initSeqViewer(SeqViewer);
 			//get the population information table from server
-			var popInfoTab = ajaxRet('/' + rName + '/popInfo/' + mipName);
+			var popInfoTab = ajaxRet('/' + rName + '/getOneMipAllSampsPopData/' + mipName);
 			//create the population table and populate it 
 			var popTable = new njhTable("#popTable", popInfoTab, mipName + "_popInfo", true);
 		});

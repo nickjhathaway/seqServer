@@ -6,10 +6,10 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<script src="/ssv/jsMiv"></script>
+	<script src="/ssv/jsMav"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
-	<link rel="stylesheet" href="/ssv/cssMiv">
+	<link rel="stylesheet" href="/ssv/cssMav">
   </head>
   <body>
     <script>
@@ -28,13 +28,13 @@
 			addDiv("#mainContent", "sampNameMenu");
 			addDiv("#mainContent", "sampleChartMaster");
 			//get sample names and the table with the sample names
-			var mipNames = ajaxRet("/" + rName + "/sampMipNames/" + sampName);
+			var mipNames = ajaxRet("/" + rName + "/mipFamNamesForSamp/" + sampName);
 			var mainSampInfoTab;
-			ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":mipNames}, function(tab){ mainSampInfoTab = tab; });
+			ajaxPost('/' + rName + '/getOneSampAllMipData/' + sampName, {"mipNames":mipNames}, function(tab){ mainSampInfoTab = tab; });
 			//sample table
 			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, sampName + "_sampInfo", false);	
 			// bar graph for the sample info
-			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","p_targetName", "c_barcodeFrac","c_clusterID", ["p_targetName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
 			//update the chart and table on click of the sample checkboxes
 			function updateChartOnClick() { 
 				//get all currently checked sample boxes and then update the current samples  
@@ -46,10 +46,11 @@
 			    if(currentMipNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
+			    	ajaxPost('/' + rName + '/getOneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
 			    }
 			 	sampleTable.updateWithData(mainSampInfoTab);
 			 	sampleChart.updateWithData(mainSampInfoTab);
+			 	$("#sampNameMenu").scrollView();
 			};
 			//create samp menu 
 			var sampMenu = new njhCheckboxMenuOrganized("#sampNameMenu", mipNames, updateChartOnClick);

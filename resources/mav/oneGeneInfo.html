@@ -6,10 +6,10 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<script src="/ssv/jsMiv"></script>
+	<script src="/ssv/jsMav"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
-	<link rel="stylesheet" href="/ssv/cssMiv">
+	<link rel="stylesheet" href="/ssv/cssMav">
   </head>
   <body>
 	<script>
@@ -24,16 +24,16 @@
 			$("#jumboTitle").html("Mip Targets for " + geneName);
 			addPanelWithDiv("#mainContent","mipLinks", geneName);
 			addPanelWithDiv("#mainContent","sampLinks", "Samples");
-			var mNames = ajaxRet("/" + rName + "/mipNamesForGene/" + geneName);
+			var mNames = ajaxRet("/" + rName + "/mipFamNamesForGene/" + geneName);
 			var cols = 10;
 			var mouseOverC = "#999";
 			var mouseLeaveC = "#FFF";
 			
-			var linkPre = "/" + rName + "/mipInfo/";
+			var linkPre = "/" + rName + "/showMipInfo/";
 			var addTo = "#mipLinks";
 			createLinksTable(addTo, linkPre, mNames,cols, mouseOverC, mouseLeaveC);
 			var sampNames = ajaxRet("/" + rName + "/sampNamesForGene/" + geneName);
-			var linkPreSamp = "/" + rName + "/showOneGeneOneSamp/" + geneName + "/";
+			var linkPreSamp = "/" + rName + "/showGeneInfoForSampData/" + geneName + "/";
 			var addToSamp = "#sampLinks";
 			createLinksTable(addToSamp, linkPreSamp, sampNames,cols, mouseOverC, mouseLeaveC);
 			

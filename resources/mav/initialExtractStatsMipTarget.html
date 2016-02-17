@@ -1,0 +1,62 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Mip Tar</title>
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<script src="/ssv/jsMav"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<link rel="stylesheet" href="/ssv/cssMav">
+  </head>
+  <body>
+
+	
+    <script>
+    	$(document).ready(function(){
+    		//get current name from window location
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var mipTar = locSplit.pop();
+			//Set Up Page
+			addDiv("body", "topNav");
+			createNavBar("#topNav", rName, "", mipTar);
+			addMainDiv("body", true);
+			//change title to current name
+			setHeadTitle(mipTar + " Stats");
+			$("#jumboTitle").html(mipTar + " Extraction Info");
+			addDiv("#mainContent", "mipTarStatsTable");
+			addDiv("#mainContent", "samplesNameMenu");
+			//get sample names and the table with the sample names
+			var mainMipTarStatsInfoTab;
+			var allSamples = ajaxRet("/" + rName + "/samplesForExtractedMip/" + mipTar);
+			ajaxPost('/' + rName + '/getInitialReadStatsPerMipTar/' + mipTar ,{"samples": allSamples}, function(tab){ mainMipTarStatsInfoTab = tab; });
+			//sample table
+			var mipTarTable =  new njhTable("#mipTarStatsTable", mainMipTarStatsInfoTab,  mipTar + "_mipTarExtractInfo", true);	
+			
+			function updateChartOnClick() { 
+				//get all currently checked sample boxes and then update the current samples  
+			    var allVals = [];
+			    $('#samplesNameMenu :checked').each(function() {
+			      allVals.push($(this).val());
+			    });
+			    var currentSamples = _.intersection(allSamples, allVals);
+			    if(currentSamples.length == 0){
+			    	mainMipTarStatsInfoTab = {};
+			    }else{
+			    	ajaxPost('/' + rName + '/getInitialReadStatsPerMipTar/' + mipTar, {"samples": currentSamples}, function(tab){ mainMipTarStatsInfoTab = tab; });
+			    }
+			    mipTarTable.updateWithData(mainMipTarStatsInfoTab);
+			};
+			
+			var sampMenu = new njhCheckboxMenu("#samplesNameMenu", allSamples, updateChartOnClick);
+
+		});
+		
+    </script>
+  </body>
+</html>

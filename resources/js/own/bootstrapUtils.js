@@ -10,6 +10,7 @@ function addPanelWithDiv(addToSelector, divId, panelTitle, panelType){
 		.attr("class", "panel-body")
 			.append("div")
 				.attr("id", divId);
+	return top;
 }
 
 function addPanelOnlyHead(addToSelector, panelTitle, panelType){
@@ -20,6 +21,7 @@ function addPanelOnlyHead(addToSelector, panelTitle, panelType){
 		.attr("class", "panel-heading")
 			.append("h1")
 				.text(panelTitle);
+	return top;
 }
 
 

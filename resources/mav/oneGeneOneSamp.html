@@ -9,10 +9,10 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 	<script src="/ssv/jsLibs"></script>
 	<script src="/ssv/jsOwn"></script>
-	<script src="/ssv/jsMiv"></script>
+	<script src="/ssv/jsMav"></script>
 	<link rel="stylesheet" href="/ssv/cssLibs">
 	<link rel="stylesheet" href="/ssv/cssOwn">
-	<link rel="stylesheet" href="/ssv/cssMiv">
+	<link rel="stylesheet" href="/ssv/cssMav">
   </head>
   <body>
 
@@ -35,20 +35,20 @@
 			//change title to current name
 			$("title", "head").html(sampName);
 			$("#jumboTitle").html(geneName + ":" + sampName);
-			d3.select("#snpsDiv")
-				.append("a")
-					.attr("href", "/" + rName + "/showOneGeneOneSampSnps/" + geneName + "/" + sampName)
-					.text("View Snps and Sequence Info");
+			//d3.select("#snpsDiv")
+			//	.append("a")
+			//		.attr("href", "/" + rName + "/showOneGeneOneSampSnps/" + geneName + "/" + sampName)
+			//		.text("View Snps and Sequence Info");
 			//get sample names and the table with the sample names
 			var allMipNames;
 			var mainSampInfoTab;
-			ajax("/" + rName + "/mipNamesForGene/" + geneName, function(mn){ allMipNames = mn; });
-			ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":allMipNames}, function(tab){ mainSampInfoTab = tab; });
+			ajax("/" + rName + "/mipFamNamesForGene/" + geneName, function(mn){ allMipNames = mn; });
+			ajaxPost('/' + rName + '/getOneSampAllMipData/' + sampName, {"mipNames":allMipNames}, function(tab){ mainSampInfoTab = tab; });
 
 			//sample table
 			var sampleTable =  new njhTable("#sampTable", mainSampInfoTab, sampName + "_sampInfo", true);	
 			// bar graph for the sample info
-			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeFrac","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
+			var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","p_targetName", "c_barcodeFrac","c_clusterID", ["p_targetName", "h_popUID", "c_clusterID", "c_barcodeCnt", "c_barcodeFrac"]);
 			//var sampleChart = new njhSampleChart("#sampleChartMaster", mainSampInfoTab, sampName +  "_sampChart","mipName", "c_barcodeCnt","c_clusterID", ["mipName", "h_popUID", "c_clusterID", "c_barcodeFrac", "c_barcodeCnt"]);
 			//update the chart and table on click of the sample checkboxes
 			function updateChartOnClick() { 
@@ -61,7 +61,7 @@
 			    if(currentMipNames.length == 0){
 			    	mainPopInfoTab = {};
 			    }else{
-			    	ajaxPost('/' + rName + '/oneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
+			    	ajaxPost('/' + rName + '/getOneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
 			    }
 			 	sampleTable.updateWithData(mainSampInfoTab);
 			 	sampleChart.updateWithData(mainSampInfoTab);

@@ -10,11 +10,11 @@ function populateNavBar(wrappingNavSelector, rName, geneName, sampName, mipName)
    	//get genes names
 	var groupNames;
 	ajax("/" + rName + "/allGroupingNames", function(mn){ groupNames = mn; });
-	var geneLinkPre = "/" + rName + "/geneInfo/";
+	var geneLinkPre = "/" + rName + "/showGeneInfo/";
 	//get samples names
 	var sampleNames;
 	ajax("/" + rName + "/allSampNames", function(mn){ sampleNames = mn; });
-	var sampleLinkPre = "/" + rName + "/oneSampAllMipInfo/";
+	var sampleLinkPre = "/" + rName + "/showOneSampAllMipData/";
 	var sampleExtractionLinkPre = "/" + rName + "/showInitialReadStatsPerSample/";
 	
 	
