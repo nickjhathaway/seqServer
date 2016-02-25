@@ -91,6 +91,7 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 		.data(menuCatsData)
 		.enter().append("li")
 			.attr("class", "dropdown active")
+			.attr("style", "margin: 2px")
 		
 			
 	cats.append("a")
