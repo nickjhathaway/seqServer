@@ -33,7 +33,7 @@ bamBaseViewer::bamBaseViewer(cppcms::service& srv, std::map<std::string, std::st
 : bibseq::seqApp(srv, config)
 {
 	configTest(config, requiredOptions(), "bamBaseViewer");
-	pages_.emplace("mainPageHtml",make_path(config["resources"] + "tv/mainPage.html") );
+	pages_.emplace("mainPageHtml",bib::files::make_path(config["resources"], "bbv/mainPage.html") );
 	rootName_ = config["name"];
 	for(auto & fCache : pages_){
 		fCache.second.replaceStr("/ssv", rootName_);
@@ -44,7 +44,6 @@ bamBaseViewer::bamBaseViewer(cppcms::service& srv, std::map<std::string, std::st
 	dispMapRoot(&bamBaseViewer::mainPage, this);
 	//table data
 	dispMap(&bamBaseViewer::tableData, this, "tableData");
-	dispMap(&bamBaseViewer::getFilename, this, "getFilename");
 	//updated table data
 
 	mapper().root(rootName_);
@@ -58,36 +57,10 @@ VecStr bamBaseViewer::requiredOptions() const {
 	return VecStr{"resources", "tableName", "delim", "header"};
 }
 
-void bamBaseViewer::getFilename(){
-	ret_json();
-	cppcms::json::value ret;
-	ret = filename_;
-	response().out() << ret;
-}
+
 
 void bamBaseViewer::tableData(){
 	ret_json();
-	/*
-	baseColors["A"] = "#ff8787";
-	baseColors["a"] = "#e66e6e";
-
-	baseColors["C"] = "#afffaf";
-	baseColors["c"] = "#96dc96";
-
-	baseColors["G"] = "#ffffaf";
-	baseColors["g"] = "#dcdc91";
-
-	baseColors["T"] = "#87afff";
-	baseColors["t"] = "#6e96e6";
-
-	baseColors["U"] = "#87afff";
-	baseColors["u"] = "#6e96e6";
-
-	baseColors["-"] = "#e6e6e6";
-
-	baseColors["N"] = "#AFAFAF";
-	baseColors["n"] = "#7D7D7D";
-	*/
 	response().out() << tableToJsonRowWise(originalTable_, originalTable_.columnNames_[0], VecStr{}, VecStr{});
 }
 

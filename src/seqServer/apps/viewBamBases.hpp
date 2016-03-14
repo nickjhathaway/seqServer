@@ -28,7 +28,6 @@
 
 #include "seqServer/apps/seqApp.hpp"
 
-
 namespace bibseq {
 
 class bamBaseViewer: public bibseq::seqApp {
@@ -40,29 +39,21 @@ private:
 	std::string filename_;
 	table originalTable_;
 
-	static bfs::path make_path(const bfs::path fn) {
-		return fn;
-	}
-
 public:
-	bamBaseViewer(cppcms::service& srv, std::map<std::string, std::string> config);
+	bamBaseViewer(cppcms::service& srv,
+			std::map<std::string, std::string> config);
 
-	virtual VecStr requiredOptions() const ;
+	virtual VecStr requiredOptions() const;
 
 	void tableData();
-
-	void getFilename();
 
 	void rootName();
 
 	void mainPage();
-
-
 
 };
 
 int bamBaseViewerMain(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
-
 

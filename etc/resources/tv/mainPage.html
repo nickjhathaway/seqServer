@@ -1,0 +1,53 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+	<title>Table Viewer</title>
+
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+	<script src="/ssv/jsLibs"></script>
+	<script src="/ssv/jsOwn"></script>
+	<link rel="stylesheet" href="/ssv/cssLibs">
+	<link rel="stylesheet" href="/ssv/cssOwn">
+	<style>
+		.container {
+			margin: 10px;
+		}
+	</style>
+
+  </head>
+  <body>	
+    <script>
+    	$(document).ready(function(){
+
+			var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			var tableFilename;
+			ajax('/' + rName + '/getFilename', function(fn){ tableFilename = fn; });
+			d3.select("#filenameDisp").text("Displaying " + tableFilename);
+			console.log(tableFilename);
+			var mainData;
+			ajax('/' + rName + '/tableData', function(md){ mainData = md; });
+			var mainTable =  new njhTable("#mainTable", mainData, "mainTable", false);	
+			function addChart(){
+				mainTable.addChart();
+			}
+			d3.select("#mainContainer").append("button").text("Show Chart").on("click", addChart);
+			
+		});
+		
+    </script>
+
+		<div id = "mainContainer" class="container theme-showcase" role="main">
+			<div class="jumbotron">
+				<h1>Table Viewer</h1>
+				<p id = "filenameDisp">
+					
+				</p>
+			</div>
+			<div id = "mainTable"></div>
+		</div>
+  </body>
+</html>
