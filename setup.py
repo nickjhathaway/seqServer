@@ -453,7 +453,7 @@ class Packages():
         pack.addVersion(url, "develop",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["develop"].additionalLdFlags_ = ["-lcurl"] 
         if Utils.isMac():
-            pack.versions_["develop"].depends_.append(LibNameVer("sharedMutex", "v0.1"))
+            pack.versions_["develop"].depends_.append(LibNameVer("sharedmutex", "v0.1"))
         pack.addVersion(url, "2.2.1",[LibNameVer("bibcpp", "2.2.1"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["2.2.1"].additionalLdFlags_ = ["-lcurl"] 
         return pack
@@ -466,7 +466,7 @@ class Packages():
         pack.addVersion(url, "master",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["master"].additionalLdFlags_ = ["-lcurl"]
         if Utils.isMac():
-            pack.versions_["master"].depends_.append(LibNameVer("sharedMutex", "v0.1"))
+            pack.versions_["master"].depends_.append(LibNameVer("sharedmutex", "v0.1"))
         return pack 
     
     def __twobit(self):
