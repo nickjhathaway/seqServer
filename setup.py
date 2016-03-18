@@ -602,7 +602,7 @@ class Packages():
     
     def checkForPackVer(self, packVer):
         if packVer.name not in self.packages_:
-            raise Exception("Lib " + packVer.name + " not found in libs, options are " + ", ".join(self.getLibNames()))
+            raise Exception("Lib " + packVer.name + " not found in libs, options are " + ", ".join(self.getPackagesNames()))
         else:
             if packVer.version not in self.packages_[packVer.name].versions_:
                 raise Exception("Version " + packVer.version + " for lib " \
