@@ -452,8 +452,8 @@ class Packages():
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "2.2.1")
         pack.addVersion(url, "develop",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["develop"].additionalLdFlags_ = ["-lcurl"] 
-        if Utils.isMac():
-            pack.versions_["develop"].depends_.append(LibNameVer("sharedmutex", "v0.1"))
+        if Utils.isMac() and not "gcc" in self.args.CC:
+            pack.versions_["develop"].depends_.append(LibNameVer("sharedMutex", "v0.1"))
         pack.addVersion(url, "2.2.1",[LibNameVer("bibcpp", "2.2.1"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["2.2.1"].additionalLdFlags_ = ["-lcurl"] 
         return pack
@@ -465,8 +465,8 @@ class Packages():
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "master")
         pack.addVersion(url, "master",[LibNameVer("bibcpp", "develop"),LibNameVer("twobit", "develop"),LibNameVer("bamtools", "v2.4.0"),LibNameVer("armadillo", "6.200.3")])
         pack.versions_["master"].additionalLdFlags_ = ["-lcurl"]
-        if Utils.isMac():
-            pack.versions_["master"].depends_.append(LibNameVer("sharedmutex", "v0.1"))
+        if Utils.isMac() and not "gcc" in self.args.CC:
+            pack.versions_["master"].depends_.append(LibNameVer("sharedMutex", "v0.1"))
         return pack 
     
     def __twobit(self):
@@ -602,7 +602,7 @@ class Packages():
     
     def checkForPackVer(self, packVer):
         if packVer.name not in self.packages_:
-            raise Exception("Lib " + packVer.name + " not found in libs, options are " + ", ".join(self.getPackagesNames()))
+            raise Exception("Lib " + packVer.name + " not found in libs, options are " + ", ".join(self.getLibNames()))
         else:
             if packVer.version not in self.packages_[packVer.name].versions_:
                 raise Exception("Version " + packVer.version + " for lib " \
