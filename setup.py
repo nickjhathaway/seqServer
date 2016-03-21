@@ -2,10 +2,8 @@
 
 
 
-import subprocess, sys, os, argparse
+import subprocess, sys, os, argparse,shutil
 from collections import namedtuple
-import shutil
-import cmd
 sys.path.append(os.path.join(os.path.dirname(__file__), "scripts/pyUtils"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "scripts/setUpScripts"))
 from utils import Utils
@@ -260,6 +258,7 @@ class Packages():
         buildCmd = ""
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git-headeronly", "master")
         pack.addHeaderOnlyVersion(url, "master")
+        pack.versions_["master"].includePath_ = os.path.join(name, "master", name)
         if not Utils.isMac():
             pack.versions_["master"].additionalLdFlags_ = ["-lrt"]
         return pack
@@ -546,8 +545,8 @@ class Packages():
         name = "njhRInside"
         buildCmd = self.__bibProjectBuildCmd()
         pack = CPPLibPackage(name, buildCmd, self.dirMaster_, "git", "1.1.1")
-        pack.addVersion(url, "develop",[LibNameVer("R", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
-        pack.addVersion(url, "1.1.1", [LibNameVer("R", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
+        pack.addVersion(url, "develop",[LibNameVer("r", "3.2.4"),LibNameVer("cppitertools", "v0.1")])
+        pack.addVersion(url, "1.1.1", [LibNameVer("r", "3.2.2"),LibNameVer("cppitertools", "v0.1")])
         return pack
     
     def __bibcpp(self):
@@ -673,7 +672,7 @@ class Packages():
         if self.checkForPackVer(packVer):
             pack = self.package(packVer.name)
             for dep in pack.versions_[packVer.version].depends_:
-                self.addPackage(packVers, dep)
+                self.addPackage(packVers, LibNameVer(str(dep.name).lower(), dep.version))
             found = False
             for otherPackVer in packVers:
                 if otherPackVer.name == packVer.name:
@@ -765,10 +764,10 @@ class Setup:
                 self.__setup(set.name, set.version)
 
         for p in self.installed:
-            print p, CT.boldGreen("installed")
+            print p.name + ":" + str(p.version), CT.boldGreen("installed")
 
         for p in self.failedInstall:
-            print  p, CT.boldRed("failed to install")
+            print  p.name + ":" + str(p.version), CT.boldRed("failed to install")
 
     def __initSetUpFuncs(self):
         self.setUps = {"zi_lib": self.zi_lib,
@@ -913,17 +912,16 @@ class Setup:
             raise Exception("Package " + str(name) + " doesn't have version " + str(version))
         bPath = pack.versions_[version].bPaths_
         if os.path.exists(bPath.local_dir):
-            print name + ":" + version, CT.boldGreen("found at ") + CT.boldBlack(bPath.local_dir)
+            print CT.boldGreen(name + ":" + version), "found at " + CT.boldBlue(bPath.local_dir)
         else:
-            print name + ":" + version, CT.boldRed("NOT"), "found; building..."
+            print CT.boldGreen(name + ":" + version), CT.boldRed("NOT"), "found; building..."
             try:
                 self.setUps[name](version)
-                self.installed.append(name)
+                self.installed.append(LibNameVer(name, version))
             except Exception as inst:
-                print type(inst)
                 print inst 
-                print "failed to install " + name
-                self.failedInstall.append(name)
+                print CT.boldRed("failed to install ") + name + ":" + str(version)
+                self.failedInstall.append(LibNameVer(name, version))
 
     def num_cores(self):
         retCores = Utils.num_cores()
@@ -1105,7 +1103,8 @@ class Setup:
                 raise Exception("Need to give version for " + lib)
             else:
                 libSplit = lib.split(":")
-                self.packages_.addPackage(self.setUpsNeeded,LibNameVer(libSplit[0].lower(),libSplit[1]))
+                #self.packages_.addPackage(self.setUpsNeeded,LibNameVer(libSplit[0].lower(),libSplit[1]))
+                self.setUpsNeeded.append(LibNameVer(libSplit[0].lower(),libSplit[1]))
         for set in self.setUpsNeeded:
             self.packages_.checkForPackVer(set)
             pack = self.__package(set.name)
@@ -1120,10 +1119,10 @@ class Setup:
                 os.remove(os.path.join(bPath.build_dir,set.name, "makefile-common.mk"))
             self.__setup(set.name, set.version)
         for p in self.installed:
-            print p, CT.boldGreen("installed")
+            print p.name + ":" + str(p.version), CT.boldGreen("installed")
 
         for p in self.failedInstall:
-            print  p, CT.boldRed("failed to install")
+            print  p.name + ":" + str(p.version), CT.boldRed("failed to install")
         
     
     def installRPackageSource(self,version, sourceFile):
