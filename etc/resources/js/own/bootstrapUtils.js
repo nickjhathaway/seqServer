@@ -10,7 +10,21 @@ function addPanelWithDiv(addToSelector, divId, panelTitle, panelType){
 		.attr("class", "panel-body")
 			.append("div")
 				.attr("id", divId);
+	return top;
 }
+
+function addPanelOnlyHead(addToSelector, panelTitle, panelType){
+	var top = d3.select(addToSelector)
+				.append("div")
+					.attr("class", "panel " + (panelType || "panel-primary"));
+	top.append("div")
+		.attr("class", "panel-heading")
+			.append("h1")
+				.text(panelTitle);
+	return top;
+}
+
+
 
 function addMainDiv(addToSelector, addJumbo){
 	var main = d3.select(addToSelector).append("div")

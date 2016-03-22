@@ -99,7 +99,7 @@ void tableViewer::mainPage() {
 }
 
 
-int tableViewerMain(std::map<std::string, std::string> inputCommands){
+int tableViewerMain(const bib::progutils::CmdArgs & inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	std::string tableName = "";

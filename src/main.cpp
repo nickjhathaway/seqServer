@@ -31,15 +31,22 @@ class serverRunner : public bib::progutils::programRunner {
 serverRunner::serverRunner()
     : bib::progutils::programRunner(
           {addFunc("seqViewer", bibseq::seqViewer, false),
-					 addFunc("tableViewer", bibseq::tableViewerMain, false)
+					 addFunc("tableViewer", bibseq::tableViewerMain, false),
+					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false)
            },
           "serverRunner") {}
 
 
 
+
 int main(int argc, char** argv){
-  serverRunner serRunner;
-  return serRunner.run(argc, argv);
+	try{
+	  serverRunner serRunner;
+	  return serRunner.run(argc, argv);
+	}catch (std::exception & e) {
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
 }
 
 

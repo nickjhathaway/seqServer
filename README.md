@@ -1,6 +1,6 @@
 seqServer
 ================
-Version 1.2.1
+Version 1.3.0
 
 several content managers for serving up the results procuded by sequenceTools 
 
@@ -15,6 +15,6 @@ cd seqServer
 #determines compilier
 ./configure.py
 #this will download most of the dependencies 
-./setup.py --compfile compfile.mk
+./setup.py --compfile compfile.mk --outMakefile makefile-common.mk
 make 
 ```

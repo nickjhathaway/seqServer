@@ -74,8 +74,9 @@ seqApp::seqApp(cppcms::service& srv,
 	dispMap(&seqApp::muscleAln,this, "muscle");
 	dispMap(&seqApp::removeGaps,this, "removeGaps");
 	dispMap(&seqApp::complementSeqs,this, "complement");
-	dispMap(&seqApp::translate,this, "translate");
+	dispMap(&seqApp::translateToProtein,this, "translate");
 	dispMap(&seqApp::minTreeData,this, "minTreeData");
+	dispMap(&seqApp::minTreeDataDetailed,this, "minTreeDataDetailed");
 
 	//general information
 	dispMap(&seqApp::colorsData,this, "baseColors");
@@ -173,7 +174,6 @@ void seqApp::getProteinColors(){
 
 void seqApp::sort(std::string sortBy){
 	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
-	//bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [sortBy=" + sortBy +  "]"), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
@@ -307,7 +307,7 @@ void seqApp::complementSeqs(){
 	}
 }
 
-void seqApp::translate(){
+void seqApp::translateToProtein(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
 	std::vector<uint64_t> selected{};
@@ -378,6 +378,40 @@ void seqApp::minTreeData(){
 	}
 }
 
+void seqApp::minTreeDataDetailed(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint64_t> selected{};
+	if(postData.find("selected[]") != postData.end()){
+		for(const auto & kv : postData){
+			if("selected[]" == kv.first){
+				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
+			}
+		}
+	}
+  auto postJson = bib::json::toJson(postData);
+  std::string uid = postJson["uid"].asString();
+  uint32_t numDiffs = bib::lexical_cast<uint32_t>(postJson["numDiff"].asString());
+	if(seqs_->containsRecord(uid)){
+		if(seqs_->recordValid(uid)){
+			ret_json();
+			cppcms::json::value ret;
+			if(selected.empty()){
+				ret = seqs_->minTreeDataDetailed(uid, numDiffs);
+			}else{
+				ret = seqs_->minTreeDataDetailed(uid, selected, numDiffs);
+				ret["selected"] = selected;
+			}
+			ret["uid"] = uid;
+			response().out() << ret;
+		}else{
+			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+		}
+	}else{
+		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+
 void seqApp::getColors(std::string num) {
 	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [num=" + estd::to_string(num) +  "]"), std::cout, debug_);
 	ret_json();
@@ -404,5 +438,8 @@ std::string seqApp::messStrFactory(const std::string & funcName, const MapStrStr
 	std::string argStrs = messStrFactory(funcName) + " [" + vectorToString(argsVec, ", ") + "]";
 	return argStrs;
 }
+
+
+
 
 } /* namespace bibseq */

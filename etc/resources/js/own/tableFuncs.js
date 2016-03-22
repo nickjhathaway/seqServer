@@ -14,7 +14,7 @@
 	        .enter()
 	        .append("th")
 	            .attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
+	            .html(function(column) { return "<nobr>" + column + "</nobr>"; });
 	
 	    // create a row for each object in the data
 	    var rows = tbody.selectAll("tr")
@@ -32,7 +32,7 @@
 	        .enter()
 	        .append("td")
 	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
+	            .html(function(d) { return "<nobr>" + d.value + "</nobr>";});
 	    
 	    return table;
 	}
@@ -60,7 +60,7 @@
 	        .enter()
 			.append("th")
 				.attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
+	            .html(function(column) { return "<nobr>" + column + "</nobr>"; });
 	   //create headers as needed and add bolding 
 	  /*header.enter()
 	        .append("th")*/
@@ -104,8 +104,8 @@
 	   	cells.enter()
 	        .append("td")
 	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
-	    cells.text(function(d) { return d.value; });
+	            .html(function(d) { return "<nobr>" + d.value + "</nobr>"; });
+	    cells.html(function(d) {  return "<nobr>" + d.value + "</nobr>"; });
 	    //remove cells as needed
 	    cells.exit()
         	 .remove();
@@ -126,7 +126,7 @@
 	        .enter()
 			.append("th")
 				.attr("style", "font-weight: bold; padding: 2px 4px;")
-	            .text(function(column) { return column; });
+	            .html(function(column) { return "<nobr>" + column + "</nobr>";});
 	   //create headers as needed and add bolding 
 	  /*header.enter()
 	        .append("th")*/
@@ -160,8 +160,8 @@
 	   	cells.enter()
 	        .append("td")
 	            .attr("style", "padding: 2px 4px;")
-	            .text(function(d) { return d.value; });
-	    cells.text(function(d) { return d.value; });
+	            .html(function(d) { return "<nobr>" + d.value + "</nobr>"; });
+	    cells.html(function(d) { return "<nobr>" + d.value + "</nobr>"; });
 	    //remove cells as needed
 	    cells.exit()
         	 .remove();

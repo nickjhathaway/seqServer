@@ -91,6 +91,7 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 		.data(menuCatsData)
 		.enter().append("li")
 			.attr("class", "dropdown active")
+			.attr("style", "margin: 2px")
 		
 			
 	cats.append("a")
@@ -106,7 +107,7 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 		.enter().append("li")
 			.append("div")
 				.attr("class", "checkbox")
-				.attr("style", "margin-left: 2px")
+				.attr("style", "margin: 2px")
 			.append("label");
 	labs.html(function(d){return "<input type=\"checkbox\" name=\"check\" checked=\"true\" value=" + d + " id=" + d + ">" + d;})
 		;//.attr("style", "border:2px solid black; padding: 2px;margin: 1px");

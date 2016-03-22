@@ -1,3 +1,13 @@
+
+$.fn.scrollView = function () {
+    return this.each(function () {
+        $('html, body').animate({
+            scrollTop: $(this).offset().top
+        }, 1000);
+    });
+}
+
+
 function drawCircle(x, y, radius, color, borderColor) {
 	context.beginPath();
 	context.arc(x, y, radius, 0, 2 * Math.PI, false);

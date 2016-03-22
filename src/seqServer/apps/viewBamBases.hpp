@@ -20,46 +20,40 @@
 // along with seqServer.  If not, see <http://www.gnu.org/licenses/>.
 //
 /*
- * seqViewer.hpp
+ * viewTable.hpp
  *
- *  Created on: Jan 2, 2015
+ *  Created on: Jun 18, 2015
  *      Author: nickhathaway
  */
 
 #include "seqServer/apps/seqApp.hpp"
 
-
 namespace bibseq {
 
-class ssv: public bibseq::seqApp {
+class bamBaseViewer: public bibseq::seqApp {
 private:
 
 	typedef bibseq::seqApp super;
 
 	std::string rootName_;
-	bool protein_;
-
-
+	std::string filename_;
+	table originalTable_;
 
 public:
-	ssv(cppcms::service& srv, std::map<std::string, std::string> config);
+	bamBaseViewer(cppcms::service& srv,
+			std::map<std::string, std::string> config);
 
-	virtual VecStr requiredOptions() const ;
+	virtual VecStr requiredOptions() const;
 
-	void seqData();
+	void tableData();
 
 	void rootName();
 
-	void showMinTree();
-
 	void mainPage();
-
-	void seqType();
 
 };
 
-int seqViewer(const bib::progutils::CmdArgs & inputCommands);
+int bamBaseViewerMain(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
-
 

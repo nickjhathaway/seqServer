@@ -19,108 +19,89 @@
 // along with seqServer.  If not, see <http://www.gnu.org/licenses/>.
 //
 /*
- * seqViewer.cpp
+ * bamBaseViewer.cpp
  *
- *  Created on: Jan 2, 2015
+ *  Created on: Jun 18, 2015
  *      Author: nickhathaway
  */
 
-#include "seqViewer.hpp"
-#include "seqServer/objects/seqCache.hpp"
+#include "viewBamBases.hpp"
 
 namespace bibseq {
 
-ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
-		bibseq::seqApp(srv, config) {
-	configTest(config, requiredOptions(), "ssv");
-	pages_.emplace("mainPageHtml",
-			bib::files::make_path(config["resources"], "ssv/mainPage.html"));
+bamBaseViewer::bamBaseViewer(cppcms::service& srv, std::map<std::string, std::string> config)
+: bibseq::seqApp(srv, config)
+{
+	configTest(config, requiredOptions(), "bamBaseViewer");
+	pages_.emplace("mainPageHtml",bib::files::make_path(config["resources"], "bbv/mainPage.html") );
 	rootName_ = config["name"];
-	debug_ = config["debug"] == "true";
-	protein_ = config["protein"] == "true";
-
-	for (auto & fCache : pages_) {
+	for(auto & fCache : pages_){
 		fCache.second.replaceStr("/ssv", rootName_);
 	}
-
-
+	filename_ = config["tableName"];
+	originalTable_ = table(config["tableName"],config["delim"], config["header"] == "true");
 	//main page
-	dispMapRoot(&ssv::mainPage, this);
-
-	dispMap(&ssv::seqData,this, "seqData");
-	dispMap(&ssv::seqType,this, "seqType");
-
-	//general information
-	dispMap(&ssv::rootName,this, "rootName");
+	dispMapRoot(&bamBaseViewer::mainPage, this);
+	//table data
+	dispMap(&bamBaseViewer::tableData, this, "tableData");
+	//updated table data
 
 	mapper().root(rootName_);
-	//read in data and set to the json
-	SeqIOOptions options(config["ioOptions"]);
-	SeqInput reader(options);
-	reader.openIn();
-	auto reads = reader.readAllReads<readObject>();
-	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reads));
+
 	std::cout << "Finished set up" << std::endl;
 
 }
 
-VecStr ssv::requiredOptions() const {
-	return VecStr{"resources", "ioOptions"};
+
+VecStr bamBaseViewer::requiredOptions() const {
+	return VecStr{"resources", "tableName", "delim", "header"};
 }
 
-void ssv::seqData() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+
+
+void bamBaseViewer::tableData(){
 	ret_json();
-	response().out() << seqs_->getJson(rootName_.substr(1));
+	response().out() << tableToJsonRowWise(originalTable_, originalTable_.columnNames_[0], VecStr{}, VecStr{});
 }
 
-void ssv::seqType() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
-	ret_json();
-	cppcms::json::value r;
-	if(protein_){
-		r = "protein";
-	}else{
-		r = "dna";
-	}
-	response().out() << r;
-}
 
-void ssv::rootName() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 
+
+void bamBaseViewer::rootName() {
+	//std::cout << "rootName" << std::endl;
 	ret_json();
 	cppcms::json::value r;
 	r = rootName_;
 	response().out() << r;
 }
 
-void ssv::showMinTree() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 
-}
 
-void ssv::mainPage() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+
+void bamBaseViewer::mainPage() {
 	auto search = pages_.find("mainPageHtml");
 	response().out() << search->second.get("/ssv", rootName_);
 }
 
 
-int seqViewer(const bib::progutils::CmdArgs & inputCommands){
+int bamBaseViewerMain(const bib::progutils::CmdArgs & inputCommands){
 	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
-	uint32_t port = 8881;
-	std::string name = "ssv";
+	std::string tableName = "";
+	std::string delim = "\t";
+	bool header = false;
+	uint32_t port = 8981;
+	std::string name = "tv";
 	std::string resourceDirName = "";
-	bool protein = false;
-	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
-	bib::appendAsNeeded(resourceDirName, "/");
-	setUp.processDefaultReader(true);
+	if(resourceDirName.back() != '/'){
+		resourceDirName.append("/");
+	}
+	setUp.setOption(delim , "-delim", "The delimiter of the Input Table");
+	setUp.setOption(header, "-header", "Whether the table has a header or not");
+	setUp.setOption(tableName, "-table", "Input Table", true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
-	setUp.processDebug();
 	setUp.finishSetUp(std::cout);
 	name = "/" + name;
   auto config = server_config(name, port);
@@ -128,24 +109,27 @@ int seqViewer(const bib::progutils::CmdArgs & inputCommands){
   std::map<std::string, std::string> appConfig;
   appConfig["name"] = name;
   appConfig["port"] = estd::to_string(port);
-  auto optsJson = setUp.pars_.ioOptions_.toJson();
-  appConfig["ioOptions"] = optsJson.toStyledString();
   appConfig["resources"] = resourceDirName;
   appConfig["js"] = resourceDirName + "js/";
   appConfig["css"] = resourceDirName + "css/";
-  appConfig["debug"] = bib::boolToStr(setUp.pars_.debug_);
-  appConfig["protein"] = bib::boolToStr(protein);
+  appConfig["tableName"] = tableName;
+  appConfig["delim"] = delim;
+  appConfig["header"] = convertBoolToString(header);
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);
 		app.applications_pool().mount(
-				cppcms::applications_factory<ssv>(appConfig));
+				cppcms::applications_factory<bamBaseViewer>(appConfig));
 		app.run();
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;
 	}
+
+
+
 	return 0;
 }
+
 
 
 
