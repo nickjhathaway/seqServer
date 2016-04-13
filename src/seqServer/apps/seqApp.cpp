@@ -143,6 +143,8 @@ void seqApp::colorsData() {
 }
 
 
+
+
 void seqApp::getProteinColors(){
 	ret_json();
 	cppcms::json::value ret;
@@ -409,6 +411,21 @@ void seqApp::minTreeDataDetailed(){
 		}
 	}else{
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+	}
+}
+
+void seqApp::addPages(const bfs::path & dir){
+	auto files = bib::files::listAllFiles(dir.string(), false, VecStr{".html"});
+	for(const auto & file : files){
+		if(bfs::is_regular_file(file.first)
+			&& bib::endsWith(file.first.string(), ".html")){
+			auto base = bfs::path(bfs::basename(file.first));
+			base.replace_extension("");
+			if(bib::in(base.string(), pages_)){
+				pages_.erase(base.string());
+			}
+			pages_.emplace(base.string(), bfs::absolute(file.first));
+		}
 	}
 }
 
