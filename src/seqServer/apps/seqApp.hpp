@@ -214,6 +214,8 @@ public:
 	void minTreeData();
 	void minTreeDataDetailed();
 
+	void addPages(const bfs::path & dir);
+
 	std::string messStrFactory(const std::string & funcName);
 	std::string messStrFactory(const std::string & funcName,
 			const MapStrStr & args);
