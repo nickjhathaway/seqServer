@@ -1,3 +1,24 @@
+//
+// SeekDeep - A library for analyzing amplicon sequence data
+// Copyright (C) 2012-2016 Nicholas Hathaway <nicholas.hathaway@umassmed.edu>,
+// Jeffrey Bailey <Jeffrey.Bailey@umassmed.edu>
+//
+// This file is part of SeekDeep.
+//
+// SeekDeep is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// SeekDeep is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with SeekDeep.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
 
 $.fn.scrollView = function () {
     return this.each(function () {
@@ -187,7 +208,11 @@ function arrayContains(arr, val){
 }
 
 
-function addSvgSaveButton(buttonId, topSvg) {
+function addSvgSaveButton(buttonId, topSvg, name) {
+	name = name || "graph.svg"
+	if(!name.endsWith('.svg')){
+		name += ".svg";
+	}
 	d3.select(buttonId).append("a").attr("id", "imgDownload");
 	d3.select(buttonId).on(
 			"click",
@@ -196,11 +221,10 @@ function addSvgSaveButton(buttonId, topSvg) {
 						d3.select(topSvg).attr("version", 1.1).attr("xmlns",
 								"http://www.w3.org/2000/svg").node()).clone()
 						.wrap('<p/>').parent().html();
-				;
 				// add the svg information to a and then click it to trigger the
 				// download
 				var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
-				d3.select("#imgDownload").attr("download", "graph.svg");
+				d3.select("#imgDownload").attr("download", name);
 				d3.select("#imgDownload").attr("href", imgsrc);
 				var a = $("#imgDownload")[0];
 				a.click();

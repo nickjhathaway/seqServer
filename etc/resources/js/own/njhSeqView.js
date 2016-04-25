@@ -1,4 +1,24 @@
-
+//
+// SeekDeep - A library for analyzing amplicon sequence data
+// Copyright (C) 2012-2016 Nicholas Hathaway <nicholas.hathaway@umassmed.edu>,
+// Jeffrey Bailey <Jeffrey.Bailey@umassmed.edu>
+//
+// This file is part of SeekDeep.
+//
+// SeekDeep is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// SeekDeep is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with SeekDeep.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
 
 
 function njhMenuItem(idName, displayName, func){
@@ -205,10 +225,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.masterDivD3.append("div").attr("class", "pop-up").append("p").attr("id", "info");
 		this.masterDivD3.append("div").attr("class", "select");
 		d3.select(viewName).append("div").attr("class", "qualChart");
-		d3.select(viewName).append("svg").attr("id", "minTreeChart")
-			.attr("width", "0px")
-			.attr("height", "0px")
-			.style("margin-left", "10px");
+		d3.select(viewName).append("div")
+			.attr("id", "minTreeChartTop");
 		var self = this;
 		var linkButton = d3.select(this.topDivName + " .downFastaDiv")
 			.append("button")
@@ -463,7 +481,21 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 				}
 			}));
 			windowOptions.push(new njhMenuItem("GenTree", "Gen Difference Graph",function(){
-				d3.select(self.topDivName + " #minTreeChart").selectAll("*").remove();
+				if(!($(self.topDivName + " #minTreeChartTop #saveButton").length)){
+					d3.select(self.topDivName + " #minTreeChartTop").append("button")
+					.attr("id", "saveButton")
+					.style("margin", "2px")
+					.text("Save As Svg");
+					addSvgSaveButton(self.topDivName + " #minTreeChartTop #saveButton", self.topDivName + " #minTreeChartTop #minTreeChart #chart", self.seqData["uid"])
+				}
+				if(!($(self.topDivName + " #minTreeChartTop #minTreeChart").length)){
+					d3.select(self.topDivName + " #minTreeChartTop").append("svg").attr("id", "minTreeChart")
+					.attr("width", "0px")
+					.attr("height", "0px")
+					.style("margin-left", "10px")
+				}else{
+					d3.select(self.topDivName + " #minTreeChart").selectAll("*").remove();
+				}
 				var jsonData;
 				var postData = {"uid" : self.uid};
 				if (self.selected.size > 0){
@@ -477,10 +509,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 				$('#minTreeChart').scrollView();
 			}));
 			windowOptions.push(new njhMenuItem("HideTree", "Hide Difference Graph",function(){
-				d3.select(self.topDivName + " #minTreeChart").selectAll("*").remove();
-				d3.select(self.topDivName + " #minTreeChart").attr("width", "0px")
-				.attr("height", "0px");
-				
+				d3.select(self.topDivName + " #minTreeChartTop").selectAll("*").remove();
 			}));
 
 			menuItems["Graphs"] = windowOptions;
