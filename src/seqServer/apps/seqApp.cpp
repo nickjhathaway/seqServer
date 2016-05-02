@@ -59,10 +59,10 @@ seqApp::seqApp(cppcms::service& srv,
 	//check configuration
 	configTest(config, requiredOptions(), "seqApp");
 	//load js and css
-	jsAndCss_.emplace("jsLibs", getLibFiles(config["js"], ".js"));
-	jsAndCss_.emplace("jsOwn", getOwnFiles(config["js"], ".js"));
-	jsAndCss_.emplace("cssLibs",getLibFiles(config["css"], ".css"));
-	jsAndCss_.emplace("cssOwn",getOwnFiles(config["css"], ".css"));
+	jsAndCss_.emplace("jsLibs",  getLibFiles(config["js"], ".js"));
+	jsAndCss_.emplace("jsOwn",   getOwnFiles(config["js"], ".js"));
+	jsAndCss_.emplace("cssLibs", getLibFiles(config["css"], ".css"));
+	jsAndCss_.emplace("cssOwn",  getOwnFiles(config["css"], ".css"));
 
 	//js and css loading
 	dispMap(&seqApp::jsLibs,this, "jsLibs");
