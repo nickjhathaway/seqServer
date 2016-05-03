@@ -60,7 +60,7 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 					}
 					for (const auto &at : attrs) {
 						if (at.first == "color") {
-							links[linkCount]["color"] = replaceString(
+							links[linkCount]["color"] = bib::replaceString(
 									trimEndWhiteSpaceReturn(at.second), "\"", "");
 						}
 					}
@@ -83,7 +83,7 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 					}
 					for (const auto &at : attrs) {
 						if (at.first == "fillcolor") {
-							nodes[nodeCount]["color"] = replaceString(
+							nodes[nodeCount]["color"] = bib::replaceString(
 									trimEndWhiteSpaceReturn(at.second), "\"", "");
 						} else if (at.first == "width") {
 							nodes[nodeCount]["size"] = bib::lexical_cast<double, std::string>(
