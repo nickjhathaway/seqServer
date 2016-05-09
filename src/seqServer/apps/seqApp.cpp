@@ -53,9 +53,8 @@ VecStr seqApp::requiredOptions()const{
 	return VecStr{"js", "css", "name"};
 }
 
-seqApp::seqApp(cppcms::service& srv,
-		std::map<std::string, std::string>  config):cppcms::application(srv), seqs_(std::make_shared<seqCache>())
-				{
+seqApp::seqApp(cppcms::service& srv, std::map<std::string, std::string> config) :
+		cppcms::application(srv), seqs_(std::make_shared<seqCache>()) {
 	//check configuration
 	configTest(config, requiredOptions(), "seqApp");
 	//load js and css
@@ -430,29 +429,32 @@ void seqApp::addPages(const bfs::path & dir){
 }
 
 void seqApp::getColors(std::string num) {
-	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__) + " [num=" + estd::to_string(num) +  "]"), std::cout, debug_);
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), { {
+			"num", estd::to_string(num) } }), std::cout, debug_);
 	ret_json();
 	cppcms::json::value ret;
 	auto outColors = bib::njhColors(std::stoi(num));
 	bibseq::VecStr outColorsStrs;
 	outColorsStrs.reserve(outColors.size());
-	for(const auto & c : outColors) {
+	for (const auto & c : outColors) {
 		outColorsStrs.emplace_back("#" + c.hexStr_);
 	}
 	ret["colors"] = outColorsStrs;
 	response().out() << ret;
 }
 
-std::string seqApp::messStrFactory(const std::string & funcName){
+std::string seqApp::messStrFactory(const std::string & funcName) {
 	return bib::err::F() << "[" << getCurrentDate() << "] " << funcName;
 }
 
-std::string seqApp::messStrFactory(const std::string & funcName, const MapStrStr & args){
+std::string seqApp::messStrFactory(const std::string & funcName,
+		const MapStrStr & args) {
 	VecStr argsVec;
-	for(const auto & kv : args){
+	for (const auto & kv : args) {
 		argsVec.emplace_back(kv.first + " = " + kv.second);
 	}
-	std::string argStrs = messStrFactory(funcName) + " [" + vectorToString(argsVec, ", ") + "]";
+	std::string argStrs = messStrFactory(funcName) + " ["
+			+ vectorToString(argsVec, ", ") + "]";
 	return argStrs;
 }
 

@@ -247,14 +247,14 @@ public:
 
 	template<typename T>
 	static cppcms::json::value minTreeDataDetailed(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::string & uid, uint32_t numDiff) {
-		if(numDiff > 0){
+			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid,
+			uint32_t numDiff) {
+		if (numDiff > 0) {
 			comparison cutOff;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
-			return jsonToCppcmsJson(genDetailMinTreeData(*reads,2, false, cutOff, true));
-		}else{
-			return jsonToCppcmsJson(genDetailMinTreeData(*reads,2, false));
+			return jsonToCppcmsJson(genDetailMinTreeData(*reads, 2, cutOff, true));
+		} else {
+			return jsonToCppcmsJson(genDetailMinTreeData(*reads, 2));
 		}
 	}
 
@@ -270,9 +270,9 @@ public:
 		if(numDiff > 0){
 			comparison cutOff;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
-			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2, false, cutOff, true));
+			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2, cutOff, true));
 		}else{
-			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2, false));
+			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2));
 		}
 	}
 
