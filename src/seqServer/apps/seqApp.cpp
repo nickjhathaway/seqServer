@@ -117,7 +117,7 @@ void seqApp::cssOwn() {
 
 void seqApp::colorsData() {
 	ret_json();
-	cppcms::json::value r;
+	Json::Value r;
 	r["A"] = "#ff8787";
 	r["a"] = "#e66e6e";
 
@@ -146,7 +146,7 @@ void seqApp::colorsData() {
 
 void seqApp::getProteinColors(){
 	ret_json();
-	cppcms::json::value ret;
+	Json::Value ret;
   ret["A"] = "#14b814";
   ret["*"] = "#e6e6e6";
   ret["L"] = "#14c86e";
@@ -176,7 +176,7 @@ void seqApp::getProteinColors(){
 void seqApp::sort(std::string sortBy){
 	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if(kv.first == "selected[]"){
@@ -189,13 +189,13 @@ void seqApp::sort(std::string sortBy){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->sort(uid, sortBy);
 			}else{
 				/**@todo implement sort only on selected seqs */
 				ret = seqs_->sort(uid, sortBy);
-				ret["selected"] = selected;
+				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
 			response().out() << ret;
@@ -210,7 +210,7 @@ void seqApp::sort(std::string sortBy){
 void seqApp::muscleAln(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if(kv.first == "selected[]"){
@@ -225,12 +225,12 @@ void seqApp::muscleAln(){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->muscle(uid);
 			}else{
 				ret = seqs_->muscle(uid, selected);
-				ret["selected"] = selected;
+				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
 			response().out() << ret;
@@ -245,7 +245,7 @@ void seqApp::muscleAln(){
 void seqApp::removeGaps(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if(kv.first == "selected[]"){
@@ -258,12 +258,12 @@ void seqApp::removeGaps(){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->removeGaps(uid);
 			}else{
 				ret = seqs_->removeGaps(uid, selected);
-				ret["selected"] = selected;
+				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
 			response().out() << ret;
@@ -277,7 +277,7 @@ void seqApp::removeGaps(){
 void seqApp::complementSeqs(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if(kv.first == "selected[]"){
@@ -290,13 +290,13 @@ void seqApp::complementSeqs(){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->rComplement(uid);
 			}else{
 				//printVector(selected);
 				ret = seqs_->rComplement(uid, selected);
-				ret["selected"] = selected;
+				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
 			response().out() << ret;
@@ -311,7 +311,7 @@ void seqApp::complementSeqs(){
 void seqApp::translateToProtein(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if(kv.first == "selected[]"){
@@ -329,12 +329,12 @@ void seqApp::translateToProtein(){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->translate(uid,           complement, reverse, start);
 			}else{
 				ret = seqs_->translate(uid, selected, complement, reverse, start);
-				ret["selected"] = std::vector<uint32_t>{};
+				ret["selected"] = bib::json::toJson(std::vector<uint32_t>{});
 			}
 			ret["uid"] = uid + "_protein";
 			response().out() << ret;
@@ -349,7 +349,7 @@ void seqApp::translateToProtein(){
 void seqApp::minTreeData(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if(kv.first == "selected[]"){
@@ -362,12 +362,12 @@ void seqApp::minTreeData(){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->minTreeData(uid);
 			}else{
 				ret = seqs_->minTreeData(uid, selected);
-				ret["selected"] = selected;
+				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
 			response().out() << ret;
@@ -382,7 +382,7 @@ void seqApp::minTreeData(){
 void seqApp::minTreeDataDetailed(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint64_t> selected{};
+	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
 			if("selected[]" == kv.first){
@@ -396,12 +396,12 @@ void seqApp::minTreeDataDetailed(){
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
-			cppcms::json::value ret;
+			Json::Value ret;
 			if(selected.empty()){
 				ret = seqs_->minTreeDataDetailed(uid, numDiffs);
 			}else{
 				ret = seqs_->minTreeDataDetailed(uid, selected, numDiffs);
-				ret["selected"] = selected;
+				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
 			response().out() << ret;
@@ -432,14 +432,14 @@ void seqApp::getColors(std::string num) {
 	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), { {
 			"num", estd::to_string(num) } }), std::cout, debug_);
 	ret_json();
-	cppcms::json::value ret;
+	Json::Value ret;
 	auto outColors = bib::njhColors(std::stoi(num));
 	bibseq::VecStr outColorsStrs;
 	outColorsStrs.reserve(outColors.size());
 	for (const auto & c : outColors) {
 		outColorsStrs.emplace_back("#" + c.hexStr_);
 	}
-	ret["colors"] = outColorsStrs;
+	ret["colors"] = bib::json::toJson(outColorsStrs);
 	response().out() << ret;
 }
 

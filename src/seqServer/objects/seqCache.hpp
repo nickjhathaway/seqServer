@@ -45,13 +45,12 @@ public:
 		std::shared_ptr<std::vector<readObject>> reads_;
 
 	};
-
+private:
 	std::unordered_map<std::string, cacheRecord> cache_;
-
 	VecStr currentCache_;
 	uint32_t cachePos_ = 0;
 	uint32_t cacheSizeLimit_ = 10;
-
+public:
 	bool recordValid(const std::string & uid) const;
 	bool containsRecord(const std::string & uid) const;
 
@@ -65,32 +64,32 @@ public:
 	std::shared_ptr<std::vector<readObject>> getRecord(const std::string & uid);
 
 	/*These currently assume cache is valid and is current in cache_ */
-	cppcms::json::value sort(const std::string & uid,
+	Json::Value sort(const std::string & uid,
 			const std::string & sortOption);
-	cppcms::json::value muscle(const std::string & uid);
-	cppcms::json::value removeGaps(const std::string & uid);
-	cppcms::json::value rComplement(const std::string & uid);
-	cppcms::json::value translate(const std::string & uid, bool complement,
+	Json::Value muscle(const std::string & uid);
+	Json::Value removeGaps(const std::string & uid);
+	Json::Value rComplement(const std::string & uid);
+	Json::Value translate(const std::string & uid, bool complement,
 			bool reverse, uint64_t start);
-	cppcms::json::value minTreeData(const std::string & uid);
-	cppcms::json::value minTreeDataDetailed(const std::string & uid, uint32_t numDiff);
-	cppcms::json::value getJson(const std::string & uid);
+	Json::Value minTreeData(const std::string & uid);
+	Json::Value minTreeDataDetailed(const std::string & uid, uint32_t numDiff);
+	Json::Value getJson(const std::string & uid);
 
-	cppcms::json::value muscle(const std::string & uid,
-			const std::vector<uint64_t> & positions);
-	cppcms::json::value removeGaps(const std::string & uid,
-			const std::vector<uint64_t> & positions);
-	cppcms::json::value translate(const std::string & uid,
-			const std::vector<uint64_t> & positions, bool complement, bool reverse,
+	Json::Value muscle(const std::string & uid,
+			const std::vector<uint32_t> & positions);
+	Json::Value removeGaps(const std::string & uid,
+			const std::vector<uint32_t> & positions);
+	Json::Value translate(const std::string & uid,
+			const std::vector<uint32_t> & positions, bool complement, bool reverse,
 			uint64_t start);
-	cppcms::json::value rComplement(const std::string & uid,
-			const std::vector<uint64_t> & positions);
-	cppcms::json::value minTreeData(const std::string & uid,
-			const std::vector<uint64_t> & positions);
-	cppcms::json::value minTreeDataDetailed(const std::string & uid,
-			const std::vector<uint64_t> & positions, uint32_t numDiff);
-	cppcms::json::value getJson(const std::string & uid,
-			const std::vector<uint64_t> & positions);
+	Json::Value rComplement(const std::string & uid,
+			const std::vector<uint32_t> & positions);
+	Json::Value minTreeData(const std::string & uid,
+			const std::vector<uint32_t> & positions);
+	Json::Value minTreeDataDetailed(const std::string & uid,
+			const std::vector<uint32_t> & positions, uint32_t numDiff);
+	Json::Value getJson(const std::string & uid,
+			const std::vector<uint32_t> & positions);
 
 };
 
@@ -99,31 +98,33 @@ public:
 class seqToJsonFactory {
 public:
 	template<typename T>
-	static cppcms::json::value seqsToJson(const std::vector<T> & reads,
+	static Json::Value seqsToJson(const std::vector<T> & reads,
 			const std::string & uid) {
-		cppcms::json::value ret;
+		Json::Value ret;
 		auto& seqs = ret["seqs"];
 		//find number of reads
-		ret["numReads"] = reads.size();
+		ret["numReads"] = bib::json::toJson(reads.size());
 		// get the maximum length
 		uint64_t maxLen = 0;
 		bibseq::readVec::getMaxLength(reads, maxLen);
-		ret["maxLen"] = maxLen;
+		ret["maxLen"] = bib::json::toJson(maxLen);
 		ret["uid"] = uid;
-		ret["selected"] = std::vector<uint32_t> { };
-		for (const auto & pos : iter::range(reads.size())) {
-			seqs[pos] = jsonToCppcmsJson(bib::json::toJson(reads[pos].seqBase_));
+		ret["selected"] = bib::json::toJson(std::vector<uint32_t> { });
+		//seqs.
+		for (const auto & pos : iter::range<uint32_t>(reads.size())) {
+			seqs[pos] = bib::json::toJson(getSeqBase(reads[pos]));
 		}
 		return ret;
 	}
 
 	template<typename T>
-	static cppcms::json::value seqsToJson(const std::vector<T> & reads,
-			const std::vector<uint64_t> & positions,const std::string & uid) {
-		cppcms::json::value ret;
+	static Json::Value seqsToJson(const std::vector<T> & reads,
+			const std::vector<uint32_t> & positions,
+			const std::string & uid) {
+		Json::Value ret;
 		auto& seqs = ret["seqs"];
 		//find number of reads
-		ret["numReads"] = positions.size();
+		ret["numReads"] = bib::json::toJson(positions.size());
 		// get the maximum length
 		uint64_t maxLen = 0;
 		for (auto pos : positions) {
@@ -135,144 +136,146 @@ public:
 			}
 			readVec::getMaxLength(reads[pos], maxLen);
 		}
-		ret["maxLen"] = maxLen;
+		ret["maxLen"] = bib::json::toJson(maxLen);
 		ret["uid"] = uid;
-		ret["selected"] = std::vector<uint64_t> { };
-		for (const auto & pos : iter::range(reads.size())) {
-			seqs[pos] = jsonToCppcmsJson(bib::json::toJson(reads[pos].seqBase_));
+		ret["selected"] = bib::json::toJson(std::vector<uint32_t> { });
+		for (const auto & pos : positions) {
+			seqs[pos] = bib::json::toJson(getSeqBase(reads[pos]));
 		}
 		return ret;
 	}
 
 	template<typename T>
-	static cppcms::json::value sort(const std::shared_ptr<std::vector<T>> & reads,
+	static Json::Value sort(std::vector<T> & reads,
 			const std::string & sortOption, const std::string & uid) {
 		if ("reverse" == sortOption) {
-			bib::reverse(*reads);
+			bib::reverse(reads);
 		} else {
-			readVecSorter::sortReadVector(*reads, sortOption);
+			readVecSorter::sortReadVector(reads, sortOption);
 		}
-		return seqsToJson(*reads, uid);
-	}
-	template<typename T>
-	static cppcms::json::value muscle(
-			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid) {
-		bib::for_each(*reads, [](readObject & read) {read.seqBase_.removeGaps();});
-		sys::muscleSeqs(*reads);
-		return seqsToJson(*reads, uid);
+		return seqsToJson(reads, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value muscle(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid) {
-		bib::for_each_pos(*reads, selected,
-				[](readObject & read) {read.seqBase_.removeGaps();});
-		sys::muscleSeqs(*reads, selected);
-		return seqsToJson(*reads, uid);
+	static Json::Value muscle(
+			std::vector<T> & reads, const std::string & uid) {
+		bib::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
+		sys::muscleSeqs(reads);
+		return seqsToJson(reads, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value removeGaps(
-			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid) {
-		bib::for_each(*reads, [](readObject & read) {read.seqBase_.removeGaps();});
-		return seqsToJson(*reads, uid);
+	static Json::Value muscle(
+			std::vector<T> & reads,
+			const std::vector<uint32_t> & selected, const std::string & uid) {
+		bib::for_each_pos(reads, selected,
+				[](T & read) {getSeqBase(read).removeGaps();});
+		sys::muscleSeqs(reads, selected);
+		return seqsToJson(reads, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value removeGaps(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid) {
-		bib::for_each_pos(*reads, selected,
-				[](readObject & read) {read.seqBase_.removeGaps();});
-		return seqsToJson(*reads, uid);
+	static Json::Value removeGaps(
+			std::vector<T> & reads, const std::string & uid) {
+		bib::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
+		return seqsToJson(reads, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value rComplement(
-			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid) {
-		readVec::allReverseComplement(*reads, true);
-		return seqsToJson(*reads, uid);
+	static Json::Value removeGaps(
+			std::vector<T> & reads,
+			const std::vector<uint32_t> & selected,
+			const std::string & uid) {
+		bib::for_each_pos(reads, selected,
+				[](T & read) {getSeqBase(read).removeGaps();});
+		return seqsToJson(reads, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value rComplement(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid) {
-		bib::for_each_pos(*reads, selected,
-				[]( T & read) {read.seqBase_.reverseComplementRead(true,true);});
-		return seqsToJson(*reads, uid);
+	static Json::Value rComplement(
+			std::vector<T> & reads, const std::string & uid) {
+		readVec::allReverseComplement(reads, true);
+		return seqsToJson(reads, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value translate(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid,
+	static Json::Value rComplement(
+			std::vector<T> & reads,
+			const std::vector<uint32_t> & selected, const std::string & uid) {
+		bib::for_each_pos(reads, selected,
+				[]( T & read) {getSeqBase(read).reverseComplementRead(true,true);});
+		return seqsToJson(reads, uid);
+	}
+
+	template<typename T>
+	static Json::Value translate(
+			std::vector<T> & reads,
+			const std::vector<uint32_t> & selected, const std::string & uid,
 			bool complement, bool reverse, uint64_t start) {
 		std::vector<baseReadObject> ret;
 		for (const auto & readPos : selected) {
 			ret.emplace_back(
 					baseReadObject(
-							(*reads)[readPos].seqBase_.translateRet(complement, reverse,
+							getSeqBase(reads[readPos]).translateRet(complement, reverse,
 									start)));
 		}
 		return seqsToJson(ret, uid);
 	}
 
 	template<typename T>
-	static cppcms::json::value translate(
-			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid,
+	static Json::Value translate(
+			std::vector<T> & reads, const std::string & uid,
 			bool complement, bool reverse, uint64_t start) {
-		std::vector<uint64_t> positions((*reads).size());
-		bib::iota<uint64_t>(positions, 0);
+		std::vector<uint32_t> positions(reads.size());
+		bib::iota<uint32_t>(positions, 0);
 		return translate(reads, positions, uid, complement, reverse, start);
 	}
 
 	template<typename T>
-	static cppcms::json::value minTreeData(
-			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid) {
-		return jsonToCppcmsJson(genMinTreeData(*reads));
+	static Json::Value minTreeData(
+			const std::vector<T> & reads, const std::string & uid) {
+		return genMinTreeData(reads);
 	}
 
 	template<typename T>
-	static cppcms::json::value minTreeData(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid) {
-		std::vector<readObject> selReads;
+	static Json::Value minTreeData(
+			const std::vector<T> & reads,
+			const std::vector<uint32_t> & selected, const std::string & uid) {
+		std::vector<T> selReads;
 		for (const auto & pos : selected) {
-			selReads.emplace_back((*reads)[pos]);
+			selReads.emplace_back(reads[pos]);
 		}
-		return jsonToCppcmsJson(genMinTreeData(selReads));
+		return genMinTreeData(selReads);
 	}
 
 	template<typename T>
-	static cppcms::json::value minTreeDataDetailed(
-			const std::shared_ptr<std::vector<T>> & reads, const std::string & uid,
+	static Json::Value minTreeDataDetailed(
+			const std::vector<T> & reads, const std::string & uid,
 			uint32_t numDiff) {
 		if (numDiff > 0) {
 			comparison cutOff;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
-			return jsonToCppcmsJson(genDetailMinTreeData(*reads, 2, cutOff, true));
+			return genDetailMinTreeData(reads, 2, cutOff, true);
 		} else {
-			return jsonToCppcmsJson(genDetailMinTreeData(*reads, 2));
+			return genDetailMinTreeData(reads, 2);
 		}
 	}
 
 	template<typename T>
-	static cppcms::json::value minTreeDataDetailed(
-			const std::shared_ptr<std::vector<T>> & reads,
-			const std::vector<uint64_t> & selected, const std::string & uid,
+	static Json::Value minTreeDataDetailed(
+			const std::vector<T> & reads,
+			const std::vector<uint32_t> & selected, const std::string & uid,
 			uint32_t numDiff) {
-		std::vector<readObject> selReads;
+		std::vector<T> selReads;
 		for (const auto & pos : selected) {
-			selReads.emplace_back((*reads)[pos]);
+			selReads.emplace_back(reads[pos]);
 		}
 		if(numDiff > 0){
 			comparison cutOff;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
-			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2, cutOff, true));
+			return genDetailMinTreeData(selReads,2, cutOff, true);
 		}else{
-			return jsonToCppcmsJson(genDetailMinTreeData(selReads,2));
+			return genDetailMinTreeData(selReads,2);
 		}
 	}
 
