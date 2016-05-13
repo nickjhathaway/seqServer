@@ -173,9 +173,8 @@ void seqApp::getProteinColors(){
 	response().out() << ret;
 }
 
-void seqApp::sort(std::string sortBy){
-	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
-	auto postData = request().post();
+template<typename MAP>
+std::vector<uint32_t> parseForSelected(const MAP & postData){
 	std::vector<uint32_t> selected{};
 	if(postData.find("selected[]") != postData.end()){
 		for(const auto & kv : postData){
@@ -184,8 +183,15 @@ void seqApp::sort(std::string sortBy){
 			}
 		}
 	}
-  auto postJson = bib::json::toJson(postData);
-  std::string uid = postJson["uid"].asString();
+	return selected;
+}
+
+void seqApp::sort(std::string sortBy){
+	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
+	auto postData = request().post();
+	std::vector<uint32_t> selected = parseForSelected(postData);
+	auto postJson = bib::json::toJson(postData);
+	std::string uid = postJson["uid"].asString();
 	if(seqs_->containsRecord(uid)){
 		if(seqs_->recordValid(uid)){
 			ret_json();
@@ -210,15 +216,7 @@ void seqApp::sort(std::string sortBy){
 void seqApp::muscleAln(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint32_t> selected{};
-	if(postData.find("selected[]") != postData.end()){
-		for(const auto & kv : postData){
-			if(kv.first == "selected[]"){
-				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
-			}
-		}
-	}
-
+	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 
@@ -245,14 +243,7 @@ void seqApp::muscleAln(){
 void seqApp::removeGaps(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint32_t> selected{};
-	if(postData.find("selected[]") != postData.end()){
-		for(const auto & kv : postData){
-			if(kv.first == "selected[]"){
-				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
-			}
-		}
-	}
+	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_->containsRecord(uid)){
@@ -274,17 +265,11 @@ void seqApp::removeGaps(){
 		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 	}
 }
+
 void seqApp::complementSeqs(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint32_t> selected{};
-	if(postData.find("selected[]") != postData.end()){
-		for(const auto & kv : postData){
-			if(kv.first == "selected[]"){
-				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
-			}
-		}
-	}
+	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_->containsRecord(uid)){
@@ -311,14 +296,7 @@ void seqApp::complementSeqs(){
 void seqApp::translateToProtein(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint32_t> selected{};
-	if(postData.find("selected[]") != postData.end()){
-		for(const auto & kv : postData){
-			if(kv.first == "selected[]"){
-				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
-			}
-		}
-	}
+	std::vector<uint32_t> selected = parseForSelected(postData);
 
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
@@ -349,14 +327,7 @@ void seqApp::translateToProtein(){
 void seqApp::minTreeData(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint32_t> selected{};
-	if(postData.find("selected[]") != postData.end()){
-		for(const auto & kv : postData){
-			if(kv.first == "selected[]"){
-				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
-			}
-		}
-	}
+	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
 	if(seqs_->containsRecord(uid)){
@@ -382,14 +353,7 @@ void seqApp::minTreeData(){
 void seqApp::minTreeDataDetailed(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto postData = request().post();
-	std::vector<uint32_t> selected{};
-	if(postData.find("selected[]") != postData.end()){
-		for(const auto & kv : postData){
-			if("selected[]" == kv.first){
-				selected.emplace_back(bib::lexical_cast<uint64_t>(kv.second));
-			}
-		}
-	}
+	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
   std::string uid = postJson["uid"].asString();
   uint32_t numDiffs = bib::lexical_cast<uint32_t>(postJson["numDiff"].asString());

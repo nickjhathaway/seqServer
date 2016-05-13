@@ -36,8 +36,8 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
 	pages_.emplace("mainPageHtml",
 			bib::files::make_path(config["resources"], "ssv/mainPage.html"));
 	rootName_ = config["name"];
-	debug_ = config["debug"] == "true";
-	protein_ = config["protein"] == "true";
+	debug_ = "true" == config["debug"];
+	protein_ = "true" == config["protein"];
 
 	for (auto & fCache : pages_) {
 		fCache.second.replaceStr("/ssv", rootName_);
