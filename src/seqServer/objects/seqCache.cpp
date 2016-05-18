@@ -172,9 +172,9 @@ void seqCache::updateAddCache(const std::string & uid,
 		const std::shared_ptr<std::vector<readObject>> & reads) {
 	std::unique_lock <std::shared_timed_mutex> lock(mut_);
 	if (containsRecordNoLock(uid)) {
-		addToCacheNoCheck(uid, reads);
-	} else {
 		updateCacheNoCheck(uid, reads);
+	} else {
+		addToCacheNoCheck(uid, reads);
 	}
 }
 
