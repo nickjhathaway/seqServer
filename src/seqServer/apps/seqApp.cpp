@@ -188,6 +188,9 @@ std::vector<uint32_t> parseForSelected(const MAP & postData){
 
 void seqApp::sort(std::string sortBy){
 	bib::scopedMessage mess(messStrFactory(std::string(__PRETTY_FUNCTION__), {{"sortBy", sortBy}}), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
 	auto postJson = bib::json::toJson(postData);
@@ -215,6 +218,9 @@ void seqApp::sort(std::string sortBy){
 
 void seqApp::muscleAln(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
@@ -242,6 +248,9 @@ void seqApp::muscleAln(){
 
 void seqApp::removeGaps(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
@@ -268,6 +277,9 @@ void seqApp::removeGaps(){
 
 void seqApp::complementSeqs(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
@@ -295,6 +307,9 @@ void seqApp::complementSeqs(){
 
 void seqApp::translateToProtein(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
 
@@ -326,6 +341,9 @@ void seqApp::translateToProtein(){
 
 void seqApp::minTreeData(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);
@@ -352,6 +370,9 @@ void seqApp::minTreeData(){
 
 void seqApp::minTreeDataDetailed(){
 	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto postData = request().post();
 	std::vector<uint32_t> selected = parseForSelected(postData);
   auto postJson = bib::json::toJson(postData);

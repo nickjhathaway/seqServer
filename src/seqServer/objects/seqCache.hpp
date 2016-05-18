@@ -50,9 +50,18 @@ private:
 	VecStr currentCache_;
 	uint32_t cachePos_ = 0;
 	uint32_t cacheSizeLimit_ = 10;
+
+	std::shared_timed_mutex mut_;
+
+	bool recordValidNoLock(const std::string & uid);
+	bool containsRecordNoLock(const std::string & uid);
+	void addToCacheNoCheck(const std::string & uid,
+			const std::shared_ptr<std::vector<readObject>> & reads);
+	void updateCacheNoCheck(const std::string & uid,
+			const std::shared_ptr<std::vector<readObject>> & reads);
 public:
-	bool recordValid(const std::string & uid) const;
-	bool containsRecord(const std::string & uid) const;
+	bool recordValid(const std::string & uid);
+	bool containsRecord(const std::string & uid);
 
 	void addToCache(const std::string & uid,
 			const std::shared_ptr<std::vector<readObject>> & reads);

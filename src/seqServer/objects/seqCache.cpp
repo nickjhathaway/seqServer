@@ -105,19 +105,38 @@ Json::Value seqCache::translate(const std::string & uid, bool complement,
 	return ret;
 }
 
+bool seqCache::recordValidNoLock(const std::string & uid){
+	if(cache_.find(uid) != cache_.end()){
+		return nullptr != cache_.find(uid)->second.reads_;
+	}else{
+		return false;
+	}
+}
 
+bool seqCache::containsRecordNoLock(const std::string & uid){
+	return cache_.find(uid) != cache_.end();
+}
 
-void seqCache::addToCache(const std::string & uid,
-		const std::shared_ptr<std::vector<readObject>> & reads) {
-	//check to see if cache already exists
-	if (containsRecord(uid)) {
-		std::stringstream ss;
-		ss << __PRETTY_FUNCTION__ << std::endl;
-		std::cerr << "Cache already contains uid: " << uid
-				<< ", should call update instead" << std::endl;
-		throw std::runtime_error{ss.str()};
+void seqCache::addToCacheNoCheck(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads){
+	cache_.emplace(uid, cacheRecord(uid, reads));
+	if (cachePos_ < currentCache_.size()) {
+		cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
+		currentCache_[cachePos_] = uid;
+		++cachePos_;
+		if (cachePos_ >= cacheSizeLimit_) {
+			cachePos_ = 0;
+		}
 	} else {
-		cache_.emplace(uid, cacheRecord(uid, reads));
+		++cachePos_;
+		currentCache_.emplace_back(uid);
+	}
+}
+
+void seqCache::updateCacheNoCheck(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads){
+	cache_.find(uid)->second.reads_ = reads;
+	if (!bib::in(uid, currentCache_)) {
 		if (cachePos_ < currentCache_.size()) {
 			cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
 			currentCache_[cachePos_] = uid;
@@ -125,41 +144,46 @@ void seqCache::addToCache(const std::string & uid,
 			if (cachePos_ >= cacheSizeLimit_) {
 				cachePos_ = 0;
 			}
-		} else {
-			++cachePos_;
-			currentCache_.emplace_back(uid);
 		}
 	}
 }
 
+void seqCache::addToCache(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads) {
+	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	//check to see if cache already exists
+	if (containsRecordNoLock(uid)) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << std::endl;
+		std::cerr << "Cache already contains uid: " << uid
+				<< ", should call update instead" << std::endl;
+		throw std::runtime_error{ss.str()};
+	} else {
+		addToCacheNoCheck(uid, reads);
+	}
+}
+
 std::shared_ptr<std::vector<readObject>> seqCache::getRecord(const std::string & uid){
+	std::shared_lock<std::shared_timed_mutex> lock(mut_);
 	return cache_.find(uid)->second.reads_;
 }
 
 void seqCache::updateAddCache(const std::string & uid,
 		const std::shared_ptr<std::vector<readObject>> & reads) {
-	if (containsRecord(uid)) {
-		updateCache(uid, reads);
+	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	if (containsRecordNoLock(uid)) {
+		addToCacheNoCheck(uid, reads);
 	} else {
-		addToCache(uid, reads);
+		updateCacheNoCheck(uid, reads);
 	}
 }
 
 void seqCache::updateCache(const std::string & uid,
 		const std::shared_ptr<std::vector<readObject>> & reads) {
+	std::unique_lock <std::shared_timed_mutex> lock(mut_);
 	// check to see if cache exists
-	if (containsRecord(uid)) {
-		cache_.find(uid)->second.reads_ = reads;
-		if (!bib::in(uid, currentCache_)) {
-			if (cachePos_ < currentCache_.size()) {
-				cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
-				currentCache_[cachePos_] = uid;
-				++cachePos_;
-				if (cachePos_ >= cacheSizeLimit_) {
-					cachePos_ = 0;
-				}
-			}
-		}
+	if (containsRecordNoLock(uid)) {
+		updateCacheNoCheck(uid, reads);
 	} else {
 		std::stringstream ss;
 		ss << __PRETTY_FUNCTION__ << std::endl;
@@ -169,16 +193,14 @@ void seqCache::updateCache(const std::string & uid,
 	}
 }
 
-bool seqCache::recordValid(const std::string & uid)const{
-	if(containsRecord(uid)){
-		return nullptr != cache_.find(uid)->second.reads_;
-	}else{
-		return false;
-	}
+bool seqCache::recordValid(const std::string & uid) {
+	std::shared_lock<std::shared_timed_mutex> lock(mut_);
+	return recordValidNoLock(uid);
 }
 
-bool seqCache::containsRecord(const std::string & uid) const {
-	return cache_.find(uid) != cache_.end();
+bool seqCache::containsRecord(const std::string & uid) {
+	std::shared_lock<std::shared_timed_mutex> lock(mut_);
+	return containsRecordNoLock(uid);
 }
 
 

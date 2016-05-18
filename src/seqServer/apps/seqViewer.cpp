@@ -70,12 +70,18 @@ VecStr ssv::requiredOptions() const {
 
 void ssv::seqData() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	ret_json();
 	response().out() << seqs_->getJson(rootName_.substr(1));
 }
 
 void ssv::seqType() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	ret_json();
 	cppcms::json::value r;
 	if(protein_){
@@ -88,6 +94,9 @@ void ssv::seqType() {
 
 void ssv::rootName() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 
 	ret_json();
 	cppcms::json::value r;
@@ -95,13 +104,13 @@ void ssv::rootName() {
 	response().out() << r;
 }
 
-void ssv::showMinTree() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 
-}
 
 void ssv::mainPage() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto search = pages_.find("mainPageHtml");
 	response().out() << search->second.get("/ssv", rootName_);
 }
