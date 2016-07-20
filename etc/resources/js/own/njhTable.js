@@ -127,7 +127,10 @@ njhTable.prototype.addChart = function(){
 		},
 		bindto : this.masterDivId + " .njhTableChart"
 	});
-	this.chart.hide(this.tableMasterData["hideOnStartColNames"]);
+	console.log(this.tableMasterData["hideOnStartColNames"]);
+	if(this.tableMasterData["hideOnStartColNames"].length > 0){
+		this.chart.hide(this.tableMasterData["hideOnStartColNames"]);
+	}
 };
 
 njhTable.prototype.updateWithData = function(updatedDataTab){

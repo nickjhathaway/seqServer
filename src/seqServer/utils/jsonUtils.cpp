@@ -136,10 +136,13 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 
 	/**@todo hide checks for presence of actual names for mainColName and hideOnSTartColNames*/
 	ret["mainColName"] = mainColName;
+
 	VecStr hideOnStartColNames;
-	for(const auto & col : tab.columnNames_){
-		if(!bib::in(col, initialVisibleColumns)){
-			hideOnStartColNames.emplace_back(col);
+	if(!initialVisibleColumns.empty()){
+		for(const auto & col : tab.columnNames_){
+			if(!bib::in(col, initialVisibleColumns)){
+				hideOnStartColNames.emplace_back(col);
+			}
 		}
 	}
 	ret["initialVisibleColumns"] = bib::json::toJson(initialVisibleColumns);
