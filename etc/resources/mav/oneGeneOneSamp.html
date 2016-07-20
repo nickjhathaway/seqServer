@@ -32,6 +32,7 @@
 			addDiv("#mainContent", "sampTable");
 			addDiv("#mainContent", "sampNameMenu");
 			addDiv("#mainContent", "sampleChartMaster");
+			addDiv("#mainContent", "mipOverlapGraphChart");
 			//change title to current name
 			$("title", "head").html(sampName);
 			$("#jumboTitle").html(geneName + ":" + sampName);
@@ -70,7 +71,12 @@
 			//create samp menu 
 			//var sampMenu = new njhCheckboxMenu("#sampNameMenu", allMipNames, updateChartOnClick);
 			var sampMenu = new njhCheckboxMenuOrganized("#sampNameMenu", allMipNames, updateChartOnClick);
-
+			getJSON("/" + rName + "/mipOverlapGraphData/" + geneName + "/" + sampName).then(function(response) {
+			  var mOverLapDrawer = new MipOverlapper("#mipOverlapGraphChart", response, $(window).width() -200);
+			  		$(window).bind("resize", function(){
+						mOverLapDrawer.updateSize();
+					});
+			});
 		});
     </script>
   </body>
