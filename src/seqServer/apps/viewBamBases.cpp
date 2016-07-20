@@ -61,7 +61,7 @@ VecStr bamBaseViewer::requiredOptions() const {
 
 void bamBaseViewer::tableData(){
 	ret_json();
-	response().out() << tableToJsonRowWise(originalTable_, originalTable_.columnNames_[0], VecStr{}, VecStr{});
+	response().out() << tableToJsonByRow(originalTable_, originalTable_.columnNames_[0]);
 }
 
 

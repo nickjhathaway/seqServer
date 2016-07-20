@@ -35,9 +35,12 @@ namespace bibseq {
 
 
 Json::Value dotToJson(const std::string& dotFilename);
-Json::Value tableToJsonRowWise(const bibseq::table & tab,
-		const std::string mainColName, const VecStr & hideOnStartColNames,
+
+Json::Value tableToJsonByRow(const bibseq::table & tab,
+		const std::string mainColName,
+		const VecStr & initialVisibleColumns = VecStr { },
 		const VecStr & excludeFromNum = VecStr { });
+
 Json::Value tableToJsonColumnWise(const bibseq::table & tab);
 
 cppcms::json::object server_config(std::string name, uint32_t port);

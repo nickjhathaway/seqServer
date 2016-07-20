@@ -105,8 +105,8 @@ Json::Value dotToJson(const std::string& dotFilename) {
 	return graph;
 }
 
-Json::Value tableToJsonRowWise(const bibseq::table & tab,
-		const std::string mainColName, const VecStr & hideOnStartColNames,
+Json::Value tableToJsonByRow(const bibseq::table & tab,
+		const std::string mainColName, const VecStr & initialVisibleColumns,
 		const VecStr & excludeFromNum) {
 	Json::Value ret;
 	auto & outTab = ret["tab"];
@@ -136,6 +136,13 @@ Json::Value tableToJsonRowWise(const bibseq::table & tab,
 
 	/**@todo hide checks for presence of actual names for mainColName and hideOnSTartColNames*/
 	ret["mainColName"] = mainColName;
+	VecStr hideOnStartColNames;
+	for(const auto & col : tab.columnNames_){
+		if(!bib::in(col, initialVisibleColumns)){
+			hideOnStartColNames.emplace_back(col);
+		}
+	}
+	ret["initialVisibleColumns"] = bib::json::toJson(initialVisibleColumns);
 	ret["hideOnStartColNames"] = bib::json::toJson(hideOnStartColNames);
 	return ret;
 }
