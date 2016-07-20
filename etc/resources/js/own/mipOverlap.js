@@ -40,7 +40,19 @@ mipOverlapWorker = function() {
     computeNodeLinks();
     computeNodeValues();
     computeNodeBreadths();
+    //computeNodeDepths();
+    computeNodeDepthsCalc(32)
+    computeNodeColorFrac();
+    computeLinkDepths();
+    return mipOverlapWorker;
+  };
+  
+  mipOverlapWorker.layoutByFrac = function() {
+    computeNodeLinks();
+    computeNodeValues();
+    computeNodeBreadths();
     computeNodeDepths();
+    computeNodeDepthsCalc(32)
     computeNodeColorFrac();
     computeLinkDepths();
     return mipOverlapWorker;
@@ -150,6 +162,138 @@ mipOverlapWorker = function() {
     nodes.forEach(function(node) {
       node.x *= kx;
     });
+  }
+  
+  
+  function computeNodeDepthsCalc(iterations) {
+    var nodesByBreadth = d3.nest()
+        .key(function(d) { return d.x; })
+        .sortKeys(d3.ascending)
+        .entries(nodes)
+        .map(function(d) { return d.values; });
+
+    //
+    initializeNodeDepth();
+    resolveCollisions();
+    for (var alpha = 1; iterations > 0; --iterations) {
+      relaxRightToLeft(alpha *= .99);
+      resolveCollisions();
+      relaxLeftToRight(alpha);
+      resolveCollisions();
+    }
+	function nodeCompare(a,b) {
+	  if (a.frac < b.frac)
+	    return -1;
+	  if (a.frac > b.frac)
+	    return 1;
+	  return 0;
+	}
+	
+	
+    function initializeNodeDepth() {
+      var ky = d3.min(nodesByBreadth, function(nodes) {
+        return (size[1] - (nodes.length - 1) * nodePadding) / d3.sum(nodes, value);
+      });
+      nodesByBreadth.forEach(function(nodes) {
+        nodes.sort(nodeCompare);
+        nodes.forEach(function(node, i) {
+          node.y = i;
+          node.yOrder = i
+          node.dy = node.value * ky;
+        });
+      });
+      nodesByBreadth.forEach(function(nodes) {
+	      nodes.forEach(function(node, i) {
+	        node.sourceLinks.forEach(function(link){
+	        	link.dy = Math.min(link.value * node.dy, link.target.dy);
+	        });
+	      });
+	    });
+    }
+/*
+    function initializeNodeDepth() {
+      var ky = d3.min(nodesByBreadth, function(nodes) {
+        return (size[1] - (nodes.length - 1) * nodePadding) / d3.sum(nodes, value);
+      });
+
+      nodesByBreadth.forEach(function(nodes) {
+        nodes.forEach(function(node, i) {
+          node.y = i;
+          node.dy = node.value * ky;
+        });
+      });
+
+      links.forEach(function(link) {
+        link.dy = link.value * ky;
+      });
+    }*/
+
+    function relaxLeftToRight(alpha) {
+      nodesByBreadth.forEach(function(nodes, breadth) {
+        nodes.forEach(function(node) {
+          if (node.targetLinks.length) {
+            var y = d3.sum(node.targetLinks, weightedSource) / d3.sum(node.targetLinks, value);
+            node.y += (y - center(node)) * alpha;
+          }
+        });
+      });
+
+      function weightedSource(link) {
+        return center(link.source) * link.value;
+      }
+    }
+
+    function relaxRightToLeft(alpha) {
+      nodesByBreadth.slice().reverse().forEach(function(nodes) {
+        nodes.forEach(function(node) {
+          if (node.sourceLinks.length) {
+            var y = d3.sum(node.sourceLinks, weightedTarget) / d3.sum(node.sourceLinks, value);
+            node.y += (y - center(node)) * alpha;
+          }
+        });
+      });
+
+      function weightedTarget(link) {
+        return center(link.target) * link.value;
+      }
+    }
+
+    function resolveCollisions() {
+      nodesByBreadth.forEach(function(nodes) {
+        var node,
+            dy,
+            y0 = 0,
+            n = nodes.length,
+            i;
+
+        // Push any overlapping nodes down.
+        nodes.sort(ascendingDepth);
+        for (i = 0; i < n; ++i) {
+          node = nodes[i];
+          dy = y0 - node.y;
+          if (dy > 0) node.y += dy;
+          y0 = node.y + node.dy + nodePadding;
+        }
+
+        // If the bottommost node goes outside the bounds, push it back up.
+        dy = y0 - nodePadding - size[1];
+        if (dy > 0) {
+          y0 = node.y -= dy;
+
+          // Push any overlapping nodes back up.
+          for (i = n - 2; i >= 0; --i) {
+            node = nodes[i];
+            dy = node.y + node.dy + nodePadding - y0;
+            if (dy > 0) node.y -= dy;
+            y0 = node.y;
+          }
+        }
+      });
+    }
+
+    function ascendingDepth(a, b) {
+      return a.y - b.y;
+    }
   }
 
   function computeNodeDepths() {
