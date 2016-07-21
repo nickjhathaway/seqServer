@@ -20,6 +20,11 @@
 //
 //
 
+String.prototype.replaceAll = function(str1, str2, ignore) 
+{
+	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
+}
+
 function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart){
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
@@ -42,7 +47,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	var self = this;
 	//add download button for table 
 	menuOrganized.append("br");
-	menuOrganized.append("button").text("Download Table").attr("class", "njhTabSaveButton");
+	menuOrganized.append("button").text("Download Table").attr("class", "njhTabSaveButton btn btn-success");
 	menuOrganized.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
 	menuOrganized.select(".njhTabSaveButton").on("click", function() {
 		var allVals = [];
@@ -70,6 +75,18 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.chart;
 	if (addChart) {
 		this.addChart();
+	}
+	console.log(this.tableMasterData["hideOnStartColNames"]);
+	console.log(this.tableMasterData["initialVisibleColumns"]);
+	
+	console.log("hi");
+	if(this.tableMasterData["hideOnStartColNames"].length > 0){
+		this.tableMasterData["hideOnStartColNames"].forEach(function(d){
+			console.log(d)
+			console.log(String(d).replaceAll(".", "\\."))
+			menuOrganized.select("#" + String(d).replaceAll(".", "\\.")).property("checked", false);
+		});
+		this.updateTableOnClickOrganized();
 	}
 }
 

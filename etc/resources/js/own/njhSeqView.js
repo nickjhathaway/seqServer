@@ -206,17 +206,11 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		}
 		d3.select(viewName).append("div")
 			.attr("class", "downFastaDiv")
-			.style("border", "2px solid black")
-			.style("padding", "2px")
 			.style("margin", "5px")
-			.style("width", "100px")
 			.style("float", "left");
 		d3.select(viewName).append("div")
 		.attr("class", "deselectDiv")
-		.style("border", "2px solid black")
-		.style("padding", "2px")
 		.style("margin", "5px")
-		.style("width", "100px")
 		.style("float", "left");
 		this.masterDivD3 = d3.select(viewName).append("div").attr("class", "SeqViewCanvasDiv");
 		this.masterDivD3.append("div").attr("class", "rightSlider");
@@ -231,11 +225,11 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		var linkButton = d3.select(this.topDivName + " .downFastaDiv")
 			.append("button")
 			.text("Download Fasta")
-			.attr("class", "fastaSaveButton");
+			.attr("class", "fastaSaveButton btn btn-success");
 		var deselectButton = d3.select(this.topDivName + " .deselectDiv")
 			.append("button")
 			.text("Un-select All")
-			.attr("class", "deselectAllBut");
+			.attr("class", "deselectAllBut btn btn-success");
 		deselectButton.on("click", function(){
 			self.selected.clear();
 			self.updateSelectors();
