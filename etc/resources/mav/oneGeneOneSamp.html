@@ -59,14 +59,12 @@
 			      allVals.push($(this).val());
 			    });
 			    var currentMipNames = _.intersection(allMipNames, allVals);
-			    if(currentMipNames.length == 0){
-			    	mainPopInfoTab = {};
-			    }else{
-			    	ajaxPost('/' + rName + '/getOneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
-			    }
-			 	sampleTable.updateWithData(mainSampInfoTab);
-			 	sampleChart.updateWithData(mainSampInfoTab);
-			 	$("#sampNameMenu").scrollView();
+			    ajaxPost('/' + rName + '/getOneSampAllMipData/' + sampName, {"mipNames":currentMipNames}, function(tab){ mainSampInfoTab = tab; });;
+				sampleChart.updateWithData(mainSampInfoTab);
+			 	setTimeout(function(){
+			 		sampleTable.updateWithData(mainSampInfoTab);
+			 		$("#sampNameMenu").scrollView(60);
+			 	}, 750);
 			};
 			//create samp menu 
 			//var sampMenu = new njhCheckboxMenu("#sampNameMenu", allMipNames, updateChartOnClick);

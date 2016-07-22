@@ -20,10 +20,7 @@
 //
 //
 
-String.prototype.replaceAll = function(str1, str2, ignore) 
-{
-	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
-}
+
 
 function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart){
 	this.masterDivId = masterDivId;
@@ -76,14 +73,8 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	if (addChart) {
 		this.addChart();
 	}
-	console.log(this.tableMasterData["hideOnStartColNames"]);
-	console.log(this.tableMasterData["initialVisibleColumns"]);
-	
-	console.log("hi");
 	if(this.tableMasterData["hideOnStartColNames"].length > 0){
 		this.tableMasterData["hideOnStartColNames"].forEach(function(d){
-			console.log(d)
-			console.log(String(d).replaceAll(".", "\\."))
 			menuOrganized.select("#" + String(d).replaceAll(".", "\\.")).property("checked", false);
 		});
 		this.updateTableOnClickOrganized();
@@ -144,7 +135,6 @@ njhTable.prototype.addChart = function(){
 		},
 		bindto : this.masterDivId + " .njhTableChart"
 	});
-	console.log(this.tableMasterData["hideOnStartColNames"]);
 	if(this.tableMasterData["hideOnStartColNames"].length > 0){
 		this.chart.hide(this.tableMasterData["hideOnStartColNames"]);
 	}

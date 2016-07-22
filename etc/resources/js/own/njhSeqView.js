@@ -229,7 +229,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		var deselectButton = d3.select(this.topDivName + " .deselectDiv")
 			.append("button")
 			.text("Un-select All")
-			.attr("class", "deselectAllBut btn btn-success");
+			.attr("class", "deselectAllBut btn btn-info");
 		deselectButton.on("click", function(){
 			self.selected.clear();
 			self.updateSelectors();
@@ -477,6 +477,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			windowOptions.push(new njhMenuItem("GenTree", "Gen Difference Graph",function(){
 				if(!($(self.topDivName + " #minTreeChartTop #saveButton").length)){
 					d3.select(self.topDivName + " #minTreeChartTop").append("button")
+					.style("float", "top")
+					.attr("class", "btn btn-success")
 					.attr("id", "saveButton")
 					.style("margin", "2px")
 					.text("Save As Svg");

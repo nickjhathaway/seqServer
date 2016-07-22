@@ -236,7 +236,7 @@ function drawPsuedoMinTreeDetailed(jsonData, addTo, hovIdStub,width,height){
   snps.selectAll("circle").style("stroke", "#00F").style("stroke-width", 1);
   snps.selectAll("circle").on("mouseover", function(d){
   			d3.select("#" + hovIdStub + "_popHover_title").html("Snp")
-			 updateTable(hoverTab, [{"SeqName":d.ref, "Pos":d.refPos, "Base":d.refBase},{"SeqName":d.seq, "Pos":d.seqPos, "Base":d.seqBase}], ["SeqName", "Pos", "Base"]);
+			 updateTable(hoverTab,[{"SeqName":d.ref, "Pos":d.refPos, "Base":d.refBase, "Qual":d.refBaseQual},{"SeqName":d.seq, "Pos":d.seqPos, "Base":d.seqBase, "Qual":d.seqBaseQual}], ["SeqName", "Pos", "Base", "Qual"]);
 	      	 return tooltip.style("visibility", "visible");})
 		  .on("mousemove", function(){return tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 		  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
@@ -348,7 +348,7 @@ var node = svg.selectAll(".node")
   snps.selectAll("circle").style("stroke", "#00F").style("stroke-width", 1);
   snps.selectAll("circle").on("mouseover", function(d){
   			d3.select("#" + addTo.substr(1) + "_popHover_title").html("Snp")
-			 updateTable(hoverTab, [{"SeqName":d.ref, "Pos":d.refPos, "Base":d.refBase},{"SeqName":d.seq, "Pos":d.seqPos, "Base":d.seqBase}], ["SeqName", "Pos", "Base"]);
+			 updateTable(hoverTab, [{"SeqName":d.ref, "Pos":d.refPos, "Base":d.refBase, "Qual":d.refBaseQual},{"SeqName":d.seq, "Pos":d.seqPos, "Base":d.seqBase, "Qual":d.seqBaseQual}], ["SeqName", "Pos", "Base", "Qual"]);
 	      	 return tooltip.style("visibility", "visible");})
 		  .on("mousemove", function(){return tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
 		  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});

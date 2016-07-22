@@ -64,11 +64,15 @@ function getJSON(url) {
 }
 
 
-$.fn.scrollView = function () {
+$.fn.scrollView = function (offset, timing) {
+	scrollOffset = offset || 0;
+	if(timing === undefined){
+		timing = 1000
+	}
     return this.each(function () {
         $('html, body').animate({
-            scrollTop: $(this).offset().top
-        }, 1000);
+            scrollTop: $(this).offset().top - scrollOffset
+        }, timing);
     });
 }
 
