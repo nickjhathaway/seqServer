@@ -260,8 +260,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 				});
 		//this.masterDiv = document.getElementById(viewName);
 		this.masterDiv = this.masterDivD3.node();
-		this.canvas = $(".canvas", this.masterDiv)[0];
 		
+		this.canvas = $(".canvas", this.masterDiv)[0];
 		this.context = this.canvas.getContext('2d');
 		
 		this.rSlider = $(".rightSlider", this.masterDiv)[0];
@@ -279,6 +279,10 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
 		this.canvas.width = $(this.masterDiv).width() * 0.98;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
+		//make a mock canvas context using canvas2svg. We use a C2S namespace for less typing:
+		this.ctx = new C2S(this.canvas.width,this.canvas.height); //width, height of your desired svg file
+
+        
 		var nameOffSet = 10 * cellWidth;
 		var numOfBases = Math.min(Math.floor((this.canvas.width - cellWidth - nameOffSet)/cellWidth),this.seqData["maxLen"] );
 	 	var numOfSeqs = Math.min(Math.floor((this.canvas.height - cellHeight)/cellHeight), this.seqData["seqs"].length);
@@ -699,15 +703,30 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	};
 
 	njhSeqView.prototype.paint = function(){
+
 		this.painter.paintSeqs(this.context, this.seqData["seqs"], this.seqStart, this.baseStart);
 		this.painter.placeBasePos(this.context, this.seqStart, this.baseStart);
+		this.painter.needToPaint = true;
+		this.painter.paintSeqs(this.ctx, this.seqData["seqs"], this.seqStart, this.baseStart);
+		this.painter.placeBasePos(this.ctx, this.seqStart, this.baseStart);
+		
+
 		this.paintSelectedSeq();
 		this.setSelector();
 		this.updateSelectors();
+		var myRectangle = this.ctx.getSerializedSvg(true); //true here will replace any named entities with numbered ones.
+        //Standalone SVG doesn't support most named entities.
+		d3.select(".SeqViewCanvasDiv")
+        	.append("div")
+        	.attr("id", "testCanvasToSvg")
+        	.html(myRectangle);;
+        //d3.select("#SeqViewCanvasDiv").select("#testCanvasToSvg").html(myRectangle);
+       
 	};
 	
 	njhSeqView.prototype.paintSelectedSeq = function(){
 		this.painter.paintSelectedSeq(this.context, this.seqData["seqs"][this.currentSeq], this.currentBase );
+		this.painter.paintSelectedSeq(this.ctx, this.seqData["seqs"][this.currentSeq], this.currentBase );
 	};
 	
 	njhSeqView.prototype.setSelector = function(){

@@ -58,9 +58,11 @@
 			 	setTimeout(function(){
 			 		sampleTable.updateWithData(mainPopInfoTab);
 			 		$("#sampNameMenu").scrollView(60, 0);
-			 	}, 750);
+			 	}, 750 * 2);
 			 	
 			};
+
+            
 			//create samp menu 
 			var sampMenu = new njhCheckboxMenu("#sampNameMenu", sampNames, updateChartOnClick);
 			//create SeqViewer for the population final sequences 
