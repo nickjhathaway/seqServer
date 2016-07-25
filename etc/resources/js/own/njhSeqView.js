@@ -714,7 +714,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.paintSelectedSeq();
 		this.setSelector();
 		this.updateSelectors();
-		var myRectangle = this.ctx.getSerializedSvg(true); //true here will replace any named entities with numbered ones.
+		//var myRectangle = this.ctx.getSerializedSvg(true); //true here will replace any named entities with numbered ones.
         //.
 		/*d3.select(".SeqViewCanvasDiv")
         	.append("div")
