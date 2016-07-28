@@ -418,7 +418,7 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 	   setTimeout(function(){
 			//update legend
 			self.legend.call(d3.legend);
-			this.legend.selectAll("text")
+			self.legend.selectAll("text")
 				.style("font-family","\"Helvetica Neue\",Helvetica,Arial,sans-serif")
 			    .style("font-size", "12px")
 			    .style("font-weight", "bold");
