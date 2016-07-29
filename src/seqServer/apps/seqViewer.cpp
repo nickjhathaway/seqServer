@@ -117,14 +117,17 @@ void ssv::mainPage() {
 
 
 int seqViewer(const bib::progutils::CmdArgs & inputCommands){
-	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	std::string name = "ssv";
-	std::string resourceDirName = "";
+	std::string resourceDirName = bib::files::make_path(seqServer_INSTALLDIR,
+			"etc/resources").string();
 	bool protein = false;
+	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
-	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
+	setUp.setOption(resourceDirName, "-resourceDirName",
+			"Name of the resource Directory where the js and hmtl is located",
+			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
