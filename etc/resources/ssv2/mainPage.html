@@ -14,17 +14,18 @@
   </head>
   <body>
 
-	
+	<div></div>
     <script>
     	$(document).ready(function(){
 	    	
 	        var baseColors = {};
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
+			
 			var currentPopName = locSplit.pop();
 			var mainData = ajaxRet('/' + rName + '/seqData');
 			var seqType =  ajaxRet('/' + rName + '/seqType');
-			console.log(seqType);
+			
 			if(seqType == "dna"){
 				baseColors = ajaxRet('/' + rName + '/baseColors');
 			}else if (seqType == "protein"){

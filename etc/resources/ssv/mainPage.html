@@ -21,17 +21,15 @@
 	        var baseColors = {};
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
-			var currentPopName = locSplit.pop();
+			addDiv("body", "viewer");
 			var mainData = ajaxRet('/' + rName + '/seqData');
 			var seqType =  ajaxRet('/' + rName + '/seqType');
-			console.log(seqType);
+			
 			if(seqType == "dna"){
 				baseColors = ajaxRet('/' + rName + '/baseColors');
 			}else if (seqType == "protein"){
 				baseColors = ajaxRet('/' + rName + '/proteinColors');
 			}
-			
-			
 			var cellWidth = 20;
 			var cellHeight = 25;
 			var SeqViewer = new njhSeqView("#viewer",  mainData, cellWidth, cellHeight, baseColors, true);
@@ -49,8 +47,5 @@
 		});
 		
     </script>
-
-    
-	<div id = "viewer"></div>
   </body>
 </html>

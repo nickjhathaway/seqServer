@@ -234,7 +234,10 @@ var getRelCursorPosition = function(event, obj) {
     
 
 function addDiv(parentId, childName) {
-	$("<div id =\"" + childName + "\"></div>").appendTo(parentId);
+	var div = d3.select(parentId)
+		.append("div")
+			.attr("id", childName);
+	return div;
 };
 
 function addH1(selector, text){

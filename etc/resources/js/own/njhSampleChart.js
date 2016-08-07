@@ -124,9 +124,11 @@ njhSampleChart.prototype.draw = function(){
 	    .range(this.masterData["popColors"]);
 	//initiate the counts to zero and no samples have been added
 	var sampleSum = {};
+	var sampleMax = {};
 	var samplePopNames = {};
 	for(pos in this.masterData["tab"]){
 		sampleSum[this.masterData["tab"][pos][self.xCol]] = 0;
+		sampleMax[this.masterData["tab"][pos][self.xCol]] = 0;
 		samplePopNames[this.masterData["tab"][pos][self.xCol]] = [];
 		//this.masterData["tab"]["color"] = this.color(this.masterData["tab"][pos][self.colorBy])
 	}
@@ -137,6 +139,7 @@ njhSampleChart.prototype.draw = function(){
 		for (sPos in self.hoverCols){
 			temp[self.hoverCols[sPos]] = this.masterData["tab"][actualPos][self.hoverCols[sPos]];
 		}
+		sampleMax[this.masterData["tab"][pos][self.xCol]] = sampleMax[this.masterData["tab"][pos][self.xCol]] + this.masterData["tab"][pos][self.yCol];
 		temp["color"] = this.color(this.masterData["tab"][actualPos][self.colorBy]);
 		samplePopNames[this.masterData["tab"][actualPos][self.xCol]].push(temp);
 	}
@@ -197,7 +200,7 @@ njhSampleChart.prototype.draw = function(){
 	bars.attr("x", function(d) { return self.x(d[self.xCol]); })
 	      .attr("y", function(d) { 
 	      	//adjust height for previously added samples 
-	      		var ret = self.y(sampleSum[d[self.xCol]] + d[self.yCol]);
+	      		var ret = self.y(sampleMax[d[self.xCol]] - sampleSum[d[self.xCol]]);
 	      		sampleSum[d[self.xCol]] = sampleSum[d[self.xCol]] + d[self.yCol];
 	      		return ret; 
 	      		})
@@ -330,19 +333,23 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 		self.color = d3.scale.ordinal()
 		    .domain(self.masterData["tab"].map(function(d) { return d[self.colorBy]; }))
 		    .range(self.masterData["popColors"]);
-		sampleSum = {};
-		samplePopNames = {};
+		var sampleSum = {};
+		var sampleMax = {};
+		var samplePopNames = {};
 		for(pos in self.masterData["tab"]){
 			sampleSum[self.masterData["tab"][pos][self.xCol]] = 0;
+			sampleMax[self.masterData["tab"][pos][self.xCol]] = 0;
 			samplePopNames[self.masterData["tab"][pos][self.xCol]] = [];
 			//self.masterData["tab"]["color"] = self.color(self.masterData["tab"][pos][self.colorBy])
 		}
+
 		for(pos in self.masterData["tab"]){
 			var actualPos = self.masterData["tab"].length - 1 - pos;
 			var temp = {};
 			for (sPos in self.hoverCols){
 				temp[self.hoverCols[sPos]] = self.masterData["tab"][actualPos][self.hoverCols[sPos]];
 			}
+			sampleMax[self.masterData["tab"][pos][self.xCol]] = sampleMax[self.masterData["tab"][pos][self.xCol]] + self.masterData["tab"][pos][self.yCol];
 			temp["color"] = self.color(self.masterData["tab"][actualPos][self.colorBy]);
 			samplePopNames[self.masterData["tab"][actualPos][self.xCol]].push(temp);
 		}
@@ -378,7 +385,7 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 	    	.duration(750)
 		  .attr("x", function(d) { return self.x(d[self.xCol]); })
 	      .attr("y", function(d) { 
-	      		var ret = self.y(sampleSum[d[self.xCol]] + d[self.yCol]);
+	      		var ret = self.y(sampleMax[d[self.xCol]] - sampleSum[d[self.xCol]]);
 	      		sampleSum[d[self.xCol]] = sampleSum[d[self.xCol]] + d[self.yCol];
 	      		return ret; 
 	      		})
