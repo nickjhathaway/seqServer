@@ -50,7 +50,6 @@ public:
 
 	void rootName();
 
-	void showMinTree();
 
 	void mainPage();
 

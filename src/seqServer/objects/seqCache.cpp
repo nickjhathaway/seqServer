@@ -31,60 +31,60 @@ namespace bibseq {
 
 
 
-cppcms::json::value seqCache::getJson(const std::string & uid){
-	return seqToJsonFactory::seqsToJson(*(cache_.at(uid).reads_), uid);
+Json::Value seqCache::getJson(const std::string & uid){
+	return seqToJsonFactory::seqsToJson(getRef((cache_.at(uid).reads_)), uid);
 }
 
-cppcms::json::value seqCache::sort(const std::string & uid, const std::string & sortOption){
-	return seqToJsonFactory::sort(cache_.at(uid).reads_, sortOption, uid);
+Json::Value seqCache::sort(const std::string & uid, const std::string & sortOption){
+	return seqToJsonFactory::sort(getRef((cache_.at(uid).reads_)), sortOption, uid);
 }
 
-cppcms::json::value seqCache::muscle(const std::string & uid){
-	return seqToJsonFactory::muscle(cache_.at(uid).reads_, uid);
+Json::Value seqCache::muscle(const std::string & uid){
+	return seqToJsonFactory::muscle(getRef((cache_.at(uid).reads_)), uid);
 }
 
-cppcms::json::value seqCache::removeGaps(const std::string & uid){
-	return seqToJsonFactory::removeGaps(cache_.at(uid).reads_, uid);
+Json::Value seqCache::removeGaps(const std::string & uid){
+	return seqToJsonFactory::removeGaps(getRef((cache_.at(uid).reads_)), uid);
 }
 
-cppcms::json::value seqCache::rComplement(const std::string & uid){
-	return seqToJsonFactory::rComplement(cache_.at(uid).reads_, uid);
+Json::Value seqCache::rComplement(const std::string & uid){
+	return seqToJsonFactory::rComplement(getRef((cache_.at(uid).reads_)), uid);
 }
 
-cppcms::json::value seqCache::minTreeData(const std::string & uid){
-	return seqToJsonFactory::minTreeData(cache_.at(uid).reads_, uid);
+Json::Value seqCache::minTreeData(const std::string & uid){
+	return seqToJsonFactory::minTreeData(getRef((cache_.at(uid).reads_)), uid);
 }
 
-cppcms::json::value seqCache::minTreeData(const std::string & uid, const std::vector<uint64_t> & positions){
-	return seqToJsonFactory::minTreeData(cache_.at(uid).reads_,positions, uid);
+Json::Value seqCache::minTreeData(const std::string & uid, const std::vector<uint32_t> & positions){
+	return seqToJsonFactory::minTreeData(getRef((cache_.at(uid).reads_)),positions, uid);
 }
 
-cppcms::json::value seqCache::minTreeDataDetailed(const std::string & uid, uint32_t numDiff){
-	return seqToJsonFactory::minTreeDataDetailed(cache_.at(uid).reads_, uid, numDiff);
+Json::Value seqCache::minTreeDataDetailed(const std::string & uid, uint32_t numDiff){
+	return seqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).reads_)), uid, numDiff);
 }
 
-cppcms::json::value seqCache::minTreeDataDetailed(const std::string & uid, const std::vector<uint64_t> & positions, uint32_t numDiff){
-	return seqToJsonFactory::minTreeDataDetailed(cache_.at(uid).reads_,positions, uid, numDiff);
+Json::Value seqCache::minTreeDataDetailed(const std::string & uid, const std::vector<uint32_t> & positions, uint32_t numDiff){
+	return seqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).reads_)),positions, uid, numDiff);
 }
 
-cppcms::json::value seqCache::muscle(const std::string & uid,const std::vector<uint64_t> & positions){
-	return seqToJsonFactory::muscle(cache_.at(uid).reads_, positions, uid);
+Json::Value seqCache::muscle(const std::string & uid,const std::vector<uint32_t> & positions){
+	return seqToJsonFactory::muscle(getRef((cache_.at(uid).reads_)), positions, uid);
 }
-cppcms::json::value seqCache::removeGaps(const std::string & uid, const std::vector<uint64_t> & positions){
-	return seqToJsonFactory::removeGaps(cache_.at(uid).reads_, positions, uid);
+Json::Value seqCache::removeGaps(const std::string & uid, const std::vector<uint32_t> & positions){
+	return seqToJsonFactory::removeGaps(getRef((cache_.at(uid).reads_)), positions, uid);
 }
-cppcms::json::value seqCache::rComplement(const std::string & uid, const std::vector<uint64_t> & positions){
-	return seqToJsonFactory::rComplement(cache_.at(uid).reads_, positions, uid);
+Json::Value seqCache::rComplement(const std::string & uid, const std::vector<uint32_t> & positions){
+	return seqToJsonFactory::rComplement(getRef((cache_.at(uid).reads_)), positions, uid);
 }
-cppcms::json::value seqCache::getJson(const std::string & uid, const std::vector<uint64_t> & positions){
-	return seqToJsonFactory::seqsToJson(*(cache_.at(uid).reads_), positions, uid);
+Json::Value seqCache::getJson(const std::string & uid, const std::vector<uint32_t> & positions){
+	return seqToJsonFactory::seqsToJson(getRef((cache_.at(uid).reads_)), positions, uid);
 }
-cppcms::json::value seqCache::translate(const std::string & uid,
-		const std::vector<uint64_t> & positions, bool complement, bool reverse,
+Json::Value seqCache::translate(const std::string & uid,
+		const std::vector<uint32_t> & positions, bool complement, bool reverse,
 		uint64_t start){
-	auto ret = seqToJsonFactory::translate(cache_.at(uid).reads_, positions, uid, complement, reverse, start);
+	auto ret = seqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), positions, uid, complement, reverse, start);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
-	for(const auto & j : cppcmsJsonToJson(ret["seqs"])){
+	for(const auto & j : ret["seqs"]){
 		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
 		(*proteins).back().seqBase_.cnt_ = j["cnt"].asDouble();
 		(*proteins).back().seqBase_.frac_ = j["frac"].asDouble();
@@ -92,11 +92,11 @@ cppcms::json::value seqCache::translate(const std::string & uid,
 	updateAddCache(uid + "_protein", proteins);
 	return ret;
 }
-cppcms::json::value seqCache::translate(const std::string & uid, bool complement,
+Json::Value seqCache::translate(const std::string & uid, bool complement,
 		bool reverse, uint64_t start){
-	auto ret = seqToJsonFactory::translate(cache_.at(uid).reads_, uid, complement, reverse, start);
+	auto ret = seqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), uid, complement, reverse, start);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
-	for(const auto & j : cppcmsJsonToJson(ret["seqs"])){
+	for(const auto & j : ret["seqs"]){
 		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
 		(*proteins).back().seqBase_.cnt_ = j["cnt"].asDouble();
 		(*proteins).back().seqBase_.frac_ = j["frac"].asDouble();
@@ -105,70 +105,102 @@ cppcms::json::value seqCache::translate(const std::string & uid, bool complement
 	return ret;
 }
 
-bool seqCache::recordValid(const std::string & uid)const{
-	if(containsRecord(uid)){
+bool seqCache::recordValidNoLock(const std::string & uid){
+	if(cache_.find(uid) != cache_.end()){
 		return nullptr != cache_.find(uid)->second.reads_;
 	}else{
 		return false;
 	}
 }
 
-bool seqCache::containsRecord(const std::string & uid)const{
+bool seqCache::containsRecordNoLock(const std::string & uid){
 	return cache_.find(uid) != cache_.end();
 }
 
-void seqCache::addToCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads){
-	//check to see if cache already exists
-	if(containsRecord(uid)){
-		std::cerr << "seqCache::addToCache" << std::endl;
-		std::cerr << "Cache already contains uid: " << uid << ", should call update instead" << std::endl;
-	}else{
-		cache_.emplace(uid,cacheRecord(uid, reads));
-		if(cachePos_ < currentCache_.size()){
+void seqCache::addToCacheNoCheck(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads){
+	cache_.emplace(uid, cacheRecord(uid, reads));
+	if (cachePos_ < currentCache_.size()) {
+		cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
+		currentCache_[cachePos_] = uid;
+		++cachePos_;
+		if (cachePos_ >= cacheSizeLimit_) {
+			cachePos_ = 0;
+		}
+	} else {
+		++cachePos_;
+		currentCache_.emplace_back(uid);
+	}
+}
+
+void seqCache::updateCacheNoCheck(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads){
+	cache_.find(uid)->second.reads_ = reads;
+	if (!bib::in(uid, currentCache_)) {
+		if (cachePos_ < currentCache_.size()) {
 			cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
 			currentCache_[cachePos_] = uid;
 			++cachePos_;
-			if(cachePos_ >= cacheSizeLimit_){
+			if (cachePos_ >= cacheSizeLimit_) {
 				cachePos_ = 0;
 			}
-		}else{
-			++cachePos_;
-			currentCache_.emplace_back(uid);
 		}
 	}
 }
 
+void seqCache::addToCache(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads) {
+	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	//check to see if cache already exists
+	if (containsRecordNoLock(uid)) {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << std::endl;
+		std::cerr << "Cache already contains uid: " << uid
+				<< ", should call update instead" << std::endl;
+		throw std::runtime_error{ss.str()};
+	} else {
+		addToCacheNoCheck(uid, reads);
+	}
+}
+
 std::shared_ptr<std::vector<readObject>> seqCache::getRecord(const std::string & uid){
+	std::shared_lock<std::shared_timed_mutex> lock(mut_);
 	return cache_.find(uid)->second.reads_;
 }
 
 void seqCache::updateAddCache(const std::string & uid,
 		const std::shared_ptr<std::vector<readObject>> & reads) {
-	if (containsRecord(uid)) {
-		updateCache(uid, reads);
+	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	if (containsRecordNoLock(uid)) {
+		updateCacheNoCheck(uid, reads);
 	} else {
-		addToCache(uid, reads);
+		addToCacheNoCheck(uid, reads);
 	}
 }
 
-void seqCache::updateCache(const std::string & uid, const std::shared_ptr<std::vector<readObject>> & reads){
+void seqCache::updateCache(const std::string & uid,
+		const std::shared_ptr<std::vector<readObject>> & reads) {
+	std::unique_lock <std::shared_timed_mutex> lock(mut_);
 	// check to see if cache exists
-	if(containsRecord(uid)){
-		cache_.find(uid)->second.reads_ = reads;
-		if(!bib::in(uid, currentCache_)){
-			if(cachePos_ < currentCache_.size()){
-				cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
-				currentCache_[cachePos_] = uid;
-				++cachePos_;
-				if(cachePos_ >= cacheSizeLimit_){
-					cachePos_ = 0;
-				}
-			}
-		}
-	}else{
-		std::cerr << "seqCache::updateCache" << std::endl;
-		std::cerr << "Cache doesn't contain uid: " << uid << ", nothing to update" << std::endl;
+	if (containsRecordNoLock(uid)) {
+		updateCacheNoCheck(uid, reads);
+	} else {
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << std::endl;
+		ss << "Cache doesn't contain uid: " << uid << ", nothing to update"
+				<< std::endl;
+		throw std::runtime_error { ss.str() };
 	}
+}
+
+bool seqCache::recordValid(const std::string & uid) {
+	std::shared_lock<std::shared_timed_mutex> lock(mut_);
+	return recordValidNoLock(uid);
+}
+
+bool seqCache::containsRecord(const std::string & uid) {
+	std::shared_lock<std::shared_timed_mutex> lock(mut_);
+	return containsRecordNoLock(uid);
 }
 
 

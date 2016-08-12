@@ -53,15 +53,16 @@
 			      allVals.push($(this).val());
 			    });
 			    var currentSampNames = _.intersection(sampNames, allVals);
-			    if(currentSampNames.length == 0){
-			    	mainPopInfoTab = {};
-			    }else{
-			    	ajaxPost('/' + rName + '/getOneMipAllSampsData/' + mipName, {"sampNames": currentSampNames}, function(tab){ mainPopInfoTab = tab; });
-			    }
-			 	sampleTable.updateWithData(mainPopInfoTab);
+			    ajaxPost('/' + rName + '/getOneMipAllSampsData/' + mipName, {"sampNames": currentSampNames}, function(tab){ mainPopInfoTab = tab; });			 	
 			 	sampleChart.updateWithData(mainPopInfoTab);
-			 	$("#sampNameMenu").scrollView();
+			 	setTimeout(function(){
+			 		sampleTable.updateWithData(mainPopInfoTab);
+			 		$("#sampNameMenu").scrollView(60, 0);
+			 	}, 750 * 2);
+			 	
 			};
+
+            
 			//create samp menu 
 			var sampMenu = new njhCheckboxMenu("#sampNameMenu", sampNames, updateChartOnClick);
 			//create SeqViewer for the population final sequences 

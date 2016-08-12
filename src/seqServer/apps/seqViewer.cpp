@@ -36,8 +36,8 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
 	pages_.emplace("mainPageHtml",
 			bib::files::make_path(config["resources"], "ssv/mainPage.html"));
 	rootName_ = config["name"];
-	debug_ = config["debug"] == "true";
-	protein_ = config["protein"] == "true";
+	debug_ = "true" == config["debug"];
+	protein_ = "true" == config["protein"];
 
 	for (auto & fCache : pages_) {
 		fCache.second.replaceStr("/ssv", rootName_);
@@ -70,12 +70,18 @@ VecStr ssv::requiredOptions() const {
 
 void ssv::seqData() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	ret_json();
 	response().out() << seqs_->getJson(rootName_.substr(1));
 }
 
 void ssv::seqType() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	ret_json();
 	cppcms::json::value r;
 	if(protein_){
@@ -88,6 +94,9 @@ void ssv::seqType() {
 
 void ssv::rootName() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 
 	ret_json();
 	cppcms::json::value r;
@@ -95,27 +104,30 @@ void ssv::rootName() {
 	response().out() << r;
 }
 
-void ssv::showMinTree() {
-	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 
-}
 
 void ssv::mainPage() {
 	bib::scopedMessage run(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
+	if(debug_){
+		std::cerr << std::this_thread::get_id() << std::endl;
+	}
 	auto search = pages_.find("mainPageHtml");
 	response().out() << search->second.get("/ssv", rootName_);
 }
 
 
 int seqViewer(const bib::progutils::CmdArgs & inputCommands){
-	bibseq::seqSetUp setUp(inputCommands);
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	std::string name = "ssv";
-	std::string resourceDirName = "";
+	std::string resourceDirName = bib::files::make_path(seqServer_INSTALLDIR,
+			"etc/resources").string();
 	bool protein = false;
+	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
-	setUp.setOption(resourceDirName, "-resourceDirName", "Name of the resource Directory where the js and hmtl is located", true);
+	setUp.setOption(resourceDirName, "-resourceDirName",
+			"Name of the resource Directory where the js and hmtl is located",
+			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");

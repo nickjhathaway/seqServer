@@ -69,12 +69,12 @@ void tableViewer::getFilename(){
 
 void tableViewer::tableData(){
 	ret_json();
-	response().out() << tableToJsonRowWise(originalTable_, originalTable_.columnNames_[0], VecStr{}, VecStr{});
+	response().out() << tableToJsonByRow(originalTable_, originalTable_.columnNames_[0]);
 }
 
 void tableViewer::updatedTableData(){
 	ret_json();
-	response().out() << tableToJsonRowWise(updatedTable_, updatedTable_.columnNames_[0], VecStr{}, VecStr{});
+	response().out() << tableToJsonByRow(updatedTable_, updatedTable_.columnNames_[0]);
 }
 
 void tableViewer::updateTable(){

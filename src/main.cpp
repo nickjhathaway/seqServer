@@ -28,16 +28,14 @@ class serverRunner : public bib::progutils::programRunner {
 
 };
 
+
 serverRunner::serverRunner()
     : bib::progutils::programRunner(
-          {addFunc("seqViewer", bibseq::seqViewer, false),
+    		std::map<std::string, funcInfo>{addFunc("seqViewer", bibseq::seqViewer, false),
 					 addFunc("tableViewer", bibseq::tableViewerMain, false),
 					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false)
            },
-          "serverRunner") {}
-
-
-
+          "serverRunner", "1", "4", "0") {}
 
 int main(int argc, char** argv){
 	try{

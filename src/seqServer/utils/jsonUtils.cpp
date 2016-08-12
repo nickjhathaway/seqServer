@@ -28,10 +28,10 @@
 #include "jsonUtils.hpp"
 
 namespace bibseq {
-cppcms::json::value dotToJson(const std::string& dotFilename) {
+Json::Value dotToJson(const std::string& dotFilename) {
 	std::ifstream dot(dotFilename);
 	std::unordered_map<std::string, uint32_t> nameIndex;
-	cppcms::json::value graph;
+	Json::Value graph;
 	auto& nodes = graph["nodes"];
 	auto& links = graph["links"];
 	uint32_t nodeCount = 0;
@@ -60,7 +60,7 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 					}
 					for (const auto &at : attrs) {
 						if (at.first == "color") {
-							links[linkCount]["color"] = replaceString(
+							links[linkCount]["color"] = bib::replaceString(
 									trimEndWhiteSpaceReturn(at.second), "\"", "");
 						}
 					}
@@ -83,7 +83,7 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 					}
 					for (const auto &at : attrs) {
 						if (at.first == "fillcolor") {
-							nodes[nodeCount]["color"] = replaceString(
+							nodes[nodeCount]["color"] = bib::replaceString(
 									trimEndWhiteSpaceReturn(at.second), "\"", "");
 						} else if (at.first == "width") {
 							nodes[nodeCount]["size"] = bib::lexical_cast<double, std::string>(
@@ -105,49 +105,66 @@ cppcms::json::value dotToJson(const std::string& dotFilename) {
 	return graph;
 }
 
-cppcms::json::value tableToJsonRowWise(const bibseq::table & tab,
-		const std::string mainColName, const VecStr & hideOnStartColNames,
+Json::Value tableToJsonByRow(const bibseq::table & tab,
+		const std::string mainColName, const VecStr & initialVisibleColumns,
 		const VecStr & excludeFromNum) {
-	cppcms::json::value ret;
-	auto & outTab = ret["tab"];
-	std::unordered_map<uint32_t, bool> numCheck;
-	bibseq::VecStr numericCols;
-	for (const auto & colPos : iter::range(tab.columnNames_.size())) {
-		numCheck[colPos] = bibseq::isVecOfDoubleStr(tab.getColumn(colPos));
-		if (numCheck[colPos]) {
-			if (!bib::in(tab.columnNames_[colPos], excludeFromNum)) {
-				numericCols.emplace_back(tab.columnNames_[colPos]);
+	Json::Value ret;
+	VecStr numericCols;
+	if(tab.empty()){
+		ret["tab"] = Json::arrayValue;
+		ret["numericColNames"] = Json::arrayValue;
+	}else{
+		auto & outTab = ret["tab"];
+		std::unordered_map<uint32_t, bool> numCheck;
+		for (const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())) {
+			numCheck[colPos] = bibseq::isVecOfDoubleStr(tab.getColumn(colPos));
+			if (numCheck[colPos]) {
+				if (!bib::in(tab.columnNames_[colPos], excludeFromNum)) {
+					numericCols.emplace_back(tab.columnNames_[colPos]);
+				}
 			}
 		}
+
+		for (const auto & rowPos : iter::range<uint32_t>(tab.content_.size())) {
+			for (const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())) {
+				if (numCheck[colPos]) {
+					outTab[rowPos][tab.columnNames_[colPos]] = bib::lexical_cast<double>(
+							tab.content_[rowPos][colPos]);
+				} else {
+					outTab[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];
+				}
+			}
+		}
+		ret["numericColNames"] = bib::json::toJson(numericCols);
 	}
 
-	for (const auto & rowPos : iter::range(tab.content_.size())) {
-		for (const auto & colPos : iter::range(tab.columnNames_.size())) {
-			if (numCheck[colPos]) {
-				outTab[rowPos][tab.columnNames_[colPos]] = bib::lexical_cast<double>(
-						tab.content_[rowPos][colPos]);
-			} else {
-				outTab[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];
-			}
-		}
-	}
-	ret["columnNames"] = tab.columnNames_;
-	ret["numericColNames"] = numericCols;
+	ret["columnNames"] = bib::json::toJson(tab.columnNames_);
+
 
 	/**@todo hide checks for presence of actual names for mainColName and hideOnSTartColNames*/
 	ret["mainColName"] = mainColName;
-	ret["hideOnStartColNames"] = hideOnStartColNames;
+
+	VecStr hideOnStartColNames;
+	if(!initialVisibleColumns.empty()){
+		for(const auto & col : tab.columnNames_){
+			if(!bib::in(col, initialVisibleColumns)){
+				hideOnStartColNames.emplace_back(col);
+			}
+		}
+	}
+	ret["initialVisibleColumns"] = bib::json::toJson(initialVisibleColumns);
+	ret["hideOnStartColNames"] = bib::json::toJson(hideOnStartColNames);
 	return ret;
 }
 
-cppcms::json::value tableToJsonColumnWise(const bibseq::table & tab){
-	cppcms::json::value ret;
+Json::Value tableToJsonColumnWise(const bibseq::table & tab){
+	Json::Value ret;
 	std::unordered_map<uint32_t, bool> numCheck;
-	for(const auto & colPos : iter::range(tab.columnNames_.size())){
+	for(const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())){
 		if(bibseq::isVecOfDoubleStr(tab.getColumn(colPos))){
-			ret[tab.columnNames_[colPos]] = bib::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos));
+			ret[tab.columnNames_[colPos]] = bib::json::toJson(bib::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos)));
 		}else{
-			ret[tab.columnNames_[colPos]] = tab.getColumn(colPos);
+			ret[tab.columnNames_[colPos]] = bib::json::toJson(tab.getColumn(colPos));
 		}
 	}
 	return ret;
