@@ -1,13 +1,13 @@
 seqServer
 ================
-Version 1.3.3
+Version 1.4.0
 
 several content managers for serving up the results procuded by sequenceTools 
 
 #Installing
 
 
-requires clang-3.6 or gcc-5
+requires clang-3.8 or gcc-5
 
 ```bash
 git clone https://github.com/nickjhathaway/seqServer.git
