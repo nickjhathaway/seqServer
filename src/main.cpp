@@ -35,7 +35,7 @@ serverRunner::serverRunner()
 					 addFunc("tableViewer", bibseq::tableViewerMain, false),
 					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false)
            },
-          "serverRunner", "1", "4", "0") {}
+          "serverRunner", "1", "4", "0-dev") {}
 
 int main(int argc, char** argv){
 	try{
