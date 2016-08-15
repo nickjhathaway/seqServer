@@ -41,8 +41,6 @@
 
 namespace bibseq {
 
-
-
 class seqApp: public cppcms::application {
 protected:
 	/**@b dispatch root page
@@ -58,7 +56,8 @@ protected:
 	 * @param func The func to activate for n, func should take no aruments
 	 * @param n The name to call from root to activate func
 	 */
-	template<typename C, typename T> void dispMap(T func,C* classCaller, std::string n) {
+	template<typename C, typename T> void dispMap(T func, C* classCaller,
+			std::string n) {
 		dispatcher().assign("/" + n, func, classCaller);
 		mapper().assign(n, "/" + n);
 	}
@@ -68,7 +67,8 @@ protected:
 	 * @param n The name to dispatch under
 	 * @param r The argument to take
 	 */
-	template<typename C, typename T> void dispMap_1arg(T func,C* classCaller, std::string n, std::string r) {
+	template<typename C, typename T> void dispMap_1arg(T func, C* classCaller,
+			std::string n, std::string r) {
 		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1);
 		mapper().assign(n, "/" + n + "/{1}");
 	}
@@ -78,7 +78,8 @@ protected:
 	 * @param n The name of the command under root
 	 * @param r the arguments separated by one / , eg. arg1/arg2
 	 */
-	template<typename C, typename T> void dispMap_2arg(T func,C* classCaller, std::string n, std::string r) {
+	template<typename C, typename T> void dispMap_2arg(T func, C* classCaller,
+			std::string n, std::string r) {
 		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2);
 		mapper().assign(n, "/" + n + "/{1}/{2}");
 	}
@@ -89,7 +90,8 @@ protected:
 	 * @param n The name of the command under root
 	 * @param r the arguments separated by one / , eg. arg1/arg2
 	 */
-	template<typename C, typename T> void dispMap_3arg(T func,C* classCaller, std::string n, std::string r) {
+	template<typename C, typename T> void dispMap_3arg(T func, C* classCaller,
+			std::string n, std::string r) {
 		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2, 3);
 		mapper().assign(n, "/" + n + "/{1}/{2}/{3}");
 	}
@@ -100,8 +102,9 @@ protected:
 	 * @param n The name of the command under root
 	 * @param r the arguments separated by one / , eg. arg1/arg2
 	 */
-	template<typename C, typename T> void dispMap_4arg(T func,C* classCaller, std::string n, std::string r) {
-		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2, 3,4);
+	template<typename C, typename T> void dispMap_4arg(T func, C* classCaller,
+			std::string n, std::string r) {
+		dispatcher().assign("/" + n + "/" + r, func, classCaller, 1, 2, 3, 4);
 		mapper().assign(n, "/" + n + "/{1}/{2}/{3}/{4}");
 	}
 
@@ -111,7 +114,8 @@ protected:
 	 * @param n The name to dispatch under
 	 * @param r The argument to take
 	 */
-	template<typename C, typename T> void dispMap_1word(T func,C* classCaller, std::string n) {
+	template<typename C, typename T> void dispMap_1word(T func, C* classCaller,
+			std::string n) {
 		dispatcher().assign("/" + n + "/" + wordWithDash_, func, classCaller, 1);
 		mapper().assign(n, "/" + n + "/{1}");
 	}
@@ -121,7 +125,8 @@ protected:
 	 * @param n The name of the command under root
 	 * @param r the arguments separated by one / , eg. arg1/arg2
 	 */
-	template<typename C, typename T> void dispMap_2word(T func,C* classCaller, std::string n) {
+	template<typename C, typename T> void dispMap_2word(T func, C* classCaller,
+			std::string n) {
 		dispatcher().assign("/" + n + "/" + twoWordArgs_, func, classCaller, 1, 2);
 		mapper().assign(n, "/" + n + "/{1}/{2}");
 	}
@@ -132,8 +137,10 @@ protected:
 	 * @param n The name of the command under root
 	 * @param r the arguments separated by one / , eg. arg1/arg2
 	 */
-	template<typename C, typename T> void dispMap_3word(T func,C* classCaller, std::string n) {
-		dispatcher().assign("/" + n + "/" + threeWordArgs_, func, classCaller, 1, 2, 3);
+	template<typename C, typename T> void dispMap_3word(T func, C* classCaller,
+			std::string n) {
+		dispatcher().assign("/" + n + "/" + threeWordArgs_, func, classCaller, 1, 2,
+				3);
 		mapper().assign(n, "/" + n + "/{1}/{2}/{3}");
 	}
 
@@ -143,8 +150,10 @@ protected:
 	 * @param n The name of the command under root
 	 * @param r the arguments separated by one / , eg. arg1/arg2
 	 */
-	template<typename C, typename T> void dispMap_4word(T func,C* classCaller, std::string n) {
-		dispatcher().assign("/" + n + "/" + fourWordArgs_, func, classCaller, 1, 2, 3,4);
+	template<typename C, typename T> void dispMap_4word(T func, C* classCaller,
+			std::string n) {
+		dispatcher().assign("/" + n + "/" + fourWordArgs_, func, classCaller, 1, 2,
+				3, 4);
 		mapper().assign(n, "/" + n + "/{1}/{2}/{3}/{4}");
 	}
 
@@ -181,7 +190,6 @@ protected:
 	const std::string threeWordArgs_ = "([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)";
 	const std::string fourWordArgs_ =  "([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)/([A-Za-z0-9\\-\\_\\.]+)";
 
-
 public:
 	seqApp(cppcms::service& srv, std::map<std::string, std::string> config);
 
@@ -190,7 +198,7 @@ public:
 	bool debug_ = false;
 	virtual ~seqApp();
 
-	virtual VecStr requiredOptions()const;
+	virtual VecStr requiredOptions() const;
 
 	/**@b Test config map, should contain at least name, js, and css and additonal checks can be added
 	 *
@@ -198,8 +206,8 @@ public:
 	 * @param additionalChecks Any additional checks that need to be search for
 	 * @return Whether config passes
 	 */
-	static bool configTest(const MapStrStr & config,
-			const VecStr & checks, const std::string nameOfClass);
+	static bool configTest(const MapStrStr & config, const VecStr & checks,
+			const std::string nameOfClass);
 
 	void jsLibs();
 	void jsOwn();
@@ -211,7 +219,6 @@ public:
 	void removeGaps();
 	void complementSeqs();
 	void translateToProtein();
-	void minTreeData();
 	void minTreeDataDetailed();
 
 	void addPages(const bfs::path & dir);
@@ -222,5 +229,4 @@ public:
 };
 
 } /* namespace bibseq */
-
 

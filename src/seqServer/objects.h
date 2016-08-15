@@ -27,4 +27,5 @@
  */
 
 #include "seqServer/objects/seqCache.hpp"
+#include "seqServer/objects/SeqToJsonFactory.hpp"
 

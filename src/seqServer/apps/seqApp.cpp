@@ -49,8 +49,8 @@ bool seqApp::configTest(const MapStrStr & config,
 	return passed;
 }
 
-VecStr seqApp::requiredOptions()const{
-	return VecStr{"js", "css", "name"};
+VecStr seqApp::requiredOptions() const {
+	return VecStr { "js", "css", "name" };
 }
 
 seqApp::seqApp(cppcms::service& srv, std::map<std::string, std::string> config) :
@@ -74,7 +74,6 @@ seqApp::seqApp(cppcms::service& srv, std::map<std::string, std::string> config) 
 	dispMap(&seqApp::removeGaps,this, "removeGaps");
 	dispMap(&seqApp::complementSeqs,this, "complement");
 	dispMap(&seqApp::translateToProtein,this, "translate");
-	dispMap(&seqApp::minTreeData,this, "minTreeData");
 	dispMap(&seqApp::minTreeDataDetailed,this, "minTreeDataDetailed");
 
 	//general information
@@ -86,7 +85,7 @@ seqApp::seqApp(cppcms::service& srv, std::map<std::string, std::string> config) 
 }
 
 seqApp::~seqApp() {
-
+	seqs_ = nullptr;
 }
 
 
@@ -202,8 +201,7 @@ void seqApp::sort(std::string sortBy){
 			if(selected.empty()){
 				ret = seqs_->sort(uid, sortBy);
 			}else{
-				/**@todo implement sort only on selected seqs */
-				ret = seqs_->sort(uid, sortBy);
+				ret = seqs_->sort(uid, selected, sortBy);
 				ret["selected"] = bib::json::toJson(selected);
 			}
 			ret["uid"] = uid;
@@ -330,35 +328,6 @@ void seqApp::translateToProtein(){
 				ret["selected"] = bib::json::toJson(std::vector<uint32_t>{});
 			}
 			ret["uid"] = uid + "_protein";
-			response().out() << ret;
-		}else{
-			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
-		}
-	}else{
-		std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
-	}
-}
-
-void seqApp::minTreeData(){
-	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
-	if(debug_){
-		std::cerr << "thread_id: " << std::this_thread::get_id() << std::endl;
-	}
-	auto postData = request().post();
-	std::vector<uint32_t> selected = parseForSelected(postData);
-  auto postJson = bib::json::toJson(postData);
-  std::string uid = postJson["uid"].asString();
-	if(seqs_->containsRecord(uid)){
-		if(seqs_->recordValid(uid)){
-			ret_json();
-			Json::Value ret;
-			if(selected.empty()){
-				ret = seqs_->minTreeData(uid);
-			}else{
-				ret = seqs_->minTreeData(uid, selected);
-				ret["selected"] = bib::json::toJson(selected);
-			}
-			ret["uid"] = uid;
 			response().out() << ret;
 		}else{
 			std::cerr << "uid: " << uid << " is not currently valid" << std::endl;

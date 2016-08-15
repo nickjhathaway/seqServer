@@ -134,14 +134,23 @@ njhSampleChart.prototype.draw = function(){
 	}
 
 	for(pos in this.masterData["tab"]){
-		var actualPos = this.masterData["tab"].length - 1 - pos;
 		var temp = {};
 		for (sPos in self.hoverCols){
-			temp[self.hoverCols[sPos]] = this.masterData["tab"][actualPos][self.hoverCols[sPos]];
+			temp[self.hoverCols[sPos]] = self.masterData["tab"][pos][self.hoverCols[sPos]];
 		}
-		sampleMax[this.masterData["tab"][pos][self.xCol]] = sampleMax[this.masterData["tab"][pos][self.xCol]] + this.masterData["tab"][pos][self.yCol];
-		temp["color"] = this.color(this.masterData["tab"][actualPos][self.colorBy]);
-		samplePopNames[this.masterData["tab"][actualPos][self.xCol]].push(temp);
+		sampleMax[self.masterData["tab"][pos][self.xCol]] = sampleMax[self.masterData["tab"][pos][self.xCol]] + self.masterData["tab"][pos][self.yCol];
+		temp["color"] = self.color(self.masterData["tab"][pos][self.colorBy]);
+		samplePopNames[self.masterData["tab"][pos][self.xCol]].push(temp);
+		/*
+		var actualPos = self.masterData["tab"].length - 1 - pos;
+		var temp = {};
+		for (sPos in self.hoverCols){
+			temp[self.hoverCols[sPos]] = self.masterData["tab"][actualPos][self.hoverCols[sPos]];
+		}
+		sampleMax[self.masterData["tab"][pos][self.xCol]] = sampleMax[self.masterData["tab"][pos][self.xCol]] + self.masterData["tab"][pos][self.yCol];
+		temp["color"] = self.color(self.masterData["tab"][actualPos][self.colorBy]);
+		samplePopNames[self.masterData["tab"][actualPos][self.xCol]].push(temp);
+		*/
 	}
 	var yMax = 0;
 	for(sPos in samplePopNames){
@@ -344,6 +353,14 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 		}
 
 		for(pos in self.masterData["tab"]){
+			var temp = {};
+			for (sPos in self.hoverCols){
+				temp[self.hoverCols[sPos]] = self.masterData["tab"][pos][self.hoverCols[sPos]];
+			}
+			sampleMax[self.masterData["tab"][pos][self.xCol]] = sampleMax[self.masterData["tab"][pos][self.xCol]] + self.masterData["tab"][pos][self.yCol];
+			temp["color"] = self.color(self.masterData["tab"][pos][self.colorBy]);
+			samplePopNames[self.masterData["tab"][pos][self.xCol]].push(temp);
+			/*
 			var actualPos = self.masterData["tab"].length - 1 - pos;
 			var temp = {};
 			for (sPos in self.hoverCols){
@@ -352,6 +369,7 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 			sampleMax[self.masterData["tab"][pos][self.xCol]] = sampleMax[self.masterData["tab"][pos][self.xCol]] + self.masterData["tab"][pos][self.yCol];
 			temp["color"] = self.color(self.masterData["tab"][actualPos][self.colorBy]);
 			samplePopNames[self.masterData["tab"][actualPos][self.xCol]].push(temp);
+			*/
 		}
 	
 		//create new bars as needed

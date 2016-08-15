@@ -31,11 +31,12 @@ class serverRunner : public bib::progutils::programRunner {
 
 serverRunner::serverRunner()
     : bib::progutils::programRunner(
-    		std::map<std::string, funcInfo>{addFunc("seqViewer", bibseq::seqViewer, false),
+    		std::map<std::string, funcInfo>{
+					 addFunc("seqViewer", bibseq::seqViewer, false),
 					 addFunc("tableViewer", bibseq::tableViewerMain, false),
 					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false)
            },
-          "serverRunner", "1", "4", "0-dev") {}
+          "serverRunner", "1", "4", "1-dev") {}
 
 int main(int argc, char** argv){
 	try{

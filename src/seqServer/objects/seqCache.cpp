@@ -26,63 +26,67 @@
  */
 
 #include "seqCache.hpp"
+#include "seqServer/objects/SeqToJsonFactory.hpp"
+
 
 namespace bibseq {
 
 
 
 Json::Value seqCache::getJson(const std::string & uid){
-	return seqToJsonFactory::seqsToJson(getRef((cache_.at(uid).reads_)), uid);
+	return SeqToJsonFactory::seqsToJson(getRef((cache_.at(uid).reads_)), uid);
 }
 
 Json::Value seqCache::sort(const std::string & uid, const std::string & sortOption){
-	return seqToJsonFactory::sort(getRef((cache_.at(uid).reads_)), sortOption, uid);
+	return SeqToJsonFactory::sort(getRef((cache_.at(uid).reads_)), sortOption, uid);
 }
 
 Json::Value seqCache::muscle(const std::string & uid){
-	return seqToJsonFactory::muscle(getRef((cache_.at(uid).reads_)), uid);
+	return SeqToJsonFactory::muscle(getRef((cache_.at(uid).reads_)), uid);
 }
 
 Json::Value seqCache::removeGaps(const std::string & uid){
-	return seqToJsonFactory::removeGaps(getRef((cache_.at(uid).reads_)), uid);
+	return SeqToJsonFactory::removeGaps(getRef((cache_.at(uid).reads_)), uid);
 }
 
 Json::Value seqCache::rComplement(const std::string & uid){
-	return seqToJsonFactory::rComplement(getRef((cache_.at(uid).reads_)), uid);
-}
-
-Json::Value seqCache::minTreeData(const std::string & uid){
-	return seqToJsonFactory::minTreeData(getRef((cache_.at(uid).reads_)), uid);
-}
-
-Json::Value seqCache::minTreeData(const std::string & uid, const std::vector<uint32_t> & positions){
-	return seqToJsonFactory::minTreeData(getRef((cache_.at(uid).reads_)),positions, uid);
+	return SeqToJsonFactory::rComplement(getRef((cache_.at(uid).reads_)), uid);
 }
 
 Json::Value seqCache::minTreeDataDetailed(const std::string & uid, uint32_t numDiff){
-	return seqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).reads_)), uid, numDiff);
+	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).reads_)), uid, numDiff);
 }
 
 Json::Value seqCache::minTreeDataDetailed(const std::string & uid, const std::vector<uint32_t> & positions, uint32_t numDiff){
-	return seqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).reads_)),positions, uid, numDiff);
+	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).reads_)),positions, uid, numDiff);
+}
+
+Json::Value seqCache::sort(const std::string & uid,
+		const std::vector<uint32_t> & positions, const std::string & sortOption) {
+	return SeqToJsonFactory::sort(getRef((cache_.at(uid).reads_)), sortOption,
+			positions, uid);
 }
 
 Json::Value seqCache::muscle(const std::string & uid,const std::vector<uint32_t> & positions){
-	return seqToJsonFactory::muscle(getRef((cache_.at(uid).reads_)), positions, uid);
+	return SeqToJsonFactory::muscle(getRef((cache_.at(uid).reads_)), positions, uid);
 }
+
 Json::Value seqCache::removeGaps(const std::string & uid, const std::vector<uint32_t> & positions){
-	return seqToJsonFactory::removeGaps(getRef((cache_.at(uid).reads_)), positions, uid);
+	return SeqToJsonFactory::removeGaps(getRef((cache_.at(uid).reads_)), positions, uid);
 }
+
 Json::Value seqCache::rComplement(const std::string & uid, const std::vector<uint32_t> & positions){
-	return seqToJsonFactory::rComplement(getRef((cache_.at(uid).reads_)), positions, uid);
+	return SeqToJsonFactory::rComplement(getRef((cache_.at(uid).reads_)), positions, uid);
 }
+
 Json::Value seqCache::getJson(const std::string & uid, const std::vector<uint32_t> & positions){
-	return seqToJsonFactory::seqsToJson(getRef((cache_.at(uid).reads_)), positions, uid);
+	return SeqToJsonFactory::seqsToJson(getRef((cache_.at(uid).reads_)), positions, uid);
 }
+
 Json::Value seqCache::translate(const std::string & uid,
 		const std::vector<uint32_t> & positions, bool complement, bool reverse,
 		uint64_t start){
-	auto ret = seqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), positions, uid, complement, reverse, start);
+	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), positions, uid, complement, reverse, start);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
 	for(const auto & j : ret["seqs"]){
 		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
@@ -92,9 +96,10 @@ Json::Value seqCache::translate(const std::string & uid,
 	updateAddCache(uid + "_protein", proteins);
 	return ret;
 }
+
 Json::Value seqCache::translate(const std::string & uid, bool complement,
 		bool reverse, uint64_t start){
-	auto ret = seqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), uid, complement, reverse, start);
+	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), uid, complement, reverse, start);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
 	for(const auto & j : ret["seqs"]){
 		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
