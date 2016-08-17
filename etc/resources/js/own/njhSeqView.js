@@ -175,6 +175,129 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	    //console.log(tWidth);
 	    seqContext.fillText(logInfo,this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2  + this.ch/2 );
    };
+   
+	function SeqPainterSvg(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors){
+		this.needToPaint = true;
+		this.cw = cellWidth;
+		this.ch = cellHeight;
+		this.nSeqs = numOfSeqs;
+		this.nBases = numOfBases;
+		this.bColors = baseColors;
+		this.nameOffSet = nameOffSet;
+	}
+	
+	SeqPainterSvg.prototype.inialize = function(mainSvgId){
+		var self = this;
+		d3.select(mainSvgId)
+			.selectAll(".nameRects")
+			.data(_.range(0, this.nSeqs))
+			.enter()
+				.append("rect")
+					.attr("class", "nameRects")
+					.attr("width", this.nameOffSet)
+					.attr("height", this.ch)
+					.attr("x", 0)
+					.attr("y", function(d){return d * self.ch})
+					.attr("fill", "#EEEEEE")
+	};
+	
+	//draw given seq
+	SeqPainterSvg.prototype.paintSeq = function(seqContext, index, seq, start){
+    	seqContext.textAlign = "center";
+    	seqContext.textBaseline = "middle";
+    	seqContext.font = "bold 15px Arial, sans-serif";
+    	for(var wi = start; wi - start < this.nBases; wi++){
+            if(wi < seq.length){
+            	seqContext.fillStyle = this.bColors[seq[wi]];
+            	seqContext.fillRect((wi - start) * this.cw + this.nameOffSet, index*this.ch, this.cw, this.ch);
+            	seqContext.fillStyle = "#000000";
+	        	seqContext.fillText(seq[wi], (wi -start)*this.cw + this.cw/2.0 + this.nameOffSet, index*this.ch + this.ch/2.0);
+            }else{
+            	seqContext.strokeStyle = "#000000";
+    			seqContext.lineWidth   = 1;
+            	seqContext.fillStyle = "#EEEEEE";
+            	seqContext.fillRect((wi -start) * this.cw + this.nameOffSet, index*this.ch, this.cw, this.ch);
+            	seqContext.strokeRect((wi -start) * this.cw + this.nameOffSet, index*this.ch, this.cw, this.ch);
+            }
+        }
+	};
+	
+	//draw all necessary seqs
+	SeqPainterSvg.prototype.paintSeqs = function(seqContext, seqData, sStart, bStart){
+    	if(this.needToPaint){
+    		//console.log("painting");
+    		//box around seqs
+    		seqContext.strokeStyle = "#000000";
+			seqContext.lineWidth   = 1;
+	    	seqContext.strokeRect(this.nameOffSet, 0,this.cw * this.nBases,
+	    		 Math.min(this.ch * this.nSeqs,this.ch * seqData.length ));
+	    	//write names
+	    	seqContext.textAlign = "left";
+	    	seqContext.textBaseline = "middle";
+	    	seqContext.font = "bold 15px Arial, sans-serif";
+	        seqContext.strokeStyle = "#000000";
+			seqContext.lineWidth   = 1;
+	    	for(var hi = sStart;( hi -sStart < this.nSeqs ) && (hi < seqData.length); hi++){
+	    		//console.log(hi);
+	    		//console.log(this.nSeqs);
+	    		seqContext.fillStyle = "#EEEEEE";
+		    	seqContext.fillRect(0, (hi - sStart)*this.ch, this.nameOffSet, this.ch);
+		    	seqContext.strokeRect(0, (hi - sStart)*this.ch, this.nameOffSet, this.ch);
+		    	seqContext.fillStyle = "#000000";
+				seqContext.fillText(seqData[hi]["name"], 2, (hi - sStart)*this.ch + this.ch/2.0);
+	    	}	    	
+	    	for(var hi = sStart;( hi -sStart < this.nSeqs ) && (hi < seqData.length) ; hi++){
+	    		this.paintSeq(seqContext, hi - sStart,
+	    		 seqData[hi]["seq"], bStart);
+	    	}
+	    	this.needToPaint = false;
+	    	//console.log("end-painting");
+    	}
+	};
+	
+	//paint seq position
+	SeqPainterSvg.prototype.placeBasePos = function(seqContext, sStart, bStart){
+    	seqContext.textAlign = "center";
+    	seqContext.textBaseline = "middle";
+    	seqContext.fillStyle = "#EEEEEE";
+	    seqContext.fillRect(this.nameOffSet - this.cw, (this.nSeqs)*this.ch + 2 , this.cw * 2, this.ch);
+	    seqContext.fillRect(this.nameOffSet - this.cw + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch + 2 , this.cw * 2, this.ch);
+	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, 0 , this.cw * 2, this.ch);
+	    seqContext.fillRect(this.nameOffSet + this.nBases * this.cw + 2, (this.nSeqs)*this.ch - this.ch , this.cw * 2, this.ch);
+	    seqContext.fillStyle = "#000000";
+    	seqContext.font = "bold 15px Arial, sans-serif";
+    	//number of bases
+      	seqContext.fillText(bStart, this.nameOffSet, (this.nSeqs)*this.ch +2 + this.ch/2.0);
+      	seqContext.fillText(bStart + this.nBases -1, this.nameOffSet + this.nBases * this.cw -this.cw, (this.nSeqs)*this.ch +2 + this.ch/2.0);
+   		//number of seqs
+      	seqContext.fillText(sStart, this.nameOffSet + this.nBases * this.cw + (2.5/4) * this.cw , this.ch/2.0  );
+   		seqContext.fillText(sStart + this.nSeqs - 1, this.nameOffSet + this.nBases * this.cw + (2.5/4) * this.cw, (this.nSeqs)*this.ch - this.ch+ this.ch/2.0  );
+   };
+   
+   SeqPainterSvg.prototype.paintSelectedSeq = function(seqContext, seq, currentBase){
+   		seqContext.font = "bold 15px Arial, sans-serif";
+   		seqContext.textAlign = "left";
+    	seqContext.textBaseline = "middle";
+   		var logInfo ="";
+   		if(currentBase < 0){
+   	   		logInfo = "name: " + 
+        	seq["name"];
+   		}else{
+   	   		logInfo = "name: " + 
+        	seq["name"]
+        	+ " base: "  + seq["seq"][currentBase] 
+        	+ " qual: " +  seq["qual"][currentBase]
+        	+ " pos: " + currentBase;
+   		}
+        var tWidth = seqContext.measureText(logInfo).width;
+        seqContext.fillStyle = "#FFFFFF";
+	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , this.nBases * this.cw - (3 *this.cw), this.ch);
+        seqContext.fillStyle = "#EEEEEE";
+	    seqContext.fillRect(this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2 , tWidth, this.ch);
+	    seqContext.fillStyle = "#000000";
+	    //console.log(tWidth);
+	    seqContext.fillText(logInfo,this.nameOffSet + this.cw + 2, (this.nSeqs)*this.ch + 2  + this.ch/2 );
+   };
 
 	function njhSeqView(viewName, seqData, cellWidth, cellHeight, baseColors,addQualChart, minTreeLink, protein){
 		//need to add style and html, currently just there
@@ -208,10 +331,17 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			.attr("class", "downFastaDiv")
 			.style("margin", "5px")
 			.style("float", "left");
+		if(!protein){
+			d3.select(viewName).append("div")
+				.attr("class", "downFastqDiv")
+				.style("margin", "5px")
+				.style("float", "left");
+		}
+
 		d3.select(viewName).append("div")
-		.attr("class", "deselectDiv")
-		.style("margin", "5px")
-		.style("float", "left");
+			.attr("class", "deselectDiv")
+			.style("margin", "5px")
+			.style("float", "left");
 		this.masterDivD3 = d3.select(viewName).append("div").attr("class", "SeqViewCanvasDiv");
 		this.masterDivD3.append("div").attr("class", "rightSlider");
 		this.masterDivD3.append("canvas").attr("class", "canvas");
@@ -224,12 +354,20 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		var self = this;
 		var linkButton = d3.select(this.topDivName + " .downFastaDiv")
 			.append("button")
-			.text("Download Fasta")
-			.attr("class", "fastaSaveButton btn btn-success");
+				.text("Download Fasta")
+				.attr("class", "fastaSaveButton btn btn-success");
+		var fastqLinkButton;
+		if(!protein){
+			fastqLinkButton = d3.select(this.topDivName + " .downFastqDiv")
+				.append("button")
+					.text("Download Fastq")
+					.attr("class", "fastqSaveButton btn btn-primary");
+		}
+
 		var deselectButton = d3.select(this.topDivName + " .deselectDiv")
 			.append("button")
-			.text("Un-select All")
-			.attr("class", "deselectAllBut btn btn-info");
+				.text("Un-select All")
+				.attr("class", "deselectAllBut btn btn-info");
 		deselectButton.on("click", function(){
 			self.selected.clear();
 			self.updateSelectors();
@@ -238,26 +376,56 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 				.attr("class", "fastaDownLink");
 		
 		linkButton.on("click", function(){
-				    var mainTable = [];
-				    //
-				    if (self.selected.size > 0){
-				    	var sels = setToArray(self.selected);
-					    for (i in sels) {
-					    	//console.log(sels[i]);
-							mainTable.push([">" + self.seqData["seqs"][sels[i]]["name"]]);
-							mainTable.push([self.seqData["seqs"][sels[i]]["seq"]]);
-						}
-				    }else{
-					    for (i = 0; i <self.seqData["seqs"].length ; i++) { 
-							mainTable.push([">" + self.seqData["seqs"][i]["name"]]);
-							mainTable.push([self.seqData["seqs"][i]["seq"]]);
-						}
-				    }
+		    var mainTable = [];
+		    //
+		    if (self.selected.size > 0){
+		    	var sels = setToArray(self.selected);
+			    for (i in sels) {
+			    	//console.log(sels[i]);
+					mainTable.push([">" + self.seqData["seqs"][sels[i]]["name"]]);
+					mainTable.push([self.seqData["seqs"][sels[i]]["seq"]]);
+				}
+		    }else{
+			    for (i = 0; i <self.seqData["seqs"].length ; i++) { 
+					mainTable.push([">" + self.seqData["seqs"][i]["name"]]);
+					mainTable.push([self.seqData["seqs"][i]["seq"]]);
+				}
+		    }
 
-				  	var fastaData = 'data:text/plain;base64,'+ btoa(d3.tsv.format(mainTable));
-				  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
-				  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
-				});
+		  	var fastaData = 'data:text/plain;base64,'+ btoa(d3.tsv.format(mainTable));
+		  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
+		  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
+		});
+		if(!protein){
+			fastqLinkButton.append("a")
+				.attr("class", "fastqDownLink");
+	
+			fastqLinkButton.on("click", function(){
+			    var mainTable = [];
+			    //
+			    if (self.selected.size > 0){
+			    	var sels = setToArray(self.selected);
+				    for (i in sels) {
+				    	//console.log(sels[i]);
+						mainTable.push(["@" + self.seqData["seqs"][sels[i]]["name"]]);
+						mainTable.push([self.seqData["seqs"][sels[i]]["seq"]]);
+						mainTable.push(["+"]);
+						mainTable.push([self.seqData["seqs"][sels[i]]["qual"].map(function(q){return String.fromCharCode(33 + q);}).join("")]);
+					}
+			    }else{
+				    for (i = 0; i <self.seqData["seqs"].length ; i++) { 
+						mainTable.push(["@" + self.seqData["seqs"][i]["name"]]);
+						mainTable.push([self.seqData["seqs"][i]["seq"]]);
+						mainTable.push(["+"]);
+						mainTable.push([self.seqData["seqs"][i]["qual"].map(function(q){return String.fromCharCode(33 + q);}).join("")]);
+					}
+			    }
+			  	var fastqData = 'data:text/plain;base64,'+ btoa(d3.tsv.format(mainTable));
+			  	fastqLinkButton.select(".fastqDownLink").attr("download", self.seqData["uid"] + ".fastq");
+			  	fastqLinkButton.select(".fastqDownLink").attr("href", fastqData).node().click();
+			});
+		}
+
 		//this.masterDiv = document.getElementById(viewName);
 		this.masterDiv = this.masterDivD3.node();
 		
@@ -276,12 +444,17 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.currentBase = 0;
 		// set up of sizes
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
-		$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
+		$(this.masterDiv).height((window.innerHeight - 60) * 0.98 * 2);
 		this.canvas.width = $(this.masterDiv).width() * 0.98;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		//make a mock canvas context using canvas2svg. We use a C2S namespace for less typing:
 		//this.ctx = new C2S(this.canvas.width,this.canvas.height); //width, height of your desired svg file
-
+		this.seqSvg = this.masterDivD3
+			.append("svg")
+				.attr("class", "NjhSeqViewerMainSvg")
+				.attr("width", $(this.masterDiv).width() * 0.98)
+				.attr("height", $(this.masterDiv).height() * 0.95)
+					.append("g");
         
 		var nameOffSet = 10 * cellWidth;
 		var numOfBases = Math.min(Math.floor((this.canvas.width - cellWidth - nameOffSet)/cellWidth),this.seqData["maxLen"] );
@@ -289,7 +462,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	 	//console.log(numOfSeqs);
 	 	//console.log(Math.floor((this.canvas.height - cellHeight)/cellHeight));
 	 	//console.log(this.seqData["seqs"].length);
-		this.painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
+		//this.painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
+		this.painter = new SeqPainterSvg(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
 		
 		if(addQualChart){
 			this.addedQualChart = true;
@@ -635,26 +809,10 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		    });
 		}	
 	};
-	
-	/*
-	 * <div id= "cutOffDiv">
-					<form id="fracCutOffForm" class="form-inline">
-						<label id= "fracCutOffLabel" for="fracCutOffInput" class="control-label"></label>
-						<div class = "input-group">
-							<input type='number' class="form-control" id = "fracCutOffInput" step="0.01" min="0" max = "100"/>
-							<div class="input-group-addon">%</div>
-						</div>
-						<button type="submit" class="btn btn-primary">Submit</button>
-					</form>
-				</div>
-	 */
+
 	njhSeqView.prototype.updateData = function(inputSeqData){
 		this.seqData = inputSeqData;
 		this.uid = inputSeqData["uid"];
-		this.seqStart = 0;
-		this.baseStart = 0;
-		this.currentSeq = 0;
-		this.currentBase = 0;
 		this.painter.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch), this.seqData["seqs"].length);
 		this.painter.needToPaint = true;
 		this.needToPaint = true;
@@ -662,6 +820,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.setUpSliders();
 		this.paint();
 	};
+	
+	njhSeqView.prototype.resetSelection = function(){
+		this.seqStart = 0;
+		this.baseStart = 0;
+		this.currentSeq = 0;
+		this.currentBase = 0;
+	}
+	
+
+	
 	njhSeqView.prototype.setUp = function(){
 		this.setUpCanvas();
 		this.setUpSliders();
@@ -689,7 +857,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		var changingWidth = (window.innerWidth - 10) * 0.98;
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
 		var maxPossHeight = this.painter.ch * (this.seqData["seqs"].length + 4);
-		$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
+		$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight) * 2);
 		this.canvas.width = $(this.masterDiv).width() * 0.96;
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		if(changingHeight > this.canvas.height){

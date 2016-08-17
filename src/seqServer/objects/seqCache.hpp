@@ -43,14 +43,14 @@ public:
 		}
 		std::string uid_;
 		std::shared_ptr<std::vector<readObject>> reads_;
-
+		/*
 	private:
-		uint32_t blockSize_ = 10000;
-		uint32_t blockStart_ = 0;
+			uint32_t blockSize_ = 10000;
+			uint32_t blockStart_ = 0;
 	public:
 		void setBlockSize(const uint32_t blockSize) {
 			blockSize_ = blockSize;
-		}
+		}*/
 
 	};
 private:
