@@ -102,6 +102,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	
 	//draw all necessary seqs
 	SeqPainter.prototype.paintSeqs = function(seqContext, seqData, sStart, bStart){
+	console.log("old painter");
+	console.log(this.nSeqs);
     	if(this.needToPaint){
     		//console.log("painting");
     		//box around seqs
@@ -186,9 +188,9 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.nameOffSet = nameOffSet;
 	}
 	
-	SeqPainterSvg.prototype.inialize = function(mainSvgId){
+	SeqPainterSvg.prototype.initialize = function(mainSvg, seqData){
 		var self = this;
-		d3.select(mainSvgId)
+		/*mainSvg
 			.selectAll(".nameRects")
 			.data(_.range(0, this.nSeqs))
 			.enter()
@@ -199,6 +201,38 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 					.attr("x", 0)
 					.attr("y", function(d){return d * self.ch})
 					.attr("fill", "#EEEEEE")
+					.attr("stroke", "#000000")*/
+		//_.range(0, this.nSeqs)
+		console.log(seqData)
+		var seqRects = mainSvg
+			.selectAll(".seqRects")
+			.data(seqData["seqs"].slice(0, this.nSeqs - 1))
+			.enter()
+				.append("rect")
+					.attr("class", "seqRects")
+					.attr("width", this.nBases * this.cw + this.nameOffSet)
+					.attr("height", this.ch)
+					.attr("x", 0)
+					.attr("y", function(d, i){return i * self.ch})
+					.attr("fill", "#EEEEEE")
+					.attr("stroke", "#000000")
+		
+					/*
+					.selectAll(".baseRects");
+		
+					.data(_.range(0, this.nBases))
+					.enter()
+						.append("rect")
+							.attr("class", "baseRects")
+							.attr("width",  this.cw)
+							.attr("height", this.ch)
+							.attr("x", function(d){return d * self.cw + self.nameOffSet})
+							.attr("y", function(d){ 
+								console.log(d3.select(this.parentNode));
+								console.log(d3.select(this.parentNode).datum());
+								return d3.select(this.parentNode).datum() * self.ch;})
+							.attr("fill", "#EEEEEE")
+							.attr("stroke", "#000000")*/
 	};
 	
 	//draw given seq
@@ -449,11 +483,12 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.canvas.height = $(this.masterDiv).height() * 0.95;
 		//make a mock canvas context using canvas2svg. We use a C2S namespace for less typing:
 		//this.ctx = new C2S(this.canvas.width,this.canvas.height); //width, height of your desired svg file
-		this.seqSvg = this.masterDivD3
+		this.seqSvgMaster = this.masterDivD3
 			.append("svg")
 				.attr("class", "NjhSeqViewerMainSvg")
 				.attr("width", $(this.masterDiv).width() * 0.98)
-				.attr("height", $(this.masterDiv).height() * 0.95)
+				.attr("height", this.canvas.height)
+		this.seqSvgG = this.seqSvgMaster
 					.append("g");
         
 		var nameOffSet = 10 * cellWidth;
@@ -463,7 +498,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	 	//console.log(Math.floor((this.canvas.height - cellHeight)/cellHeight));
 	 	//console.log(this.seqData["seqs"].length);
 		//this.painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
-		this.painter = new SeqPainterSvg(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
+		this.painter = new SeqPainter(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
+		this.painterSvg = new SeqPainterSvg(cellWidth, cellHeight, numOfSeqs, numOfBases, nameOffSet, baseColors);
 		
 		if(addQualChart){
 			this.addedQualChart = true;
@@ -814,6 +850,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		this.seqData = inputSeqData;
 		this.uid = inputSeqData["uid"];
 		this.painter.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch), this.seqData["seqs"].length);
+		this.painterSvg.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch), this.seqData["seqs"].length);
+
 		this.painter.needToPaint = true;
 		this.needToPaint = true;
 		this.updateCanvas();
@@ -840,16 +878,20 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	njhSeqView.prototype.updateSeqDims = function(){
 		this.painter.nBases = Math.min(Math.floor((this.canvas.width - this.painter.cw - this.painter.nameOffSet)/this.painter.cw),this.seqData["maxLen"] );
 		this.painter.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch), this.seqData["seqs"].length);
+		this.painterSvg.nBases = Math.min(Math.floor((this.canvas.width - this.painter.cw - this.painter.nameOffSet)/this.painter.cw),this.seqData["maxLen"] );
+		this.painterSvg.nSeqs = Math.min(Math.floor((this.canvas.height - this.painter.ch)/this.painter.ch), this.seqData["seqs"].length);
 	}
 	
 	njhSeqView.prototype.setUpCanvas = function(){
 		$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
 		var maxPossHeight = this.painter.ch * (this.seqData["seqs"].length + 4);
-		$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
+		$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight) * 2);
 		this.canvas.width = $(this.masterDiv).width() * 0.96;
-		this.canvas.height = $(this.masterDiv).height() * 0.95;
+		this.canvas.height = Math.min((window.innerHeight - 60) * 0.80, maxPossHeight) * 0.95;
+		this.seqSvgMaster.attr("height", this.canvas.height)
 		this.updateSeqDims();
 		this.updateSelectors();
+		this.painterSvg.initialize(this.seqSvgG, this.seqData);
 	};
 	
 	njhSeqView.prototype.updateCanvas = function(){
