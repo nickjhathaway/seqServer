@@ -33,8 +33,13 @@ namespace bibseq {
 ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
 		bibseq::seqApp(srv, config) {
 	configTest(config, requiredOptions(), "ssv");
-	pages_.emplace("mainPageHtml",
-			bib::files::make_path(config["resources"], "ssv/mainPage.html"));
+	if("true" == config["svg"]){
+		pages_.emplace("mainPageHtml",
+				bib::files::make_path(config["resources"], "ssvSvg/mainPage.html"));
+	}else{
+		pages_.emplace("mainPageHtml",
+				bib::files::make_path(config["resources"], "ssv/mainPage.html"));
+	}
 	rootName_ = config["name"];
 	debug_ = "true" == config["debug"];
 	protein_ = "true" == config["protein"];
@@ -123,8 +128,10 @@ int seqViewer(const bib::progutils::CmdArgs & inputCommands){
 	std::string resourceDirName = bib::files::make_path(seqServer_INSTALLDIR,
 			"etc/resources").string();
 	bool protein = false;
+	bool svg = false;
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
+	setUp.setOption(svg, "--svg", "Viewing svg viewer");
 	setUp.setOption(resourceDirName, "-resourceDirName",
 			"Name of the resource Directory where the js and hmtl is located",
 			!bfs::exists(resourceDirName));
@@ -147,6 +154,7 @@ int seqViewer(const bib::progutils::CmdArgs & inputCommands){
   appConfig["css"] = resourceDirName + "css/";
   appConfig["debug"] = bib::boolToStr(setUp.pars_.debug_);
   appConfig["protein"] = bib::boolToStr(protein);
+  appConfig["svg"] = bib::boolToStr(svg);
   std::cout << "localhost:"  << port << name << std::endl;
 	try {
 		cppcms::service app(config);
