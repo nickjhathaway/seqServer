@@ -29,15 +29,39 @@ public:
 class SeqAppRestbed {
 
 	void getDNAColorsHandler(
-			const std::shared_ptr<restbed::Session> session) const;
+			std::shared_ptr<restbed::Session> session) const;
 	void getProteinColorsHandler(
-			const std::shared_ptr<restbed::Session> session) const;
+			std::shared_ptr<restbed::Session> session) const;
+	void getColorsHandler(
+			std::shared_ptr<restbed::Session> session) const;
 
 	std::string root_;
 	bool debug_ = false;
+
+	void cssOwnHandler(std::shared_ptr<restbed::Session> session);
+	void cssLibsHandler(std::shared_ptr<restbed::Session> session);
+	void jsOwnHandler(std::shared_ptr<restbed::Session> session);
+	void jsLibsHandler(std::shared_ptr<restbed::Session> session);
+
+
+
+protected:
+	std::map<std::string, bib::files::FileCache> pages_;
+	std::map<std::string, bib::files::FilesCache> jsAndCss_;
+
+
 public:
 
-	SeqAppRestbed(const std::shared_ptr<restbed::Service> service, const Json::Value & config);
+	std::shared_ptr<restbed::Resource> cssOwn();
+	std::shared_ptr<restbed::Resource> cssLibs();
+	std::shared_ptr<restbed::Resource> jsOwn();
+	std::shared_ptr<restbed::Resource> jsLibs();
+
+	std::shared_ptr<restbed::Resource> getDNAColors() const;
+	std::shared_ptr<restbed::Resource> getProteinColors() const;
+	std::shared_ptr<restbed::Resource> getColors() const;
+
+	SeqAppRestbed(const Json::Value & config);
 
 
 	std::shared_ptr<restbed::Service> service_;
@@ -49,9 +73,14 @@ public:
 
 	void checkConfigThrow() const;
 
-	std::map<std::string, bib::files::FileCache> pages_;
+	std::vector<std::shared_ptr<restbed::Resource>> getAllResources();
 
-	std::map<std::string, bib::files::FilesCache> jsAndCss_;
+
+	void addPages(const bfs::path & dir);
+
+	std::string messStrFactory(const std::string & funcName);
+	std::string messStrFactory(const std::string & funcName,
+			const MapStrStr & args);
 
 };
 

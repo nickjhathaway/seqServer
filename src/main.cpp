@@ -34,8 +34,9 @@ serverRunner::serverRunner()
     		std::map<std::string, funcInfo>{
 					 addFunc("seqViewer", bibseq::seqViewer, false),
 					 addFunc("tableViewer", bibseq::tableViewerMain, false),
-					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false)
-           },
+					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false),
+					 addFunc("seqViewerRestbed", bibseq::seqViewerRestbed, false)
+           },//
           "serverRunner", "1", "4", "1-dev") {}
 
 int main(int argc, char** argv){

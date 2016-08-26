@@ -7,7 +7,7 @@
  */
 
 
-#include "seqServer/apps/SeqAppRestBed.hpp"
+#include "seqServer/apps/SeqAppRestbed.hpp"
 
 
 namespace bibseq {
@@ -15,7 +15,11 @@ namespace bibseq {
 class SeqViewerRestbed: public SeqAppRestbed {
 public:
 
+	using SeqAppRestbed::SeqAppRestbed;
 };
+
+
+int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
 
