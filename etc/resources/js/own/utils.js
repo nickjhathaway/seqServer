@@ -124,7 +124,7 @@ function ajaxPost(url, data, func) {
         url: url,
         datatype : 'json',
         async : false,
-        data: data,
+        data: JSON.stringify(data),
 		success: function(ct) {
 			func(ct);
 		}

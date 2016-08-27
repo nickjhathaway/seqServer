@@ -35,9 +35,6 @@ bamBaseViewer::bamBaseViewer(cppcms::service& srv, std::map<std::string, std::st
 	configTest(config, requiredOptions(), "bamBaseViewer");
 	pages_.emplace("mainPageHtml",bib::files::make_path(config["resources"], "bbv/mainPage.html") );
 	rootName_ = config["name"];
-	for(auto & fCache : pages_){
-		fCache.second.replaceStr("/ssv", rootName_);
-	}
 	filename_ = config["tableName"];
 	originalTable_ = table(config["tableName"],config["delim"], config["header"] == "true");
 	//main page
@@ -80,7 +77,7 @@ void bamBaseViewer::rootName() {
 
 void bamBaseViewer::mainPage() {
 	auto search = pages_.find("mainPageHtml");
-	response().out() << search->second.get("/ssv", rootName_);
+	response().out() << search->second.get();
 }
 
 

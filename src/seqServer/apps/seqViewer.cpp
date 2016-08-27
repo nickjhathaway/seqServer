@@ -40,14 +40,10 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
 		pages_.emplace("mainPageHtml",
 				bib::files::make_path(config["resources"], "ssv/mainPage.html"));
 	}
+
 	rootName_ = config["name"];
 	debug_ = "true" == config["debug"];
 	protein_ = "true" == config["protein"];
-
-	for (auto & fCache : pages_) {
-		fCache.second.replaceStr("/ssv", rootName_);
-	}
-
 
 	//main page
 	dispMapRoot(&ssv::mainPage, this);
@@ -65,8 +61,9 @@ ssv::ssv(cppcms::service& srv, std::map<std::string, std::string> config) :
 	reader.openIn();
 	auto reads = reader.readAllReads<readObject>();
 	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reads));
-	std::cout << "Finished set up" << std::endl;
-
+	if(debug_){
+		std::cout << "Finished set up" << std::endl;
+	}
 }
 
 VecStr ssv::requiredOptions() const {
@@ -117,7 +114,7 @@ void ssv::mainPage() {
 		std::cerr << std::this_thread::get_id() << std::endl;
 	}
 	auto search = pages_.find("mainPageHtml");
-	response().out() << search->second.get("/ssv", rootName_);
+	response().out() << search->second.get();
 }
 
 

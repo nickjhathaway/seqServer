@@ -35,8 +35,7 @@ class SeqAppRestbed {
 	void getColorsHandler(
 			std::shared_ptr<restbed::Session> session) const;
 
-	std::string root_;
-	bool debug_ = false;
+
 
 	void cssOwnHandler(std::shared_ptr<restbed::Session> session);
 	void cssLibsHandler(std::shared_ptr<restbed::Session> session);
@@ -44,11 +43,33 @@ class SeqAppRestbed {
 	void jsLibsHandler(std::shared_ptr<restbed::Session> session);
 
 
+	void sortPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+	void muscleAlnPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+	void removeGapsPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+	void complementSeqsPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+	void translateToProteinPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+	void minTreeDataDetailedPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+
+	void sortHandler(std::shared_ptr<restbed::Session> session); //std::string sortBy
+	void muscleAlnHandler(std::shared_ptr<restbed::Session> session);
+	void removeGapsHandler(std::shared_ptr<restbed::Session> session);
+	void complementSeqsHandler(std::shared_ptr<restbed::Session> session);
+	void translateToProteinHandler(std::shared_ptr<restbed::Session> session);
+	void minTreeDataDetailedHandler(std::shared_ptr<restbed::Session> session);
+
+
 
 protected:
 	std::map<std::string, bib::files::FileCache> pages_;
 	std::map<std::string, bib::files::FilesCache> jsAndCss_;
-
+	std::string rootName_;
+	bool debug_ = false;
 
 public:
 
@@ -61,11 +82,20 @@ public:
 	std::shared_ptr<restbed::Resource> getProteinColors() const;
 	std::shared_ptr<restbed::Resource> getColors() const;
 
+
+	std::shared_ptr<restbed::Resource> sort(); //std::string sortBy
+	std::shared_ptr<restbed::Resource> muscleAln();
+	std::shared_ptr<restbed::Resource> removeGaps();
+	std::shared_ptr<restbed::Resource> complementSeqs();
+	std::shared_ptr<restbed::Resource> translateToProtein();
+	std::shared_ptr<restbed::Resource> minTreeDataDetailed();
+
 	SeqAppRestbed(const Json::Value & config);
 
 
-	std::shared_ptr<restbed::Service> service_;
+
 	const Json::Value config_;
+	std::shared_ptr<seqCache> seqs_;
 
 	virtual ~SeqAppRestbed();
 
@@ -73,7 +103,7 @@ public:
 
 	void checkConfigThrow() const;
 
-	std::vector<std::shared_ptr<restbed::Resource>> getAllResources();
+	virtual std::vector<std::shared_ptr<restbed::Resource>> getAllResources();
 
 
 	void addPages(const bfs::path & dir);

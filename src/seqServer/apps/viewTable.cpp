@@ -35,9 +35,6 @@ tableViewer::tableViewer(cppcms::service& srv, std::map<std::string, std::string
 	configTest(config, requiredOptions(), "tableViewer");
 	pages_.emplace("mainPageHtml",make_path(config["resources"] + "tv/mainPage.html") );
 	rootName_ = config["name"];
-	for(auto & fCache : pages_){
-		fCache.second.replaceStr("/ssv", rootName_);
-	}
 	filename_ = config["tableName"];
 	originalTable_ = table(config["tableName"],config["delim"], config["header"] == "true");
 	updatedTable_ = originalTable_;
@@ -95,7 +92,7 @@ void tableViewer::rootName() {
 
 void tableViewer::mainPage() {
 	auto search = pages_.find("mainPageHtml");
-	response().out() << search->second.get("/ssv", rootName_);
+	response().out() << search->second.get();
 }
 
 

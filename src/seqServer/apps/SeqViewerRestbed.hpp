@@ -13,9 +13,29 @@
 namespace bibseq {
 
 class SeqViewerRestbed: public SeqAppRestbed {
+
+	typedef bibseq::SeqAppRestbed super;
+
+	bool protein_;
+
+	void seqDataHandler(std::shared_ptr<restbed::Session> session);
+	void mainPageHandler(std::shared_ptr<restbed::Session> session);
+	void seqTypeHandler(std::shared_ptr<restbed::Session> session);
+
 public:
 
-	using SeqAppRestbed::SeqAppRestbed;
+	SeqViewerRestbed(const Json::Value & config);
+
+
+	virtual VecStr requiredOptions() const ;
+
+	std::shared_ptr<restbed::Resource> seqData();
+	std::shared_ptr<restbed::Resource> mainPage();
+	std::shared_ptr<restbed::Resource> seqType();
+
+	virtual std::vector<std::shared_ptr<restbed::Resource>> getAllResources();
+
+
 };
 
 

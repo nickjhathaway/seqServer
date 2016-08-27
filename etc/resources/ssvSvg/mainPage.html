@@ -1,16 +1,22 @@
 
 <!DOCTYPE HTML>
+
 <html>
+	<meta charset="utf-8">
   <head>
 	<title>Sequence Viewer</title>
 
 	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-	<script src="/ssv/jsLibs"></script>
-	<script src="/ssv/jsOwn"></script>
-	<link rel="stylesheet" href="/ssv/cssLibs">
-	<link rel="stylesheet" href="/ssv/cssOwn">
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+  <script>
+	  var locSplit = window.location.toString().split(/[\/]+/);
+		var rName = locSplit[2];
+		$("head").append("<script rel='stylesheet' type='text/javascript' src='/" + rName + "/jsLibs' />");
+		$("head").append("<script rel='stylesheet' type='text/javascript' src='/" + rName + "/jsOwn' />");
+		$("head").append("<link rel='stylesheet' type='text/css' href='/" + rName + "/cssLibs' />");
+		$("head").append("<link rel='stylesheet' type='text/css' href='/" + rName + "/cssOwn' />");
+  </script> 
   </head>
   <body>
 
@@ -18,18 +24,18 @@
     <script>
     	$(document).ready(function(){
 	    	
-	        var baseColors = {};
+	    var baseColors = {};
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			addDiv("body", "viewer");
 			var mainData = ajaxRet('/' + rName + '/seqData');
 			var seqType =  ajaxRet('/' + rName + '/seqType');
-			
 			if(seqType == "dna"){
 				baseColors = ajaxRet('/' + rName + '/baseColors');
 			}else if (seqType == "protein"){
 				baseColors = ajaxRet('/' + rName + '/proteinColors');
 			}
+
 			var cellWidth = 20;
 			var cellHeight = 25;
 			var SeqViewer = new njhSeqViewSvg("#viewer",  mainData, cellWidth, cellHeight, baseColors, true);
