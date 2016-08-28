@@ -93,7 +93,7 @@
     				.append("text")
     				.attr("class", "baseTexts")
     				.attr("x", function(d,i){ return self.nameOffSet + i * self.cw + self.cw/4;})
-    				.attr("y", self.ch/1.5)
+    				.attr("y", self.ch * .75)
     				.attr("fill", "#000000");
 			//get rid of any text that no longer have data
     		seqGroupsBaseTexts
@@ -231,7 +231,12 @@
 			.style("margin", "5px")
 			.style("float", "left");
 		this.masterDivD3 = d3.select(viewName).append("div").attr("class", "SeqViewCanvasDiv");
-		this.masterDivD3.append("div").attr("class", "rightSlider");
+		this.masterDivD3
+			.append("div")
+			.attr("class", "rightSliderDiv")
+			.append("input")
+				.attr("class", "rightSlider")
+				.attr("data-slider-id", "rightSliderCon");;
 		this.seqSvgMaster = this.masterDivD3
 			.append("svg")
 				.attr("class", "NjhSeqViewerMainSvg")
@@ -247,7 +252,12 @@
 		filterSvg.append("feComposite")
 			.attr("in", "SourceGraphic")
 
-		this.masterDivD3.append("div").attr("class", "bottomSlider");
+		this.masterDivD3
+			.append("div")
+			.attr("class", "bottomSliderDiv")
+			.append("input")
+				.attr("class", "bottomSlider")
+				.attr("data-slider-id", "bottomSliderCon");
 		this.masterDivD3.append("div").attr("class", "pop-up").append("p").attr("id", "info");
 		this.masterDivD3.append("div").attr("class", "select");
 		d3.select(viewName).append("div").attr("class", "qualChart");
@@ -333,6 +343,8 @@
 		
 		this.rSlider = $(".rightSlider", this.masterDiv)[0];
 		this.bSlider = $(".bottomSlider", this.masterDiv)[0];
+		this.rSliderDiv = $(".rightSliderDiv", this.masterDiv)[0];
+		this.bSliderDiv = $(".bottomSliderDiv", this.masterDiv)[0];
 		this.popUp = $(".pop-up", this.masterDiv)[0];
 		this.sel = $(".select", this.masterDiv)[0];
 		
@@ -783,12 +795,6 @@
 		}else{
 			$(this.sel).hide();
 		}
-		/*console.log("setSelector");
-		console.log(this.sel);
-		console.log(this.currentBase);
-		console.log(this.currentSeq );
-		console.log(this.currentSeq *this.painterSvg.ch);
-		console.log(this.currentBase *this.painterSvg.cw + this.painterSvg.nameOffSet );*/
 	};
 	
 	njhSeqViewSvg.prototype.updateSelectors = function(){
@@ -828,7 +834,7 @@
     njhSeqViewSvg.prototype.mouseWheelUp = function(steps){
         if(this.seqStart > 0){
         	--this.seqStart;
-        	$(this.rSlider).slider('value', this.seqData["numReads"] - this.seqStart - this.painterSvg.nSeqs);
+        	$(this.rSlider).bootstrapSlider('setValue', this.seqStart);
         	this.painterSvg.needToPaint = true;
         	this.paint();
         }
@@ -837,38 +843,45 @@
     njhSeqViewSvg.prototype.mouseWheelDown = function(steps){
         if(this.seqStart < Math.max(this.seqData["numReads"]- this.painterSvg.nSeqs, 0)){
         	++this.seqStart;
-        	$(this.rSlider).slider('value', this.seqData["numReads"] - this.seqStart - this.painterSvg.nSeqs);
+        	$(this.rSlider).bootstrapSlider('setValue', this.seqStart);
         	this.painterSvg.needToPaint = true;
         	this.paint();
         }
     };
     
 	njhSeqViewSvg.prototype.setUpSliders = function(){
-    	$( this.bSlider ).css("left", this.painterSvg.nameOffSet);
-    	$( this.bSlider).css("width", this.painterSvg.nBases * this.painterSvg.cw);
-    	$( this.rSlider ).css("height", this.painterSvg.nSeqs * this.painterSvg.ch);
-	    $( this.bSlider).slider({
-	      range: "min",
+		var self = this;
+		$(this.bSliderDiv).css("left", this.painterSvg.nameOffSet);
+		$(this.bSliderDiv).css("width", this.painterSvg.nBases * this.painterSvg.cw);
+		$(this.bSlider).css("width", this.painterSvg.nBases * this.painterSvg.cw);
+	    $(this.bSlider).bootstrapSlider({
+	     // range: "min",
 	      min: 0,
-	      max: Math.max(this.seqData["maxLen"] - this.painterSvg.nBases, 0),
+	      max: Math.max(self.seqData["maxLen"] - self.painterSvg.nBases, 0),
+	      value: 0
+	    });
+	    $( this.bSlider ).on("slide", function(slideEvent){
+	    	  self.baseStart = slideEvent.value;
+	    	  self.painterSvg.needToPaint = true;
+	    	  self.paint();
+	    });  
+	    $(this.rSliderDiv).css("height", this.painterSvg.nSeqs * this.painterSvg.ch);
+	    $(this.rSlider).css("height", this.painterSvg.nSeqs * this.painterSvg.ch);
+	    
+	    $( this.rSlider ).bootstrapSlider({
+	      //range: "max",
+	      min: 0,
+	      tooltip_position:'left',
+	      max: Math.max(self.seqData["numReads"]- self.painterSvg.nSeqs, 0),
 	      value: 0,
-	      slide :function(event, ui){
-	      	this.baseStart = ui.value;
-	      	this.painterSvg.needToPaint = true;
-	      	this.paint();
-	      }.bind(this)
-	      }).bind(this);
-	    $( this.rSlider ).slider({
-	      range: "max",
-	      min: 0,
-	      max: Math.max(this.seqData["numReads"]- this.painterSvg.nSeqs, 0),
-	      value: this.seqData["numReads"],
-	      orientation: "vertical", slide :function(event, ui){
-	      	this.painterSvg.needToPaint = true;
-	      	this.seqStart = this.seqData["numReads"] - this.painterSvg.nSeqs - ui.value;
-	      	this.paint();
-	      }.bind(this)
-	    }).bind(this);
+	      orientation: "vertical"
+	    });
+	    $( this.rSlider ).on("slide", function(slideEvent){
+    	  self.painterSvg.needToPaint = true;
+    	  //self.seqStart = self.seqData["numReads"] - self.painterSvg.nSeqs - slideEvent.value;
+    	  self.seqStart = slideEvent.value;
+    	  self.paint();
+	    });
    };
    
    njhSeqViewSvg.prototype.updateOnResize = function(){
@@ -927,45 +940,41 @@
     //object.hover(function(e) {
     $(this.seqSvgMaster.node()).hover(function(e) {
       //fadeInBox.fadeIn(500);
-      $(this.popUp).fadeIn(500);
+      $(self.popUp).fadeIn(500);
       //.css('top', e.pageY + moveDown)
       //.css('left', e.pageX + moveLeft)
       //.appendTo('body');
     }, function() {
       //fadeInBox.hide();
-      $(this.popUp).hide();
-    }).bind(this);
-    var popUpWindow = this.popUp;
-    //var painter = this.painter;
-    //var seqs = this.seqData["seqs"];
-    //var seqStart = this.seqStart;
-    //var baseStart = this.baseStart;
+      $(self.popUp).hide();
+    });
+
     $(this.seqSvgMaster.node()).mouseleave(function(e) {
-    	$(popUpWindow).hide();
+    	$(self.popUp).hide();
     });
     $(this.seqSvgMaster.node()).mousemove(function(e) {
     	var currentPoint = getRelCursorPosition(e, self.seqSvgMaster.node());
         if(currentPoint[1] <= self.painterSvg.nSeqs * self.painterSvg.ch &&
         		currentPoint[0] <= self.painterSvg.nBases * self.painterSvg.cw + self.painterSvg.nameOffSet){
-        	$(popUpWindow).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
+        	$(self.popUp).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
           	var currentBaseHover = Math.ceil(currentPoint[0]/self.painterSvg.cw) - self.painterSvg.nameOffSet/self.painterSvg.cw + self.baseStart -1;
             var currentSeqHover = Math.ceil(currentPoint[1]/self.painterSvg.ch) + self.seqStart - 1;
             var base = self.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover];
             var qual = self.seqData["seqs"][currentSeqHover]["qual"][currentBaseHover];
 			if(currentPoint[0] > self.painterSvg.nameOffSet){
-	        	//console.log($("#info", popUpWindow)[0]);
-    	        $("#info", popUpWindow)[0].innerHTML = "name: " + 
+	        	//console.log($("#info", self.popUp)[0]);
+    	        $("#info", self.popUp)[0].innerHTML = "name: " + 
     	        	self.seqData["seqs"][currentSeqHover]["name"]
     	        	+ "<br>base: "  + base
     	        	+ "<br>qual: " +  qual 
     	        	+ "<br>pos: " + currentBaseHover;
 	        }else{
-	        	$("#info", popUpWindow)[0].innerHTML = "name: " + 
+	        	$("#info", self.popUp)[0].innerHTML = "name: " + 
 	        	self.seqData["seqs"][currentSeqHover]["name"];
 	        }
-			$(popUpWindow).show();
+			$(self.popUp).show();
         }else{
-        	$(popUpWindow).hide();
+        	$(self.popUp).hide();
         }
     });
    };

@@ -222,9 +222,19 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			.style("margin", "5px")
 			.style("float", "left");
 		this.masterDivD3 = d3.select(viewName).append("div").attr("class", "SeqViewCanvasDiv");
-		this.masterDivD3.append("div").attr("class", "rightSlider");
+		this.masterDivD3
+			.append("div")
+			.attr("class", "rightSliderDiv")
+			.append("input")
+				.attr("class", "rightSlider")
+				.attr("data-slider-id", "rightSliderCon");;
 		this.masterDivD3.append("canvas").attr("class", "canvas");
-		this.masterDivD3.append("div").attr("class", "bottomSlider");
+		this.masterDivD3
+			.append("div")
+			.attr("class", "bottomSliderDiv")
+			.append("input")
+				.attr("class", "bottomSlider")
+				.attr("data-slider-id", "bottomSliderCon");
 		this.masterDivD3.append("div").attr("class", "pop-up").append("p").attr("id", "info");
 		this.masterDivD3.append("div").attr("class", "select");
 		d3.select(viewName).append("div").attr("class", "qualChart");
@@ -313,6 +323,8 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		
 		this.rSlider = $(".rightSlider", this.masterDiv)[0];
 		this.bSlider = $(".bottomSlider", this.masterDiv)[0];
+		this.rSliderDiv = $(".rightSliderDiv", this.masterDiv)[0];
+		this.bSliderDiv = $(".bottomSliderDiv", this.masterDiv)[0];
 		this.popUp = $(".pop-up", this.masterDiv)[0];
 		this.sel = $(".select", this.masterDiv)[0];
 		
@@ -813,7 +825,7 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
     njhSeqView.prototype.mouseWheelUp = function(steps){
         if(this.seqStart > 0){
         	--this.seqStart;
-        	$(this.rSlider).slider('value', this.seqData["numReads"] - this.seqStart - this.painter.nSeqs);
+        	$(this.rSlider).bootstrapSlider('setValue', this.seqStart);
         	this.painter.needToPaint = true;
         	this.paint();
         }
@@ -822,38 +834,45 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
     njhSeqView.prototype.mouseWheelDown = function(steps){
         if(this.seqStart < Math.max(this.seqData["numReads"]- this.painter.nSeqs, 0)){
         	++this.seqStart;
-        	$(this.rSlider).slider('value', this.seqData["numReads"] - this.seqStart - this.painter.nSeqs);
+        	$(this.rSlider).bootstrapSlider('setValue', this.seqStart);
         	this.painter.needToPaint = true;
         	this.paint();
         }
     };
     
 	njhSeqView.prototype.setUpSliders = function(){
-    	$( this.bSlider ).css("left", this.painter.nameOffSet);
-    	$( this.bSlider).css("width", this.painter.nBases * this.painter.cw);
-    	$( this.rSlider ).css("height", this.painter.nSeqs * this.painter.ch);
-	    $( this.bSlider).slider({
-	      range: "min",
+		var self = this;
+		$(this.bSliderDiv).css("left", this.painter.nameOffSet);
+		$(this.bSliderDiv).css("width", this.painter.nBases * this.painter.cw);
+		$(this.bSlider).css("width", this.painter.nBases * this.painter.cw);
+	    $(this.bSlider).bootstrapSlider({
+	     // range: "min",
 	      min: 0,
-	      max: Math.max(this.seqData["maxLen"] - this.painter.nBases, 0),
+	      max: Math.max(self.seqData["maxLen"] - self.painter.nBases, 0),
+	      value: 0
+	    });
+	    $( this.bSlider ).on("slide", function(slideEvent){
+	    	  self.baseStart = slideEvent.value;
+	    	  self.painter.needToPaint = true;
+	    	  self.paint();
+	    });  
+	    $(this.rSliderDiv).css("height", this.painter.nSeqs * this.painter.ch);
+	    $(this.rSlider).css("height", this.painter.nSeqs * this.painter.ch);
+	    
+	    $( this.rSlider ).bootstrapSlider({
+	      //range: "max",
+	      min: 0,
+	      tooltip_position:'left',
+	      max: Math.max(self.seqData["numReads"]- self.painter.nSeqs, 0),
 	      value: 0,
-	      slide :function(event, ui){
-	      	this.baseStart = ui.value;
-	      	this.painter.needToPaint = true;
-	      	this.paint();
-	      }.bind(this)
-	      }).bind(this);
-	    $( this.rSlider ).slider({
-	      range: "max",
-	      min: 0,
-	      max: Math.max(this.seqData["numReads"]- this.painter.nSeqs, 0),
-	      value: this.seqData["numReads"],
-	      orientation: "vertical", slide :function(event, ui){
-	      	this.painter.needToPaint = true;
-	      	this.seqStart = this.seqData["numReads"] - this.painter.nSeqs - ui.value;
-	      	this.paint();
-	      }.bind(this)
-	    }).bind(this);
+	      orientation: "vertical"
+	    });
+	    $( this.rSlider ).on("slide", function(slideEvent){
+    	  self.painter.needToPaint = true;
+    	  //self.seqStart = self.seqData["numReads"] - self.painter.nSeqs - slideEvent.value;
+    	  self.seqStart = slideEvent.value;
+    	  self.paint();
+	    });
    };
    
    njhSeqView.prototype.updateOnResize = function(){
@@ -908,48 +927,37 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	//add hover box listening 
 	var moveLeft = 20;
     var moveDown = 10;
-    //object.hover(function(e) {
     $(this.canvas).hover(function(e) {
-      //fadeInBox.fadeIn(500);
-      $(this.popUp).fadeIn(500);
-      //.css('top', e.pageY + moveDown)
-      //.css('left', e.pageX + moveLeft)
-      //.appendTo('body');
+      $(self.popUp).fadeIn(500);
     }, function() {
-      //fadeInBox.hide();
-      $(this.popUp).hide();
-    }).bind(this);
-    var popUpWindow = this.popUp;
-    //var painter = this.painter;
-    //var seqs = this.seqData["seqs"];
-    //var seqStart = this.seqStart;
-    //var baseStart = this.baseStart;
+      $(self.popUp).hide();
+    });
     $(this.canvas).mouseleave(function(e) {
-    	$(popUpWindow).hide();
+    	$(self.popUp).hide();
     });
     $(this.canvas).mousemove(function(e) {
     	var currentPoint = getRelCursorPosition(e, self.canvas);
         if(currentPoint[1] <= self.painter.nSeqs * self.painter.ch &&
         		currentPoint[0] <= self.painter.nBases * self.painter.cw + self.painter.nameOffSet){
-        	$(popUpWindow).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
+        	$(self.popUp).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
           	var currentBaseHover = Math.ceil(currentPoint[0]/self.painter.cw) - self.painter.nameOffSet/self.painter.cw + self.baseStart -1;
             var currentSeqHover = Math.ceil(currentPoint[1]/self.painter.ch) + self.seqStart - 1;
             var base = self.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover];
             var qual = self.seqData["seqs"][currentSeqHover]["qual"][currentBaseHover];
 			if(currentPoint[0] > self.painter.nameOffSet){
-	        	//console.log($("#info", popUpWindow)[0]);
-    	        $("#info", popUpWindow)[0].innerHTML = "name: " + 
+	        	//console.log($("#info", self.popUp)[0]);
+    	        $("#info", self.popUp)[0].innerHTML = "name: " + 
     	        	self.seqData["seqs"][currentSeqHover]["name"]
     	        	+ "<br>base: "  + base
     	        	+ "<br>qual: " +  qual 
     	        	+ "<br>pos: " + currentBaseHover;
 	        }else{
-	        	$("#info", popUpWindow)[0].innerHTML = "name: " + 
+	        	$("#info", self.popUp)[0].innerHTML = "name: " + 
 	        	self.seqData["seqs"][currentSeqHover]["name"];
 	        }
-			$(popUpWindow).show();
+			$(self.popUp).show();
         }else{
-        	$(popUpWindow).hide();
+        	$(self.popUp).hide();
         }
     });
    };

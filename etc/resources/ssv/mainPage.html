@@ -3,19 +3,18 @@
 <html>
 	<meta charset="utf-8">
   <head>
-	<title>Sequence Viewer</title>
-
-	<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-  <script>
-	  var locSplit = window.location.toString().split(/[\/]+/);
-		var rName = locSplit[2];
-		$("head").append("<script rel='stylesheet' type='text/javascript' src='/" + rName + "/jsLibs' />");
-		$("head").append("<script rel='stylesheet' type='text/javascript' src='/" + rName + "/jsOwn' />");
-		$("head").append("<link rel='stylesheet' type='text/css' href='/" + rName + "/cssLibs' />");
-		$("head").append("<link rel='stylesheet' type='text/css' href='/" + rName + "/cssOwn' />");
-  </script> 
+		<title>Sequence Viewer</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+	  <script>
+		  var locSplit = window.location.toString().split(/[\/]+/);
+			var rName = locSplit[2];
+			$("head").append("<script rel='stylesheet' type='text/javascript' src='/" + rName + "/jsLibs' />");
+			$("head").append("<script rel='stylesheet' type='text/javascript' src='/" + rName + "/jsOwn' />");
+			$("head").append("<link rel='stylesheet' type='text/css' href='/" + rName + "/cssLibs' />");
+			$("head").append("<link rel='stylesheet' type='text/css' href='/" + rName + "/cssOwn' />");
+	  </script> 
   </head>
   <body>
 
@@ -23,7 +22,7 @@
     <script>
     	$(document).ready(function(){
 	    	
-	        var baseColors = {};
+	    var baseColors = {};
 			var locSplit = window.location.toString().split(/[\/]+/);
 			var rName = locSplit[2];
 			addDiv("body", "viewer");

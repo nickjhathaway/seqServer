@@ -608,7 +608,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs(){
 							std::placeholders::_1)));
 	return resource;
 }
-std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "translate" } }));
@@ -619,10 +619,10 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein(){
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::minTreeDataDetailed(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::minTreeDataDetailed() {
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(
-			UrlPathFactory::createUrl( { { rootName_ }, { "minTreeDataDetailed" } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
+			"minTreeDataDetailed" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
 					std::bind(&SeqAppRestbed::minTreeDataDetailedHandler, this,
