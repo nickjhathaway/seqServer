@@ -390,6 +390,8 @@
 			    	}
 			    }
 			});
+		}else{
+			this.addedQualChart = false;
 		}
 		
 	};
