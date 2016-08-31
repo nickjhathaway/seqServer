@@ -444,9 +444,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost('/' + rName + '/sort/seq',postData, function(md){ mainData = md; });
-		    //console.log(self.uid);
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/sort/seq',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		sortOptions.push(new njhMenuItem("sortSeqCondensed", "Sequence Condensed",function(){
 			var mainData;
@@ -454,8 +461,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost('/' + rName + '/sort/seqCondensed',postData, function(md){ mainData = md; });
-	    	self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/sort/seqCondensed',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		sortOptions.push(new njhMenuItem("sortTotalCount", "Total Read Count",function(){
 			var mainData;
@@ -463,8 +478,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost('/' + rName + '/sort/totalCount',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/sort/totalCount',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		sortOptions.push(new njhMenuItem("sortSize", "Length",function(){
 			var mainData;
@@ -472,8 +495,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost('/' + rName + '/sort/size',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/sort/size',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		sortOptions.push(new njhMenuItem("sortName", "Name",function(){
 			var mainData;
@@ -481,8 +512,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost( '/' + rName + '/sort/name',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/sort/name',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		sortOptions.push(new njhMenuItem("sortName", "Reverse",function(){
 			var mainData;
@@ -490,8 +529,16 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost( '/' + rName + '/sort/reverse',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/sort/reverse',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		menuItems["Sort"] = sortOptions;
 		var alnOptions = [];
@@ -501,17 +548,32 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost( '/' + rName + '/muscle',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/muscle',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		alnOptions.push(new njhMenuItem("removeGaps", "remove gaps",function(){
-			var mainData;
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 			}
-			ajaxPost( '/' + rName + '/removeGaps',postData, function(md){ mainData = md; });
-		    self.updateData(mainData);
+			var gifLoading = prsentDivGifLoading();
+			makeRequest({
+		  		url: '/' + rName + '/removeGaps',
+		  		method: "POST",
+		  		params: postData,
+		  		headers: {"Content-Type" : "application/json"}
+		  	}).then(function (datums) {
+		  		self.updateData(JSON.parse(datums));
+		  		gifLoading.remove();
+		  	}).catch(logRequestError);
 		}));
 		menuItems["Aln"] = alnOptions;
 		
@@ -519,14 +581,20 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		if(!protein){
 			var editOptions = [];
 			editOptions.push(new njhMenuItem("complement", "Reverse Complement",function(){
-				var mainData;
 				var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 				if (self.selected.size > 0){
 					postData["selected"] = setToArray(self.selected);
 				}
-				var ar = setToArray(self.selected);
-				ajaxPost( '/' + rName + '/complement',postData, function(md){ mainData = md; });
-			    self.updateData(mainData);
+				var gifLoading = prsentDivGifLoading();
+				makeRequest({
+			  		url: '/' + rName + '/complement',
+			  		method: "POST",
+			  		params: postData,
+			  		headers: {"Content-Type" : "application/json"}
+			  	}).then(function (datums) {
+			  		self.updateData(JSON.parse(datums));
+			  		gifLoading.remove();
+			  	}).catch(logRequestError);
 			}));
 			menuItems["Edit"] = editOptions;
 		}
@@ -534,28 +602,32 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 		if(!protein){
 			var translateOptions = [];
 			translateOptions.push(new njhMenuItem("translate", "Translate",function(){
-				var mainData;
 				//console.log($("#startSiteInput", self.topDivName).val());
 				var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID, "start" : $("#startSiteInput", self.topDivName).val()};
 				if (self.selected.size > 0){
 					postData["selected"] = setToArray(self.selected);
 				}
-				var ar = setToArray(self.selected);
-				ajaxPost( '/' + rName + '/translate',postData, function(md){ mainData = md; });
-			    //console.log(mainData);
-			    //console.log(self.topDivName.substring(1) + "_protein");
-			    if($("#" + self.topDivName.substring(1) + "_protein").length){
-			    	self.proteinViewer.updateData(mainData);
-			    }else{
-			    	var proteinColors = {};
-					ajax('/' + rName + '/proteinColors', function(bc){ proteinColors = bc; });
-			    	$( "<div id = \"" + self.topDivName.substring(1) + "_protein" +   "\"></div>" ).insertAfter( self.topDivName );
-			    	self.proteinViewer = new njhSeqView("#" + self.topDivName.substring(1) + "_protein", mainData, self.painter.cw, self.painter.ch, proteinColors,false, true, self.sessionUID);
-			    	self.proteinViewer.setUp();
-			    	self.proteinViewer.paint();
-			    }
-			    $("#" + self.topDivName.substring(1) + "_protein").scrollView();
-			    
+				var gifLoading = prsentDivGifLoading();
+				makeRequest({
+			  		url: '/' + rName + '/translate',
+			  		method: "POST",
+			  		params: postData,
+			  		headers: {"Content-Type" : "application/json"}
+			  	}).then(function (datums) {
+				    if($("#" + self.topDivName.substring(1) + "_protein").length){
+				    	self.proteinViewer.updateData(JSON.parse(datums));
+				    }else{
+				    	var mainData = JSON.parse(datums);
+				    	console.log(mainData);
+				    	$( "<div id = \"" + self.topDivName.substring(1) + "_protein" +   "\"></div>" ).insertAfter( self.topDivName );
+				    	self.proteinViewer = new njhSeqView("#" + self.topDivName.substring(1) + "_protein", mainData, self.painter.cw, self.painter.ch, mainData["baseColor"],false, true, self.sessionUID);
+				    	self.proteinViewer.setUp();
+				    	self.proteinViewer.paint();
+				    }
+				    gifLoading.remove();
+				    $("#" + self.topDivName.substring(1) + "_protein").scrollView();
+			  		
+			  	}).catch(logRequestError);			    
 			}));
 			menuItems["Translate"] = translateOptions;
 		}
@@ -621,11 +693,18 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 					postData["selected"] = setToArray(self.selected);
 				}
 				postData["numDiff"] = $("#numDiffInput", self.topDivName).val();
-				var ar = setToArray(self.selected);
-				ajaxPost( '/' + rName + '/minTreeDataDetailed',postData, function(md){ jsonData = md; });
-				drawPsuedoMinTreeDetailed(jsonData, self.topDivName + " #minTreeChart", "minTreeChart",
-						$("#treeWidthInput", self.topDivName).val(),$("#treeHeightInput", self.topDivName).val());
-				$('#minTreeChart').scrollView();
+				var gifLoading = prsentDivGifLoading();
+				makeRequest({
+			  		url: '/' + rName + '/minTreeDataDetailed',
+			  		method: "POST",
+			  		params: postData,
+			  		headers: {"Content-Type" : "application/json"}
+			  	}).then(function (datums) {
+					drawPsuedoMinTreeDetailed(JSON.parse(datums), self.topDivName + " #minTreeChart", "minTreeChart",
+							$("#treeWidthInput", self.topDivName).val(),$("#treeHeightInput", self.topDivName).val());
+					$('#minTreeChart').scrollView();
+			  		gifLoading.remove();
+			  	}).catch(logRequestError);
 			}));
 			windowOptions.push(new njhMenuItem("HideTree", "Hide Difference Graph",function(){
 				d3.select(self.topDivName + " #minTreeChartTop").selectAll("*").remove();

@@ -414,6 +414,7 @@ void SeqAppRestbed::translateToProteinPostHandler(std::shared_ptr<restbed::Sessi
 					seqData = seqsBySession_[sessionUID]->translate(uid, selected, complement, reverse, start);
 					//seqData["selected"] = bib::json::toJson(selected);
 				}
+				seqData["baseColor"] = bib::json::parse(ColorFactory::AAColorsJson);
 				seqData["uid"] = uid + "_protein";
 				seqData["sessionUID"] = bib::json::toJson(sessionUID);
 			}else{
