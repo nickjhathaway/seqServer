@@ -38,9 +38,10 @@ public:
 	public:
 
 		cacheRecord(const std::string & uid,
-				const std::shared_ptr<std::vector<readObject>> & reads) :
-				uid_(uid), reads_(reads) {
-		}
+				const std::shared_ptr<std::vector<readObject>> & reads);
+		cacheRecord(const cacheRecord & other);
+		cacheRecord(cacheRecord && other);
+
 		std::string uid_;
 		std::shared_ptr<std::vector<readObject>> reads_;
 		/*
@@ -53,7 +54,11 @@ public:
 		}*/
 
 	};
+	seqCache();
+	seqCache(const seqCache & other);
+	seqCache(seqCache && other);
 private:
+
 	std::unordered_map<std::string, cacheRecord> cache_;
 	VecStr currentCache_;
 	uint32_t cachePos_ = 0;

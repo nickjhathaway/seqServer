@@ -28,4 +28,5 @@
 
 #include "seqServer/objects/seqCache.hpp"
 #include "seqServer/objects/SeqToJsonFactory.hpp"
-
+#include "seqServer/objects/SessionUIDFactory.hpp"
+#include "seqServer/objects/ColorFactory.hpp"

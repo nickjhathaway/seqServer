@@ -13,13 +13,8 @@ namespace bibseq {
 SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(config){
 
 	protein_ = config_["protein"].asBool();
-	if(config["svg"].asBool()){
-		pages_.emplace("mainPageHtml",
-				bib::files::make_path(config["resources"], "ssvSvg/mainPage.html"));
-	}else{
-		pages_.emplace("mainPageHtml",
+	pages_.emplace("mainPageHtml",
 				bib::files::make_path(config["resources"], "ssv/mainPage.html"));
-	}
 
 	//read in data and set to the json
 	SeqIOOptions options(config["ioOptions"].asString());
@@ -41,7 +36,18 @@ void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session
 }
 
 void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session){
-	auto seqData = seqs_->getJson(rootName_.substr(1));
+	auto sesUid = startSeqCacheSession();
+
+	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
+	seqData["sessionUID"] = bib::json::toJson(sesUid);
+	if(protein_){
+		seqData["seqType"] = bib::json::toJson("protein");
+		seqData["baseColor"] = bib::json::parse(ColorFactory::AAColorsJson);
+	}else{
+		seqData["seqType"] = bib::json::toJson("dna");
+		seqData["baseColor"] = bib::json::parse(ColorFactory::DNAColorsJson);
+	}
+
 	auto body = seqData.toStyledString();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(body);
@@ -121,13 +127,11 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	std::string clusDir = "";
 	uint32_t port = 8881;
 	std::string name = "ssv";
-	std::string resourceDirName = bib::files::make_path(seqServer_INSTALLDIR,
+	std::string resourceDirName = bib::files::make_path(seqServer::getSeqServerInstallDir(),
 			"etc/resources").string();
 	bool protein = false;
-	bool svg = false;
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
-	setUp.setOption(svg, "--svg", "Viewing svg viewer");
 	setUp.setOption(resourceDirName, "-resourceDirName",
 			"Name of the resource Directory where the js and hmtl is located",
 			!bfs::exists(resourceDirName));
@@ -141,6 +145,7 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	name = "/" + name;
   //
   Json::Value appConfig;
+
   appConfig["name"] =  bib::json::toJson(name);
   appConfig["port"] = bib::json::toJson( estd::to_string(port));
   auto optsJson = setUp.pars_.ioOptions_.toJson();
@@ -150,7 +155,6 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
   appConfig["css"] = bib::json::toJson(resourceDirName + "css/");
   appConfig["debug"] =  bib::json::toJson(setUp.pars_.debug_);
   appConfig["protein"] = bib::json::toJson(protein);
-  appConfig["svg"] = bib::json::toJson(svg);
 
   if(setUp.pars_.verbose_){
     std::cout << "localhost:"  << port << name << std::endl;

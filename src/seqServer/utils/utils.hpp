@@ -35,6 +35,11 @@ std::vector<bfs::path> getOwnFiles(const std::string & dir, const std::string & 
 std::vector<bfs::path> getLibFiles(const std::string & dir, const std::string & ext);
 
 
+namespace seqServer {
+
+std::string getSeqServerInstallDir();
+
+}  // namespace seqServer
 
 } /* namespace bibseq */
 

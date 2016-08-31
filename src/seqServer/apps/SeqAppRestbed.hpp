@@ -9,21 +9,10 @@
 
 #include "seqServer/utils.h"
 #include "seqServer/restbedUtils.h"
-#include "seqServer/objects/seqCache.hpp"
+#include "seqServer/objects.h"
 
 
 namespace bibseq {
-
-
-class ColorFactory{
-public:
-
-	static const std::string DNAColorsJson;
-	static const std::string AAColorsJson;
-	static Json::Value getColors(uint32_t num);
-};
-
-
 
 
 class SeqAppRestbed {
@@ -64,12 +53,24 @@ class SeqAppRestbed {
 	void minTreeDataDetailedHandler(std::shared_ptr<restbed::Session> session);
 
 
+	void closeSessionPostHandler(std::shared_ptr<restbed::Session> session,
+				const restbed::Bytes & body);
+	void closeSessionHandler(std::shared_ptr<restbed::Session> session);
+
+	void openSessionHandler(std::shared_ptr<restbed::Session> session);
+
+
+
 
 protected:
 	std::map<std::string, bib::files::FileCache> pages_;
 	std::map<std::string, bib::files::FilesCache> jsAndCss_;
 	std::string rootName_;
 	bool debug_ = false;
+
+	SessionUIDFactory sesUIDFac_;
+
+	uint32_t startSeqCacheSession();
 
 public:
 
@@ -90,12 +91,17 @@ public:
 	std::shared_ptr<restbed::Resource> translateToProtein();
 	std::shared_ptr<restbed::Resource> minTreeDataDetailed();
 
+	std::shared_ptr<restbed::Resource> closeSession();
+	std::shared_ptr<restbed::Resource> openSession();
+
 	SeqAppRestbed(const Json::Value & config);
 
 
 
 	const Json::Value config_;
 	std::shared_ptr<seqCache> seqs_;
+
+	std::unordered_map<uint32_t, std::unique_ptr<seqCache>> seqsBySession_;
 
 	virtual ~SeqAppRestbed();
 

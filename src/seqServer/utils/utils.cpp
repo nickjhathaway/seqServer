@@ -38,4 +38,14 @@ std::vector<bfs::path> getLibFiles(const std::string & dir, const std::string & 
 	return bib::getVecOfMapKeys(files);
 }
 
+
+
+namespace seqServer {
+
+std::string getSeqServerInstallDir(){
+	return seqServer_INSTALLDIR;
+}
+
+}  // namespace seqServer
+
 } /* namespace bibseq */
