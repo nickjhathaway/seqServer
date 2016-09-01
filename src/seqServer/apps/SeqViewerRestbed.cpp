@@ -13,8 +13,8 @@ namespace bibseq {
 SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(config){
 
 	protein_ = config_["protein"].asBool();
-	pages_.emplace("mainPageHtml",
-				bib::files::make_path(config["resources"], "ssv/mainPage.html"));
+	pages_.emplace("mainPageJs",
+					bib::files::make_path(config["resources"], "ssv/ssv.js"));
 
 	//read in data and set to the json
 	SeqIOOptions options(config["ioOptions"].asString());
@@ -29,7 +29,7 @@ SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(c
 
 
 void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session){
-	auto body = pages_.at("mainPageHtml").get();
+	auto body = genHtmlDoc(rootName_, pages_.at("mainPageJs"));
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtHtmlHeader(body);
 	session->close(restbed::OK, body, headers);
@@ -54,20 +54,6 @@ void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session)
 	session->close(restbed::OK, body, headers);
 }
 
-void SeqViewerRestbed::seqTypeHandler(std::shared_ptr<restbed::Session> session){
-	Json::Value r;
-	if(protein_){
-		r = "protein";
-	}else{
-		r = "dna";
-	}
-	auto body = r.toStyledString();
-	const std::multimap<std::string, std::string> headers =
-			HeaderFactory::initiateAppJsonHeader(body);
-	session->close(restbed::OK, body, headers);
-}
-
-
 std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqData(){
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
@@ -90,22 +76,11 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::mainPage(){
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqType(){
-	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(
-			UrlPathFactory::createUrl( { { rootName_ }, {"seqType"}}));
-	resource->set_method_handler("GET",
-			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqViewerRestbed::seqTypeHandler, this,
-							std::placeholders::_1)));
-	return resource;
-}
 
 std::vector<std::shared_ptr<restbed::Resource>> SeqViewerRestbed::getAllResources(){
 	auto ret = super::getAllResources();
 	ret.emplace_back(mainPage());
 	ret.emplace_back(seqData());
-	ret.emplace_back(seqType());
 	return ret;
 }
 

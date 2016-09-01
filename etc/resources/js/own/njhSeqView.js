@@ -109,7 +109,12 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
     			.remove();
     		//set the names
     		seqGroups.selectAll(".nameText")
-    			.text(function(d){return d3.select(this.parentNode).datum()["name"];});
+    			.text(function(d){return d3.select(this.parentNode).datum()["name"];})
+    			.on("mousedown", function(){
+    				console.log(d3.event);
+    				console.log(this);
+    				console.log(d3.event.shiftKey);
+    			});
     		//add bases rects that need to be added
     		var seqGroupsBaseRects = seqGroups.selectAll(".baseRects")
     			.data(function(d){ return d["seq"].slice(bStart, bStart + self.nBases);});

@@ -114,10 +114,11 @@ public:
 
 	void addPages(const bfs::path & dir);
 
-	std::string messStrFactory(const std::string & funcName);
-	std::string messStrFactory(const std::string & funcName,
+	static std::string messStrFactory(const std::string & funcName);
+	static std::string messStrFactory(const std::string & funcName,
 			const MapStrStr & args);
-
+	static std::string genHtmlDoc(std::string rName,
+			bib::files::FileCache & cache);
 };
 
 

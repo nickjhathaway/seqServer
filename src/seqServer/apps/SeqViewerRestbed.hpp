@@ -20,7 +20,6 @@ class SeqViewerRestbed: public SeqAppRestbed {
 
 	void seqDataHandler(std::shared_ptr<restbed::Session> session);
 	void mainPageHandler(std::shared_ptr<restbed::Session> session);
-	void seqTypeHandler(std::shared_ptr<restbed::Session> session);
 
 public:
 
@@ -31,7 +30,6 @@ public:
 
 	std::shared_ptr<restbed::Resource> seqData();
 	std::shared_ptr<restbed::Resource> mainPage();
-	std::shared_ptr<restbed::Resource> seqType();
 
 	virtual std::vector<std::shared_ptr<restbed::Resource>> getAllResources();
 

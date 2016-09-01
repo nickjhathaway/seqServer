@@ -31,6 +31,7 @@ void SeqAppRestbed::checkConfigThrow() const {
 }
 
 void SeqAppRestbed::cssOwnHandler(std::shared_ptr<restbed::Session> session) {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	std::string body = jsAndCss_.find("cssOwn")->second.get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtCssHeader(body);
@@ -38,6 +39,7 @@ void SeqAppRestbed::cssOwnHandler(std::shared_ptr<restbed::Session> session) {
 }
 
 void SeqAppRestbed::cssLibsHandler(std::shared_ptr<restbed::Session> session) {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	std::string body = jsAndCss_.find("cssLibs")->second.get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtCssHeader(body);
@@ -45,6 +47,7 @@ void SeqAppRestbed::cssLibsHandler(std::shared_ptr<restbed::Session> session) {
 }
 
 void SeqAppRestbed::jsOwnHandler(std::shared_ptr<restbed::Session> session) {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	std::string body = jsAndCss_.find("jsOwn")->second.get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtJavascriptHeader(body);
@@ -52,6 +55,7 @@ void SeqAppRestbed::jsOwnHandler(std::shared_ptr<restbed::Session> session) {
 }
 
 void SeqAppRestbed::jsLibsHandler(std::shared_ptr<restbed::Session> session) {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	std::string body = jsAndCss_.find("jsLibs")->second.get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtJavascriptHeader(body);
@@ -59,6 +63,7 @@ void SeqAppRestbed::jsLibsHandler(std::shared_ptr<restbed::Session> session) {
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::cssOwn() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "cssOwn" } }));
 	resource->set_method_handler("GET",
@@ -69,6 +74,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::cssOwn() {
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::cssLibs() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "cssLibs" } }));
 	resource->set_method_handler("GET",
@@ -79,6 +85,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::cssLibs() {
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::jsOwn() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "jsOwn" } }));
 	resource->set_method_handler("GET",
@@ -89,6 +96,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::jsOwn() {
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::jsLibs() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "jsLibs" } }));
 	resource->set_method_handler("GET",
@@ -114,6 +122,7 @@ SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
 }
 
 std::vector<std::shared_ptr<restbed::Resource>> SeqAppRestbed::getAllResources() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	std::vector<std::shared_ptr<restbed::Resource>> ret;
 	ret.emplace_back(jsOwn());
 	ret.emplace_back(jsLibs());
@@ -147,6 +156,7 @@ VecStr SeqAppRestbed::requiredOptions() const {
 
 void SeqAppRestbed::getDNAColorsHandler(
 		std::shared_ptr<restbed::Session> session) const {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(ColorFactory::DNAColorsJson);
 	session->close(restbed::OK, ColorFactory::DNAColorsJson, headers);
@@ -154,6 +164,7 @@ void SeqAppRestbed::getDNAColorsHandler(
 
 void SeqAppRestbed::getProteinColorsHandler(
 		std::shared_ptr<restbed::Session> session) const {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(ColorFactory::AAColorsJson);
 	session->close(restbed::OK, ColorFactory::AAColorsJson, headers);
@@ -161,6 +172,7 @@ void SeqAppRestbed::getProteinColorsHandler(
 
 void SeqAppRestbed::getColorsHandler(
 		std::shared_ptr<restbed::Session> session) const {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	uint32_t num = 0;
 	const auto request = session->get_request();
 	request->get_path_parameter("number", num);
@@ -172,6 +184,7 @@ void SeqAppRestbed::getColorsHandler(
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::getDNAColors() const {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "baseColors" } }));
@@ -182,6 +195,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getDNAColors() const {
 	return resource;
 }
 std::shared_ptr<restbed::Resource> SeqAppRestbed::getProteinColors() const {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "proteinColors" } }));
@@ -192,6 +206,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getProteinColors() const {
 	return resource;
 }
 std::shared_ptr<restbed::Resource> SeqAppRestbed::getColors() const {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "getColors" }, {
 			"number", UrlPathFactory::pat_nums_ } }));
@@ -259,7 +274,7 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 		if(seqsBySession_[sessionUID]->containsRecord(uid)){
 			if(seqsBySession_[sessionUID]->recordValid(uid)){
 				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->sort(uid, sortBy);
+					seqData = seqsBySession_[sessionUID]->sort(uid,           sortBy);
 				}else{
 					seqData = seqsBySession_[sessionUID]->sort(uid, selected, sortBy);
 					seqData["selected"] = bib::json::toJson(selected);
@@ -570,6 +585,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::sort(){
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::muscleAln(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "muscle" } }));
@@ -581,6 +597,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::muscleAln(){
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::removeGaps(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "removeGaps" } }));
@@ -591,6 +608,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::removeGaps(){
 	return resource;
 }
 std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "complement" } }));
@@ -601,6 +619,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs(){
 	return resource;
 }
 std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "translate" } }));
@@ -612,6 +631,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::minTreeDataDetailed() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
 			"minTreeDataDetailed" } }));
@@ -660,6 +680,7 @@ void SeqAppRestbed::closeSessionHandler(std::shared_ptr<restbed::Session> sessio
 }
 
 uint32_t SeqAppRestbed::startSeqCacheSession() {
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto ret = sesUIDFac_.genSessionUID();
 	seqsBySession_[ret] = std::make_unique<seqCache>(*seqs_);
 	return ret;
@@ -667,6 +688,7 @@ uint32_t SeqAppRestbed::startSeqCacheSession() {
 
 
 void SeqAppRestbed::openSessionHandler(std::shared_ptr<restbed::Session> session){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	Json::Value ret;
 	ret["sessionUID"] = startSeqCacheSession();
 	auto body = ret.toStyledString();
@@ -676,6 +698,7 @@ void SeqAppRestbed::openSessionHandler(std::shared_ptr<restbed::Session> session
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::closeSession(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
 			"closeSession" } }));
@@ -687,6 +710,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::closeSession(){
 }
 
 std::shared_ptr<restbed::Resource> SeqAppRestbed::openSession(){
+	bib::scopedMessage mess(messStrFactory(__PRETTY_FUNCTION__), std::cout, debug_);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
 			"openSession" } }));
@@ -695,6 +719,29 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::openSession(){
 					std::bind(&SeqAppRestbed::openSessionHandler, this,
 							std::placeholders::_1)));
 	return resource;
+}
+
+
+std::string SeqAppRestbed::genHtmlDoc(std::string rName,
+		bib::files::FileCache & cache) {
+	bib::lstrip(rName, '/');
+	std::string header = "<!DOCTYPE HTML>\n"
+			"<html>\n"
+			"	<meta charset=\"utf-8\">\n"
+			"  <head>\n"
+			"		<script type=\"text/javascript\" src=\"/" + rName + "/jsLibs\"></script>\n"
+					"		<script type=\"text/javascript\" src=\"/" + rName + "/jsOwn\"></script>\n"
+					"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName + "/cssLibs\">\n"
+					"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName + "/cssOwn\">\n"
+					"  </head>\n"
+					"  <body>\n"
+					"    <script>\n";
+	std::string body = cache.get();
+
+	std::string footer = "    </script> \n"
+			"  </body>\n"
+			"</html>\n";
+	return header + body + footer;
 }
 
 
