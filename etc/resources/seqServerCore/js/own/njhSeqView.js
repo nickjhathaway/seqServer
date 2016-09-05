@@ -195,10 +195,10 @@ njhSeqView.prototype.initDrawArea = function(){
 		.style("width", this.cw + 2 + "px")
 		.style("height", this.ch + 2 + "px");
 	
-	d3.select(viewName).append("div")
+	d3.select(this.topDivName).append("div")
 		.attr("class", "qualChart");
 	
-	d3.select(viewName).append("div")
+	d3.select(this.topDivName).append("div")
 		.attr("id", "minTreeChartTop");
 
 
