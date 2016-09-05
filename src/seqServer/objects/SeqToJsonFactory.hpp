@@ -28,6 +28,7 @@ public:
 		//seqs.
 		for (const auto & pos : iter::range<uint32_t>(reads.size())) {
 			seqs[pos] = bib::json::toJson(getSeqBase(reads[pos]));
+			seqs[pos]["position"] = pos;
 		}
 		return ret;
 	}
@@ -45,7 +46,7 @@ public:
 		for (auto pos : positions) {
 			if (pos >= reads.size()) {
 				throw std::out_of_range {
-						"Error in bibseq::seqToJsonFactory::seqsToJson, out of range, pos: "
+						std::string(__PRETTY_FUNCTION__) + ": Error , out of range, pos: "
 								+ estd::to_string(pos) + ", size: "
 								+ estd::to_string(reads.size()) };
 			}
@@ -53,9 +54,12 @@ public:
 		}
 		ret["maxLen"] = bib::json::toJson(maxLen);
 		ret["uid"] = uid;
-		ret["selected"] = bib::json::toJson(std::vector<uint32_t> { });
+		ret["selected"] = bib::json::toJson(positions);
+		uint32_t count = 0;
 		for (const auto & pos : positions) {
-			seqs[pos] = bib::json::toJson(getSeqBase(reads[pos]));
+			seqs[count] = bib::json::toJson(getSeqBase(reads[pos]));
+			seqs[count]["position"] = pos;
+			++count;
 		}
 		return ret;
 	}
@@ -72,8 +76,10 @@ public:
 			const std::string & sortOption,
 			std::vector<uint32_t> selected,
 			const std::string & uid) {
+		bib::sort(selected);
 		readVecSorter::sortReadVector(reads, selected, sortOption);
-		return seqsToJson(reads, uid);
+
+		return seqsToJson(reads, selected, uid);
 	}
 
 	template<typename T>
@@ -91,7 +97,7 @@ public:
 		bib::for_each_pos(reads, selected,
 				[](T & read) {getSeqBase(read).removeGaps();});
 		sys::muscleSeqs(reads, selected);
-		return seqsToJson(reads, uid);
+		return seqsToJson(reads, selected, uid);
 	}
 
 	template<typename T>
@@ -108,7 +114,7 @@ public:
 			const std::string & uid) {
 		bib::for_each_pos(reads, selected,
 				[](T & read) {getSeqBase(read).removeGaps();});
-		return seqsToJson(reads, uid);
+		return seqsToJson(reads,selected, uid);
 	}
 
 	template<typename T>
@@ -124,7 +130,16 @@ public:
 			const std::vector<uint32_t> & selected, const std::string & uid) {
 		bib::for_each_pos(reads, selected,
 				[]( T & read) {getSeqBase(read).reverseComplementRead(true,true);});
-		return seqsToJson(reads, uid);
+		return seqsToJson(reads,selected, uid);
+	}
+
+	template<typename T>
+	static Json::Value translate(
+			std::vector<T> & reads, const std::string & uid,
+			bool complement, bool reverse, uint64_t start) {
+		std::vector<uint32_t> positions(reads.size());
+		bib::iota<uint32_t>(positions, 0);
+		return translate(reads, positions, uid, complement, reverse, start);
 	}
 
 	template<typename T>
@@ -139,16 +154,9 @@ public:
 							getSeqBase(reads[readPos]).translateRet(complement, reverse,
 									start)));
 		}
-		return seqsToJson(ret, uid);
-	}
-
-	template<typename T>
-	static Json::Value translate(
-			std::vector<T> & reads, const std::string & uid,
-			bool complement, bool reverse, uint64_t start) {
-		std::vector<uint32_t> positions(reads.size());
-		bib::iota<uint32_t>(positions, 0);
-		return translate(reads, positions, uid, complement, reverse, start);
+		auto jsonRet = seqsToJson(ret, uid);
+		jsonRet["seqType"] = bib::json::toJson("protein");
+		return jsonRet;
 	}
 
 	template<typename T>

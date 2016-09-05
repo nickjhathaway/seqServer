@@ -70,6 +70,8 @@ protected:
 
 	SessionUIDFactory sesUIDFac_;
 
+	std::shared_ptr<LogMessageFactory> messFac_;
+
 	uint32_t startSeqCacheSession();
 
 public:
@@ -114,12 +116,11 @@ public:
 
 	void addPages(const bfs::path & dir);
 
-	static std::string messStrFactory(const std::string & funcName);
-	static std::string messStrFactory(const std::string & funcName,
-			const MapStrStr & args);
 	static std::string genHtmlDoc(std::string rName,
 			bib::files::FileCache & cache);
 };
+
+
 
 
 }  // namespace bibseq

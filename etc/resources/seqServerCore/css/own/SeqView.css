@@ -1,4 +1,4 @@
-.SeqViewCanvasDiv {
+.SeqViewDrawAreaDiv {
 	position: relative;
 	clear: both;
 	/*top: 80px*/;
@@ -8,7 +8,8 @@
 	border-bottom-right-radius: 10px;
 	margin-bottom: 10px;
 }
-.SeqViewCanvasDiv .rightSliderDiv {
+
+.SeqViewDrawAreaDiv .rightSliderDiv {
 	position: relative;
 	float: right;
 	right: 10px;
@@ -17,7 +18,7 @@
 	height: 100%;
 }
 
-.SeqViewCanvasDiv .bottomSliderDiv {
+.SeqViewDrawAreaDiv .bottomSliderDiv {
 	position:absolute;
 	bottom: 0;
 	left: 0;
@@ -25,26 +26,23 @@
 	height: 10px;
 }
 
-.SeqViewCanvasDiv .slider-horizontal {
+.SeqViewDrawAreaDiv .slider-horizontal {
     width: 100% !important;
 }
 
-.SeqViewCanvasDiv .slider-vertical {
+.SeqViewDrawAreaDiv .slider-vertical {
     height: 100% !important;
 }
 
-.SeqViewCanvasDiv #bottomSliderCon .slider-selection {
+.SeqViewDrawAreaDiv #bottomSliderCon .slider-selection {
 	background: #8283FF;
 }
 
-.SeqViewCanvasDiv #rightSliderCon .slider-selection {
+.SeqViewDrawAreaDiv #rightSliderCon .slider-selection {
 	background: #8283FF;
 }
 
-
-
-
-.SeqViewCanvasDiv .pop-up {
+.SeqViewDrawAreaDiv .pop-up {
 	display: none;
 	position: absolute;
 	width: 300px;
@@ -55,11 +53,9 @@
 	font-size: 90%;
 	opacity: .85;
 }
-.SeqViewCanvasDiv .select {
+.SeqViewDrawAreaDiv .select {
 	/*display: none;*/
 	position: absolute;
-	width: 22px;
-	height: 27px;
 	background: #e6e6e6;
 	color: #000000;
 	border: 2px solid #000000;
@@ -67,7 +63,7 @@
 	pointer-events: none;
 }
 
-.SeqViewCanvasDiv .seqHighlight {
+.SeqViewDrawAreaDiv .seqHighlight {
 	/*display: none;*/
 	position: absolute;
 	background: #85DDFA;

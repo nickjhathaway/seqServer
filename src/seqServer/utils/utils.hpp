@@ -39,6 +39,8 @@ namespace seqServer {
 
 std::string getSeqServerInstallDir();
 
+std::string getSeqServerInstallCoreDir();
+
 }  // namespace seqServer
 
 } /* namespace bibseq */

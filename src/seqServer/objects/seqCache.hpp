@@ -44,6 +44,8 @@ public:
 
 		std::string uid_;
 		std::shared_ptr<std::vector<readObject>> reads_;
+		//SeqIOOptions ioOpts_;
+
 		/*
 	private:
 			uint32_t blockSize_ = 10000;

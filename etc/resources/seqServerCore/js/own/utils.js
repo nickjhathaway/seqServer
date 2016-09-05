@@ -110,6 +110,7 @@ function logRequestError(err) {
 	}else{
 		console.error(err);
 	}
+	throw err;
 }
 
 
@@ -400,5 +401,11 @@ function removeAllDivGifLoading(){
 	d3.selectAll("#PrsentingDivGifLoading").remove();
 }
 
+
+function getLastValue(set){
+  var value;
+  for(value of set);
+  return value;
+}
 
 

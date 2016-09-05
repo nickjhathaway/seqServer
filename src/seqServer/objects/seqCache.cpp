@@ -117,9 +117,9 @@ Json::Value seqCache::translate(const std::string & uid,
 	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), positions, uid, complement, reverse, start);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
 	for(const auto & j : ret["seqs"]){
-		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
-		(*proteins).back().seqBase_.cnt_ = j["cnt"].asDouble();
-		(*proteins).back().seqBase_.frac_ = j["frac"].asDouble();
+		proteins->emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
+		proteins->back().seqBase_.cnt_ = j["cnt"].asDouble();
+		proteins->back().seqBase_.frac_ = j["frac"].asDouble();
 	}
 	updateAddCache(uid + "_protein", proteins);
 	return ret;
@@ -130,9 +130,9 @@ Json::Value seqCache::translate(const std::string & uid, bool complement,
 	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).reads_)), uid, complement, reverse, start);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
 	for(const auto & j : ret["seqs"]){
-		(*proteins).emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
-		(*proteins).back().seqBase_.cnt_ = j["cnt"].asDouble();
-		(*proteins).back().seqBase_.frac_ = j["frac"].asDouble();
+		proteins->emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
+		proteins->back().seqBase_.cnt_ = j["cnt"].asDouble();
+		proteins->back().seqBase_.frac_ = j["frac"].asDouble();
 	}
 	updateAddCache(uid + "_protein", proteins);
 	return ret;

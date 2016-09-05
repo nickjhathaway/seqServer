@@ -30,3 +30,4 @@
 #include "seqServer/objects/SeqToJsonFactory.hpp"
 #include "seqServer/objects/SessionUIDFactory.hpp"
 #include "seqServer/objects/ColorFactory.hpp"
+#include "seqServer/objects/LogMessageFactory.hpp"

@@ -42,8 +42,13 @@ std::vector<bfs::path> getLibFiles(const std::string & dir, const std::string & 
 
 namespace seqServer {
 
-std::string getSeqServerInstallDir(){
+std::string getSeqServerInstallDir() {
 	return seqServer_INSTALLDIR;
+}
+
+std::string getSeqServerInstallCoreDir() {
+	return bib::files::make_path(seqServer_INSTALLDIR,
+			"etc/resources/seqServerCore").string();
 }
 
 }  // namespace seqServer

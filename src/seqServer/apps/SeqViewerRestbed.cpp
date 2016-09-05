@@ -29,6 +29,7 @@ SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(c
 
 
 void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session){
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto body = genHtmlDoc(rootName_, pages_.at("mainPageJs"));
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtHtmlHeader(body);
@@ -36,6 +37,7 @@ void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session
 }
 
 void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session){
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto sesUid = startSeqCacheSession();
 
 	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
@@ -55,6 +57,7 @@ void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session)
 }
 
 std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqData(){
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, {"seqData"}}));
@@ -66,6 +69,7 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqData(){
 }
 
 std::shared_ptr<restbed::Resource> SeqViewerRestbed::mainPage(){
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }}));
@@ -78,6 +82,7 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::mainPage(){
 
 
 std::vector<std::shared_ptr<restbed::Resource>> SeqViewerRestbed::getAllResources(){
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = super::getAllResources();
 	ret.emplace_back(mainPage());
 	ret.emplace_back(seqData());
@@ -104,13 +109,18 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	std::string name = "ssv";
 	std::string resourceDirName = bib::files::make_path(seqServer::getSeqServerInstallDir(),
 			"etc/resources").string();
+	std::string seqServerCore = seqServer::getSeqServerInstallCoreDir();
 	bool protein = false;
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "-resourceDirName",
-			"Name of the resource Directory where the js and hmtl is located",
+			"Name of the resource Directory where the js and html is located",
 			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
+	setUp.setOption(seqServerCore, "-seqServerCore",
+			"Name of the seqServerCore Directory where the js and html for the core seqServer code is located",
+			!bfs::exists(seqServerCore));
+	bib::appendAsNeeded(seqServerCore, "/");
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
@@ -126,8 +136,9 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
   auto optsJson = setUp.pars_.ioOptions_.toJson();
   appConfig["ioOptions"] =  bib::json::toJson(optsJson.toStyledString());
   appConfig["resources"] = bib::json::toJson(resourceDirName);
-  appConfig["js"] = bib::json::toJson(resourceDirName + "js/");
-  appConfig["css"] = bib::json::toJson(resourceDirName + "css/");
+  appConfig["seqServerCore"] = bib::json::toJson(seqServerCore);
+  //appConfig["js"] = bib::json::toJson(resourceDirName + "js/");
+  //appConfig["css"] = bib::json::toJson(resourceDirName + "css/");
   appConfig["debug"] =  bib::json::toJson(setUp.pars_.debug_);
   appConfig["protein"] = bib::json::toJson(protein);
 
