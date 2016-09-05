@@ -85,17 +85,19 @@ function njhSeqView(viewName, seqData, cellWidth, cellHeight, addQualChart){
 	this.cw = cellWidth;
 	this.ch = cellHeight;
 	this.bColors = seqData["baseColor"];
-			
+	
+	//order for the next three is important
 	this.initDefaultMenu();
 	this.initActionButtons();
 	this.initDrawArea();
 	
 
 	// set up of sizes
-	$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
+	$(this.masterDiv).width( (window.innerWidth  - 10) * 0.98);
 	$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
+	
 	this.seqSvgMaster
-			.attr("width", $(this.masterDiv).width() * 0.98)
+			.attr("width",  $(this.masterDiv).width() * 0.98)
 			.attr("height", $(this.masterDiv).height() * 0.95)
 			
 
@@ -201,7 +203,7 @@ njhSeqView.prototype.initDrawArea = function(){
 	d3.select(this.topDivName).append("div")
 		.attr("id", "minTreeChartTop");
 
-
+	
 	this.masterDiv = this.masterDivD3.node();
 	
 	this.rSlider = $(".rightSlider", this.masterDiv)[0];
@@ -243,7 +245,6 @@ njhSeqView.prototype.initActionButtons = function(){
 				mainTable.push([self.seqData["seqs"][i]["seq"]]);
 			}
 	    }
-
 	  	var fastaData = 'data:text/plain;base64,'+ btoa(d3.tsv.format(mainTable));
 	  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
 	  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
@@ -297,7 +298,7 @@ njhSeqView.prototype.initActionButtons = function(){
 			.attr("class", "deselectAllBut btn btn-info");
 	deselectButton.on("click", function(){
 		self.selected.clear();
-		self.updateSelectors();
+		self.updateHighlightedSeqs();
 	});
 }
 
@@ -577,7 +578,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				.style("margin-right", "5px");
 		var divInputGroup = startSiteInput
 			.append("div")
-			.attr("class", "input-group");
+				.attr("class", "input-group");
 		divInputGroup.append("input")
 			.attr("type", "number")
 			.attr("class", "form-control")
@@ -588,7 +589,6 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			.attr("value", "0");
 		$('#startSiteForm').submit(function(e){
 	        e.preventDefault();
-	        //console.log($("#startSiteInput").val());
 	    });
 		var treeWidthInput = d3.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
 			.append("li")
@@ -616,7 +616,6 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			.attr("value", "1000");
 		$('#treeWidthForm').submit(function(e){
 	        e.preventDefault();
-	        //console.log($("#startSiteInput").val());
 	    });
 		var treeHeightInput = d3.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
 			.append("li")
@@ -634,7 +633,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				.style("margin-right", "5px");;
 		var divTreeHeightInputGroup = treeHeightInput
 			.append("div")
-			.attr("class", "input-group");
+				.attr("class", "input-group");
 		divTreeHeightInputGroup.append("input")
 			.attr("type", "number")
 			.attr("class", "form-control")
@@ -644,7 +643,6 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			.attr("value", "1000");
 		$('#treeHeightForm').submit(function(e){
 	        e.preventDefault();
-	        //console.log($("#startSiteInput").val());
 	    });
 		
 		var numDiffInput = d3.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
@@ -663,7 +661,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				.style("margin-right", "5px");;
 		var divNumDiffInputGroup = numDiffInput
 			.append("div")
-			.attr("class", "input-group");
+				.attr("class", "input-group");
 		divNumDiffInputGroup.append("input")
 			.attr("type", "number")
 			.attr("class", "form-control")
@@ -673,7 +671,6 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			.attr("value", "0");
 		$('#numDiffForm').submit(function(e){
 	        e.preventDefault();
-	        //console.log($("#startSiteInput").val());
 	    });
 	}	
 };
@@ -725,18 +722,18 @@ njhSeqView.prototype.setUpDrawArea = function(){
 	$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
 	this.seqSvgMaster.attr("height", Math.min((window.innerHeight - 60) * 0.80, maxPossHeight) * 0.95)
 	this.updateSeqDims();
-	this.updateSelectors();
+	this.updateHighlightedSeqs();
 	this.paintSeqs();
 };
 
 njhSeqView.prototype.updateDrawArea = function(){
-	var self = this
+	var self = this;
 	var changingHeight = (window.innerHeight - 60) * 0.80;
-	var changingWidth = (window.innerWidth - 10) * 0.98;
+	var changingWidth =  (window.innerWidth  - 10) * 0.98;
 	$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
 	var maxPossHeight = this.ch * (this.seqData["seqs"].length + 4);
 	$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
-	this.seqSvgMaster.attr("width", $(self.masterDiv).width() * 0.96);
+	this.seqSvgMaster.attr("width",  $(self.masterDiv).width()  * 0.96);
 	this.seqSvgMaster.attr("height", $(self.masterDiv).height() * 0.95);
 	if(changingHeight > parseInt(this.seqSvgMaster.style("height"))){
 		this.needToPaint = true;
@@ -745,7 +742,7 @@ njhSeqView.prototype.updateDrawArea = function(){
 		this.needToPaint = true;
 	}
 	this.updateSeqDims();
-	this.updateSelectors();
+	this.updateHighlightedSeqs();
 };
 
 njhSeqView.prototype.paint = function(){
@@ -753,7 +750,7 @@ njhSeqView.prototype.paint = function(){
 	this.placeBasePos();
 	this.paintSelectedSeq();
 	this.setSelector();
-	this.updateSelectors();
+	this.updateHighlightedSeqs();
 };
 
 njhSeqView.prototype.setSelector = function(){
@@ -769,20 +766,26 @@ njhSeqView.prototype.setSelector = function(){
 	}
 };
 
-njhSeqView.prototype.updateSelectors = function(){
+njhSeqView.prototype.updateHighlightedSeqs = function(){
 	var self = this;
-	var selectors = d3.select(this.topDivName + " .SeqViewDrawAreaDiv").selectAll(".seqHighlight")
+	var selectors = d3.select(this.topDivName + " .SeqViewDrawAreaDiv")
+		.selectAll(".seqHighlight")
 		.data(setToArray(this.selected));
+	
 	var lowerBound = this.seqStart;
 	var upperBound = this.seqStart + this.nSeqs;
-	selectors.enter().append("div")
+	selectors.enter()
+		.append("div")
 		.attr("class", "seqHighlight")
 		.style("width", function(d){ 
 			return self.nameOffSet.toString() + "px";})
 		.style("height",function(d){ return self.ch.toString() + "px";});
-	selectors.exit().remove();
 	
-	selectors.style("visibility",function(d){ 
+	selectors.exit()
+		.remove();
+	
+	selectors
+		.style("visibility",function(d){ 
 			if(d >= lowerBound && d < upperBound){
 				return "visible";
 			}else{
@@ -794,13 +797,7 @@ njhSeqView.prototype.updateSelectors = function(){
 			}else{
 				return 0;
 			}})
-		.style("left",function(d){ 
-			//console.log(d);
-			if(d >= lowerBound && d < upperBound){
-				return 0;
-			}else{
-				return 0;
-			}});
+		.style("left", 0);
 };
 
 njhSeqView.prototype.mouseWheelUp = function(steps){
@@ -823,31 +820,36 @@ njhSeqView.prototype.mouseWheelDown = function(steps){
 
 njhSeqView.prototype.setUpSliders = function(){
 	var self = this;
+	//set up base slider
 	$(this.bSliderDiv).css("left", this.nameOffSet);
 	$(this.bSliderDiv).css("width", this.nBases * this.cw);
 	$(this.bSlider).css("width", this.nBases * this.cw);
-    $(this.bSlider).bootstrapSlider({
-     // range: "min",
-      min: 0,
-      max: Math.max(self.seqData["maxLen"] - self.nBases, 0),
-      value: 0
-    });
-    $( this.bSlider ).on("slide", function(slideEvent){
-    	  self.baseStart = slideEvent.value;
-    	  self.needToPaint = true;
-    	  self.paint();
-    });  
-    $(this.rSliderDiv).css("height", this.nSeqs * this.ch);
-    $(this.rSlider).css("height", this.nSeqs * this.ch);
-    
-    $( this.rSlider ).bootstrapSlider({
-      min: 0,
-      tooltip_position:'left',
-      max: Math.max(self.seqData["numReads"]- self.nSeqs, 0),
-      value: 0,
-      orientation: "vertical"
-    });
-    $( this.rSlider ).on("slide", function(slideEvent){
+	//create base slider using bootstrapSlider class
+	$(this.bSlider).bootstrapSlider({
+	  min: 0,
+	  max: Math.max(self.seqData["maxLen"] - self.nBases, 0),
+	  value: 0
+	});
+	//set up update function on slide
+	$( this.bSlider ).on("slide", function(slideEvent){
+		  self.baseStart = slideEvent.value;
+		  self.needToPaint = true;
+		  self.paint();
+	});  
+	
+	//setup seq slider
+	$(this.rSliderDiv).css("height", this.nSeqs * this.ch);
+	$(this.rSlider).css("height", this.nSeqs * this.ch);
+	//create seq slider using bootstrapSlider class
+	$( this.rSlider ).bootstrapSlider({
+	  min: 0,
+	  tooltip_position:'left',
+	  max: Math.max(self.seqData["numReads"]- self.nSeqs, 0),
+	  value: 0,
+	  orientation: "vertical"
+	});
+	//set up update function on slide
+	$( this.rSlider ).on("slide", function(slideEvent){
 	  self.needToPaint = true;
 	  self.seqStart = slideEvent.value;
 	  self.paint();
@@ -1012,7 +1014,7 @@ njhSeqView.prototype.paintSeqs = function(){
         			self.selected.add(self.currentSeq);
         		}	
 			}
-			self.updateSelectors();
+			self.updateHighlightedSeqs();
 		});
 		//add bases rects that need to be added
 		var seqGroupsBaseRects = seqGroups.selectAll(".baseRects")
@@ -1148,9 +1150,7 @@ njhSeqView.prototype.paintSelectedSeq = function(){
 njhSeqView.prototype.init = function(){
 	var self = this;
 	$(window).bind("resize", function(){
-		self.updateDrawArea();
-		self.setUpSliders();
-		self.paint();
+		self.updateOnResize();
 	});
 	self.setUp();
 	self.paint();
