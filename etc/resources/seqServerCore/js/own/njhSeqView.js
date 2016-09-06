@@ -85,33 +85,30 @@ function njhSeqView(viewName, seqData, cellWidth, cellHeight, addQualChart){
 	this.cw = cellWidth;
 	this.ch = cellHeight;
 	this.bColors = seqData["baseColor"];
+    //setting name offset for displaying sequence names
+	this.nameOffSet = 10 * cellWidth;
 	
 	//order for the next three is important
+	//initiate the menu
 	this.initDefaultMenu();
+	//initiate the action buttons
 	this.initActionButtons();
+	//initiate the drawing area
 	this.initDrawArea();
-	
-
-	// set up of sizes
-	$(this.masterDiv).width( (window.innerWidth  - 10) * 0.98);
-	$(this.masterDiv).height((window.innerHeight - 60) * 0.98);
-	
-	this.seqSvgMaster
-			.attr("width",  $(this.masterDiv).width() * 0.98)
-			.attr("height", $(this.masterDiv).height() * 0.95)
-			
-
-    
-	this.nameOffSet = 10 * cellWidth;
-	this.nBases = Math.min(Math.floor((parseInt(this.seqSvgMaster.style("width")) - cellWidth - this.nameOffSet)/cellWidth),this.seqData["maxLen"] );
-	this.nSeqs = Math.min(Math.floor((parseInt(this.seqSvgMaster.style("height")) - cellHeight)/cellHeight), this.seqData["seqs"].length);
-	
+	//add quality chart if indicated
 	if(addQualChart){
 		this.addQualChart();
 	}else{
 		this.showingQualChart = false;
 	}
 	
+	var self = this;
+	//bind the resize of the window to update the viewer as well
+	$(window).bind("resize", function(){
+		self.updateOnResize();
+	});
+	self.setUp();
+	self.paint();
 };
 
 njhSeqView.prototype.removeQualChart = function(){
@@ -187,9 +184,12 @@ njhSeqView.prototype.initDrawArea = function(){
 	
 	this.masterDivD3
 		.append("div")
-		.attr("class", "pop-up")
-			.append("p")
-			.attr("id", "info");
+		.attr("class", "pop-up");
+	
+	this.popTab = createTable(this.topDivName + " .pop-up")
+		.style("border", "1px solid black")
+		.style("box-shadow", "3px 3px 1.5px rgba(0, 0, 0, 0.5)")
+		.attr("id", "pop-up-tab");
 	
 	this.masterDivD3
 		.append("div")
@@ -690,10 +690,8 @@ njhSeqView.prototype.updateData = function(inputSeqData){
 	}
 	
 	this.uid = inputSeqData["uid"];
-	this.nSeqs = Math.min(Math.floor((parseInt(this.seqSvgMaster.style("height")) - this.ch)/this.ch), this.seqData["seqs"].length);
 	this.needToPaint = true;
-	this.updateDrawArea();
-	this.setUpSliders();
+	this.setUp();
 	this.paint();
 };
 
@@ -705,50 +703,51 @@ njhSeqView.prototype.resetSelection = function(){
 }
 
 njhSeqView.prototype.setUp = function(){
-	this.setUpDrawArea();
+	this.updateDrawArea();
 	this.setUpSliders();
 	this.setUpListeners();
-	this.setSelector();
+	this.paintSelectedSeq();
 };
 
+//should be called after a resize of the drawing area or a change of data
 njhSeqView.prototype.updateSeqDims = function(){
-	this.nBases = Math.min(Math.floor((parseInt(this.seqSvgMaster.style("width")) - this.cw - this.nameOffSet)/this.cw),this.seqData["maxLen"] );
+	this.nBases = Math.min(Math.floor((parseInt(this.seqSvgMaster.style("width")) - this.cw * 3 - this.nameOffSet)/this.cw),this.seqData["maxLen"] );
 	this.nSeqs = Math.min(Math.floor((parseInt(this.seqSvgMaster.style("height")) - this.ch)/this.ch), this.seqData["seqs"].length);
 }
 
-njhSeqView.prototype.setUpDrawArea = function(){
-	$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
+//set the drawing area size based on window size
+njhSeqView.prototype.setDrawAreaSize = function(){
+	$(this.masterDiv).width(Math.max((window.innerWidth - 10) * 0.98, this.nameOffSet + this.cw * 40));
 	var maxPossHeight = this.ch * (this.seqData["seqs"].length + 4);
-	$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
-	this.seqSvgMaster.attr("height", Math.min((window.innerHeight - 60) * 0.80, maxPossHeight) * 0.95)
-	this.updateSeqDims();
-	this.updateHighlightedSeqs();
-	this.paintSeqs();
-};
+	$(this.masterDiv).height(Math.min(Math.max((window.innerHeight - 60) * 0.80 , this.ch * 8), maxPossHeight));
+	this.seqSvgMaster.attr("width",  $(this.masterDiv).width() - 20);
+	this.seqSvgMaster.attr("height", $(this.masterDiv).height() - 25);
+}
 
-njhSeqView.prototype.updateDrawArea = function(){
-	var self = this;
+//only setups up the drawing area size and the number of seqs and bases to display
+njhSeqView.prototype.updateDrawAreaSize = function(){
 	var changingHeight = (window.innerHeight - 60) * 0.80;
 	var changingWidth =  (window.innerWidth  - 10) * 0.98;
-	$(this.masterDiv).width((window.innerWidth - 10) * 0.98);
-	var maxPossHeight = this.ch * (this.seqData["seqs"].length + 4);
-	$(this.masterDiv).height(Math.min((window.innerHeight - 60) * 0.80, maxPossHeight));
-	this.seqSvgMaster.attr("width",  $(self.masterDiv).width()  * 0.96);
-	this.seqSvgMaster.attr("height", $(self.masterDiv).height() * 0.95);
+	
+	this.setDrawAreaSize();
+	
 	if(changingHeight > parseInt(this.seqSvgMaster.style("height"))){
 		this.needToPaint = true;
 	}
 	if(changingWidth > parseInt(this.seqSvgMaster.style("width"))){
 		this.needToPaint = true;
 	}
+}
+
+njhSeqView.prototype.updateDrawArea = function(){
+	this.updateDrawAreaSize();
 	this.updateSeqDims();
-	this.updateHighlightedSeqs();
 };
+
 
 njhSeqView.prototype.paint = function(){
 	this.paintSeqs();
-	this.placeBasePos();
-	this.paintSelectedSeq();
+	this.updateBaseSeqPos();
 	this.setSelector();
 	this.updateHighlightedSeqs();
 };
@@ -830,10 +829,10 @@ njhSeqView.prototype.setUpSliders = function(){
 	  max: Math.max(self.seqData["maxLen"] - self.nBases, 0),
 	  value: 0
 	});
-	//set up update function on slide
-	$( this.bSlider ).on("slide", function(slideEvent){
-		  self.baseStart = slideEvent.value;
+	//set up update function on slider change
+	$( this.bSlider ).on("change", function(changeEvent){
 		  self.needToPaint = true;
+		  self.baseStart = changeEvent.value.newValue;
 		  self.paint();
 	});  
 	
@@ -848,21 +847,21 @@ njhSeqView.prototype.setUpSliders = function(){
 	  value: 0,
 	  orientation: "vertical"
 	});
-	//set up update function on slide
-	$( this.rSlider ).on("slide", function(slideEvent){
+
+	//set up update function on slider change
+	$( this.rSlider ).on("change", function(changeEvent){
 	  self.needToPaint = true;
-	  self.seqStart = slideEvent.value;
+	  self.seqStart = changeEvent.value.newValue;
 	  self.paint();
 	});
+	
 };
    
 njhSeqView.prototype.updateOnResize = function(){
-   this.updateDrawArea();
-   this.setUpSliders();
-   this.paint();
-   if(this.proteinViewer){
-	   this.proteinViewer.updateOnResize();
-   }
+    this.updateDrawArea();
+    this.setUpSliders();
+    this.paint();
+    this.paintSelectedSeq();
 };
 
 njhSeqView.prototype.clicked = function(e){
@@ -908,29 +907,22 @@ njhSeqView.prototype.setUpListeners = function(){
 	});
 	
 	$(this.seqSvgMaster.node()).mousemove(function(e) {
-	var currentPoint = getRelCursorPosition(e, self.seqSvgMaster.node());
-    if(currentPoint[1] <= self.nSeqs * self.ch &&
-    		currentPoint[0] <= self.nBases * self.cw + self.nameOffSet){
-    	$(self.popUp).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
-      	var currentBaseHover = Math.ceil(currentPoint[0]/self.cw) - self.nameOffSet/self.cw + self.baseStart -1;
-        var currentSeqHover = Math.ceil(currentPoint[1]/self.ch) + self.seqStart - 1;
-        var base = self.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover];
-        var qual = self.seqData["seqs"][currentSeqHover]["qual"][currentBaseHover];
-		if(currentPoint[0] > self.nameOffSet){
-	        $("#info", self.popUp)[0].innerHTML = "name: " + 
-	        	self.seqData["seqs"][currentSeqHover]["name"]
-	        	+ "<br>base: "  + base
-	        	+ "<br>qual: " +  qual 
-	        	+ "<br>pos: " + currentBaseHover;
-        }else{
-        	$("#info", self.popUp)[0].innerHTML = "name: " + 
-        	self.seqData["seqs"][currentSeqHover]["name"];
-	        }
-			$(self.popUp).show();
-        }else{
+		var currentPoint = getRelCursorPosition(e, self.seqSvgMaster.node());
+	    if(currentPoint[1] <= self.nSeqs * self.ch &&
+	    		currentPoint[0] <= self.nBases * self.cw + self.nameOffSet){
+	    	$(self.popUp).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
+          	var currentBaseHover = Math.ceil(currentPoint[0]/self.cw) - self.nameOffSet/self.cw + self.baseStart -1;
+            var currentSeqHover = Math.ceil(currentPoint[1]/self.ch) + self.seqStart - 1;
+            if(currentPoint[0] > self.nameOffSet &&
+            		undefined == self.seqData["seqs"][currentSeqHover]["seq"][currentBaseHover]){
+            	$(self.popUp).hide();
+            } else {
+            	$(self.popUp).show();
+            }
+	    } else {
         	$(self.popUp).hide();
         }
-    });
+	});
 };
    	
 	//draw all necessary seqs
@@ -978,44 +970,46 @@ njhSeqView.prototype.paintSeqs = function(){
 			.text(function(d){return d3.select(this.parentNode).datum()["name"];});
 		
 		seqGroups.selectAll(".nameRects")
-		.on("mousedown", function(d,i){
-			self.currentSeq = d3.select(this.parentNode).datum()["position"];
-			if(d3.event.shiftKey ){
-    			if(self.selected.size > 0){
-    				var lastAdded = getLastValue(self.selected);
-    				if(lastAdded == self.currentSeq){
-    					self.selected.delete(self.currentSeq);
-    				}else{
-	    				var seqs;
-	    				if(lastAdded > self.currentSeq){
-	    					seqs = range(self.currentSeq, lastAdded - 1);
+			.on("mouseenter", function(d, i){
+				updateTable(self.popTab,[{"name": d3.select(this.parentNode).datum()["name"]}], ["name"]);
+			}).on("mousedown", function(d,i){
+				self.currentSeq = d3.select(this.parentNode).datum()["position"];
+				if(d3.event.shiftKey ){
+	    			if(self.selected.size > 0){
+	    				var lastAdded = getLastValue(self.selected);
+	    				if(lastAdded == self.currentSeq){
+	    					self.selected.delete(self.currentSeq);
 	    				}else{
-	    					seqs = range(lastAdded + 1, self.currentSeq);
+		    				var seqs;
+		    				if(lastAdded > self.currentSeq){
+		    					seqs = range(self.currentSeq, lastAdded - 1);
+		    				}else{
+		    					seqs = range(lastAdded + 1, self.currentSeq);
+		    				}
+	    					for(seqPos in seqs){
+	    	            		if(self.selected.has(seqs[seqPos])){
+	    	            			self.selected.delete(seqs[seqPos]);
+	    	            		}else{
+	    	            			self.selected.add(seqs[seqPos]);
+	    	            		}
+	    					}
 	    				}
-    					for(seqPos in seqs){
-    	            		if(self.selected.has(seqs[seqPos])){
-    	            			self.selected.delete(seqs[seqPos]);
-    	            		}else{
-    	            			self.selected.add(seqs[seqPos]);
-    	            		}
-    					}
-    				}
-    			}else{
-            		if(self.selected.has(self.currentSeq)){
-            			self.selected.delete(self.currentSeq);
-            		}else{
-            			self.selected.add(self.currentSeq);
-            		}
-    			}
-			}else{
-        		if(self.selected.has(self.currentSeq)){
-        			self.selected.delete(self.currentSeq);
-        		}else{
-        			self.selected.add(self.currentSeq);
-        		}	
-			}
-			self.updateHighlightedSeqs();
-		});
+	    			}else{
+	            		if(self.selected.has(self.currentSeq)){
+	            			self.selected.delete(self.currentSeq);
+	            		}else{
+	            			self.selected.add(self.currentSeq);
+	            		}
+	    			}
+				}else{
+	        		if(self.selected.has(self.currentSeq)){
+	        			self.selected.delete(self.currentSeq);
+	        		}else{
+	        			self.selected.add(self.currentSeq);
+	        		}	
+				}
+				self.updateHighlightedSeqs();
+			});
 		//add bases rects that need to be added
 		var seqGroupsBaseRects = seqGroups.selectAll(".baseRects")
 			.data(function(d){ return d["seq"].slice(self.baseStart, self.baseStart + self.nBases);});
@@ -1026,8 +1020,19 @@ njhSeqView.prototype.paintSeqs = function(){
 				.attr("class", "baseRects")
 				.attr("x", function(d,i){ return self.nameOffSet + i * self.cw})
 				.attr("width", this.cw)
-				.attr("height", this.ch);
-		
+				.attr("height", this.ch)
+				.on("mouseenter", function(d,i){
+					updateTable(self.popTab,[{"name": d3.select(this.parentNode).datum()["name"], 
+											 "base": d,
+											 "qual": d3.select(this.parentNode).datum()["qual"][self.baseStart + i],
+											 "pos" : (self.baseStart + i)}], ["name", "base", "qual", "pos"]);
+					/*
+					$("#info", self.popUp)[0].innerHTML = "name: " 
+					+ d3.select(this.parentNode).datum()["name"]
+		        	+ "<br>base: "  + d
+		        	+ "<br>qual: " + d3.select(this.parentNode).datum()["qual"][self.baseStart + i]
+		        	+ "<br>pos: " + (self.baseStart + i);*/
+				});
 		//get rid of any base that no longer have data
 		seqGroupsBaseRects
 			.exit()
@@ -1035,8 +1040,8 @@ njhSeqView.prototype.paintSeqs = function(){
 		
 		//set the rects colors
 		seqGroupsBaseRects
-				.attr("fill", function(d){ return self.bColors[d]})
-				.attr("stroke",function(d){ return self.bColors[d]});
+			.attr("fill", function(d){ return self.bColors[d]})
+			.attr("stroke",function(d){ return self.bColors[d]});
 		
 		//add base texts that need to be added;
 		var seqGroupsBaseTexts = seqGroups.selectAll(".baseTexts")
@@ -1069,7 +1074,7 @@ njhSeqView.prototype.paintSeqs = function(){
 };
 
 //paint seq position
-njhSeqView.prototype.placeBasePos = function(){
+njhSeqView.prototype.updateBaseSeqPos = function(){
 	var baseStartPos = this.seqSvgMasterG.selectAll("#baseStartPos")
 		.data([this.baseStart]);
 	
@@ -1092,7 +1097,7 @@ njhSeqView.prototype.placeBasePos = function(){
 			.attr("fill", "#000000");
 			
 	
-	baseStopPos.attr("x", this.nameOffSet + this.nBases * this.cw - this.cw)
+	baseStopPos.attr("x", this.nameOffSet + this.nBases * this.cw - this.cw )
 		.attr("y", this.nSeqs * this.ch + 2 + this.ch/2.0)
 		.text(function(d){return d;});
 	
@@ -1128,33 +1133,28 @@ njhSeqView.prototype.paintSelectedSeq = function(){
 	if(this.currentBase < 0){
    		logInfo = "name: "  
    			+ this.seqData["seqs"][this.currentSeq]["name"];
-	}else{
+	} else {
    		logInfo = "name: "  
 	        	+ this.seqData["seqs"][this.currentSeq]["name"]
 	        	+ " base: "  + this.seqData["seqs"][this.currentSeq]["seq"][this.currentBase] 
 	        	+ " qual: " +  this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]
 	        	+ " pos: " + this.currentBase;
 	}
+	
 	var selectedSeqInfo = this.seqSvgMasterG.selectAll("#selectedSeqInfo")
 		.data([logInfo]);
 	
 	selectedSeqInfo.enter()
 		.append("text")
 			.attr("id","selectedSeqInfo" )
-			.attr("fill", "#000000");		
-	selectedSeqInfo.attr("x", this.nameOffSet + this.cw + 20 )
+			.attr("fill", "#000000");	
+	
+	selectedSeqInfo
+		.attr("x", this.nameOffSet + this.cw + 20 )
 		.attr("y", (this.nSeqs)*this.ch + 2  + this.ch/2)
 			.text(function(d){return d;});
 };
    
-njhSeqView.prototype.init = function(){
-	var self = this;
-	$(window).bind("resize", function(){
-		self.updateOnResize();
-	});
-	self.setUp();
-	self.paint();
-};
 
 
    

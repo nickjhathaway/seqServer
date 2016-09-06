@@ -13,7 +13,6 @@ $(document).ready(function(){
 	}).then(function (datums) {
 		var mainData = JSON.parse(datums);
 		var SeqViewer = new njhSeqView("#viewer",  mainData, cellWidth, cellHeight, false);
-		SeqViewer.init();
 		gifLoading.remove()
 		$(window).on('beforeunload', function(){
 		  	makeRequest({
