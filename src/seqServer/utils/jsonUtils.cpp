@@ -204,4 +204,14 @@ cppcms::json::value jsonToCppcmsJson(const Json::Value & val ){
 	return ret;
 }
 
+std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData) {
+	std::vector<uint32_t> selected { };
+	if (postData.isMember("selected")) {
+		selected = bib::json::jsonArrayToVec(postData["selected"],
+				std::function<uint32_t(const Json::Value &)>(
+						[](const Json::Value & val)->uint32_t {return val.asUInt();}));
+	}
+	return selected;
+}
+
 } /* namespace bibseq */

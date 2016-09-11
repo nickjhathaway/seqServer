@@ -17,11 +17,7 @@ SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(c
 					bib::files::make_path(config["resources"], "ssv/ssv.js"));
 
 	//read in data and set to the json
-	SeqIOOptions options(config["ioOptions"].asString());
-	SeqInput reader(options);
-	reader.openIn();
-	auto reads = reader.readAllReads<readObject>();
-	seqs_->addToCache(rootName_.substr(1), std::make_shared<std::vector<readObject>>(reads));
+	seqs_->addToCache(rootName_.substr(1), SeqIOOptions(config["ioOptions"].asString()));
 	if(debug_){
 		std::cout << "Finished set up" << std::endl;
 	}
@@ -39,7 +35,6 @@ void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session
 void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto sesUid = startSeqCacheSession();
-
 	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
 	seqData["sessionUID"] = bib::json::toJson(sesUid);
 	if(protein_){
@@ -63,8 +58,9 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqData(){
 			UrlPathFactory::createUrl( { { rootName_ }, {"seqData"}}));
 	resource->set_method_handler("GET",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqViewerRestbed::seqDataHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> session) {
+						seqDataHandler(session);
+					}));
 	return resource;
 }
 
@@ -75,8 +71,9 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::mainPage(){
 			UrlPathFactory::createUrl( { { rootName_ }}));
 	resource->set_method_handler("GET",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqViewerRestbed::mainPageHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> session) {
+						mainPageHandler(session);
+					}));
 	return resource;
 }
 
@@ -110,6 +107,7 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	std::string resourceDirName = bib::files::make_path(seqServer::getSeqServerInstallDir(),
 			"etc/resources").string();
 	std::string seqServerCore = seqServer::getSeqServerInstallCoreDir();
+	bfs::path workingDir = "/tmp/";
 	bool protein = false;
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
@@ -124,6 +122,7 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	setUp.processDefaultReader(true);
 	setUp.setOption(port, "-port", "Port Number to Serve On");
 	setUp.setOption(name, "-name", "Nmae of root of the server");
+	setUp.setOption(workingDir, "--workingDir", "The working directory to store temporary files");
 	setUp.processDebug();
 	setUp.processVerbose();
 	setUp.finishSetUp(std::cout);
@@ -137,10 +136,9 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
   appConfig["ioOptions"] =  bib::json::toJson(optsJson.toStyledString());
   appConfig["resources"] = bib::json::toJson(resourceDirName);
   appConfig["seqServerCore"] = bib::json::toJson(seqServerCore);
-  //appConfig["js"] = bib::json::toJson(resourceDirName + "js/");
-  //appConfig["css"] = bib::json::toJson(resourceDirName + "css/");
   appConfig["debug"] =  bib::json::toJson(setUp.pars_.debug_);
   appConfig["protein"] = bib::json::toJson(protein);
+  appConfig["workingDir"] = bib::json::toJson(workingDir);
 
   if(setUp.pars_.verbose_){
     std::cout << "localhost:"  << port << name << std::endl;

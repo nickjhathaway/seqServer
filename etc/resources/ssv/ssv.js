@@ -12,24 +12,11 @@ $(document).ready(function(){
 		method: "GET"
 	}).then(function (datums) {
 		var mainData = JSON.parse(datums);
-		var SeqViewer = new njhSeqView("#viewer",  mainData, cellWidth, cellHeight, false);
-		gifLoading.remove()
-		$(window).on('beforeunload', function(){
-		  	makeRequest({
-		  		url: '/' + rName + '/closeSession',
-		  		method: "POST",
-		  		params: {"sessionUID" : mainData["sessionUID"]},
-		  		headers: {"Content-Type" : "application/json"}
-		  	}).then(function (datums) {
-		  		console.log(JSON.parse(datums));
-		  	}).catch(function(err){
-		  		removeAllDivGifLoading();
-		  		logRequestError(err);
-		  	});
-		});
+		var SeqViewer = new njhSeqView("#viewer", mainData);
+		gifLoading.remove();
+		setUpCloseSession(mainData["sessionUID"]);		
 	}).catch(function(err){
   		removeAllDivGifLoading();
   		logRequestError(err);
   	});
 });
-	 	

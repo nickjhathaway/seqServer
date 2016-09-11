@@ -31,3 +31,7 @@
 #include "seqServer/objects/SessionUIDFactory.hpp"
 #include "seqServer/objects/ColorFactory.hpp"
 #include "seqServer/objects/LogMessageFactory.hpp"
+
+#include "seqServer/objects/SeqCaches.h"
+
+

@@ -409,3 +409,19 @@ function getLastValue(set){
 }
 
 
+function setUpCloseSession(sessionID){
+	$(window).on('beforeunload', function(){
+	  	makeRequest({
+	  		url: '/' + rName + '/closeSession',
+	  		method: "POST",
+	  		params: {"sessionUID" : sessionID },
+	  		headers: {"Content-Type" : "application/json"}
+	  	}).then(function (datums) {
+	  		console.log(JSON.parse(datums));
+	  	}).catch(function(err){
+	  		logRequestError(err);
+	  	});
+	});
+}
+
+

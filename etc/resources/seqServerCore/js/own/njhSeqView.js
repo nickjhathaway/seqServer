@@ -65,28 +65,35 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
    
 
 
-function njhSeqView(viewName, seqData, cellWidth, cellHeight, addQualChart){
+function njhSeqView(viewName, seqData, params){
 	//need to add style and html, currently just there
 	//retrieve html elements 
 	this.topDivName = viewName;
 	this.topDiv = document.getElementById(viewName);
 	$(this.topDiv).addClass("SeqView");
-	this.sessionUID = seqData["sessionUID"];
-	this.uid = seqData["uid"];
-	this.showingQualChart = addQualChart;
-	this.selected = new Set(seqData["selected"]);
-	this.protein = seqData["seqType"] === "protein"; 
-	this.seqData = seqData;
 	this.seqStart = 0;
 	this.baseStart = 0;
 	this.currentSeq = 0;
 	this.currentBase = 0;
 	this.needToPaint = true;
-	this.cw = cellWidth;
-	this.ch = cellHeight;
-	this.bColors = seqData["baseColor"];
+	if(typeof params === 'undefined'){
+		params = {}
+	}
+	this.cw = (params.hasOwnProperty("cellWidth")) ?   params["cellWidth"] : 20;
+	this.ch = (params.hasOwnProperty("cellHeight")) ?  params["cellHeight"] : 25;
+	this.showingQualChart = (params.hasOwnProperty("addQualChart")) ?  params["addQualChart"] : false;
     //setting name offset for displaying sequence names
-	this.nameOffSet = 10 * cellWidth;
+	this.nameOffSet = 10 * this.cw;
+	
+	var self = this;
+	
+	//set up input seqData;
+	this.seqData = seqData;
+	this.sessionUID = seqData["sessionUID"];
+	this.uid = seqData["uid"];
+	this.selected = new Set(seqData["selected"]);
+	this.protein = seqData["seqType"] === "protein"; 
+	this.bColors = seqData["baseColor"];
 	
 	//order for the next three is important
 	//initiate the menu
@@ -96,13 +103,10 @@ function njhSeqView(viewName, seqData, cellWidth, cellHeight, addQualChart){
 	//initiate the drawing area
 	this.initDrawArea();
 	//add quality chart if indicated
-	if(addQualChart){
+	if(this.showingQualChart){
 		this.addQualChart();
-	}else{
-		this.showingQualChart = false;
 	}
-	
-	var self = this;
+
 	//bind the resize of the window to update the viewer as well
 	$(window).bind("resize", function(){
 		self.updateOnResize();

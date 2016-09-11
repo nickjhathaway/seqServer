@@ -50,6 +50,8 @@ cppcms::json::value jsonToCppcmsJson(const Json::Value & val);
 
 
 
+std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData);
+
 
 } /* namespace bibseq */
 

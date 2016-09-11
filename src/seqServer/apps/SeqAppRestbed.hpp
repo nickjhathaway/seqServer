@@ -26,10 +26,8 @@ class SeqAppRestbed {
 
 
 
-	void cssOwnHandler(std::shared_ptr<restbed::Session> session);
-	void cssLibsHandler(std::shared_ptr<restbed::Session> session);
-	void jsOwnHandler(std::shared_ptr<restbed::Session> session);
-	void jsLibsHandler(std::shared_ptr<restbed::Session> session);
+	void cssHandler(std::shared_ptr<restbed::Session> session);
+	void jsHandler(std::shared_ptr<restbed::Session> session);
 
 
 	void sortPostHandler(std::shared_ptr<restbed::Session> session,
@@ -76,10 +74,8 @@ protected:
 
 public:
 
-	std::shared_ptr<restbed::Resource> cssOwn();
-	std::shared_ptr<restbed::Resource> cssLibs();
-	std::shared_ptr<restbed::Resource> jsOwn();
-	std::shared_ptr<restbed::Resource> jsLibs();
+	std::shared_ptr<restbed::Resource> css();
+	std::shared_ptr<restbed::Resource> js();
 
 	std::shared_ptr<restbed::Resource> getDNAColors() const;
 	std::shared_ptr<restbed::Resource> getProteinColors() const;
@@ -101,9 +97,9 @@ public:
 
 
 	const Json::Value config_;
-	std::shared_ptr<seqCache> seqs_;
+	std::shared_ptr<SeqCache> seqs_;
 
-	std::unordered_map<uint32_t, std::unique_ptr<seqCache>> seqsBySession_;
+	std::unordered_map<uint32_t, std::unique_ptr<SeqCache>> seqsBySession_;
 
 	virtual ~SeqAppRestbed();
 

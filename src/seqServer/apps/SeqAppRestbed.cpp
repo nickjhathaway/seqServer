@@ -12,8 +12,9 @@ namespace bibseq {
 void SeqAppRestbed::checkConfigThrow() const {
 	VecStr missing;
 	for (const auto & required : requiredOptions()) {
-		if(debug_){
-			std::cout << "Checking for required config option: " << required << std::endl;
+		if (debug_) {
+			std::cout << "Checking for required config option: " << required
+					<< std::endl;
 		}
 		if (!config_.isMember(required)) {
 			missing.emplace_back(required);
@@ -23,100 +24,80 @@ void SeqAppRestbed::checkConfigThrow() const {
 		std::stringstream ss;
 		ss << __PRETTY_FUNCTION__
 				<< ": Error, missing the following required options: "
-				<< bib::conToStr(requiredOptions(), ", ") << "\n";
+				<< bib::conToStr(missing, ", ") << "\n";
 		ss << "given options are: " << bib::conToStr(config_.getMemberNames(), ", ")
 				<< "\n";
 		throw std::runtime_error { ss.str() };
 	}
 }
 
-void SeqAppRestbed::cssOwnHandler(std::shared_ptr<restbed::Session> session) {
+void SeqAppRestbed::cssHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	std::string body = jsAndCss_.find("cssOwn")->second.get();
+	std::string body = jsAndCss_.find("css")->second.get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtCssHeader(body);
 	session->close(restbed::OK, body, headers);
 }
 
-void SeqAppRestbed::cssLibsHandler(std::shared_ptr<restbed::Session> session) {
+void SeqAppRestbed::jsHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	std::string body = jsAndCss_.find("cssLibs")->second.get();
-	const std::multimap<std::string, std::string> headers =
-			HeaderFactory::initiateTxtCssHeader(body);
-	session->close(restbed::OK, body, headers);
-}
-
-void SeqAppRestbed::jsOwnHandler(std::shared_ptr<restbed::Session> session) {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	std::string body = jsAndCss_.find("jsOwn")->second.get();
+	std::string body = jsAndCss_.find("js")->second.get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtJavascriptHeader(body);
 	session->close(restbed::OK, body, headers);
 }
 
-void SeqAppRestbed::jsLibsHandler(std::shared_ptr<restbed::Session> session) {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	std::string body = jsAndCss_.find("jsLibs")->second.get();
-	const std::multimap<std::string, std::string> headers =
-			HeaderFactory::initiateTxtJavascriptHeader(body);
-	session->close(restbed::OK, body, headers);
-}
-
-std::shared_ptr<restbed::Resource> SeqAppRestbed::cssOwn() {
+std::shared_ptr<restbed::Resource> SeqAppRestbed::css() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "cssOwn" } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "css" } }));
 	resource->set_method_handler("GET",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::cssOwnHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> session) {
+						cssHandler(session);
+					}));
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::cssLibs() {
+std::shared_ptr<restbed::Resource> SeqAppRestbed::js() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "cssLibs" } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "js" } }));
 	resource->set_method_handler("GET",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::cssLibsHandler, this,
-							std::placeholders::_1)));
-	return resource;
-}
-
-std::shared_ptr<restbed::Resource> SeqAppRestbed::jsOwn() {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "jsOwn" } }));
-	resource->set_method_handler("GET",
-			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::jsOwnHandler, this,
-							std::placeholders::_1)));
-	return resource;
-}
-
-std::shared_ptr<restbed::Resource> SeqAppRestbed::jsLibs() {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "jsLibs" } }));
-	resource->set_method_handler("GET",
-			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::jsLibsHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> session) {
+						jsHandler(session);
+					}));
 	return resource;
 }
 
 SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
-		config_(config), seqs_(std::make_shared<seqCache>()){
+		config_(config) {
 	checkConfigThrow();
-	//load js and css
-	jsAndCss_.emplace("jsLibs",  getLibFiles(bib::files::make_path(config_["seqServerCore"].asString(), "js").string(), ".js"));
-	jsAndCss_.emplace("jsOwn",   getOwnFiles(bib::files::make_path(config_["seqServerCore"].asString(), "js").string(), ".js"));
-	jsAndCss_.emplace("cssLibs", getLibFiles(bib::files::make_path(config_["seqServerCore"].asString(), "css").string(), ".css"));
-	jsAndCss_.emplace("cssOwn",  getOwnFiles(bib::files::make_path(config_["seqServerCore"].asString(), "css").string(), ".css"));
+	//load js
+	auto jsFiles = getLibFiles(
+			bib::files::make_path(config_["seqServerCore"].asString(), "js").string(),
+			".js");
+	addOtherVec(jsFiles,
+			getOwnFiles(
+					bib::files::make_path(config_["seqServerCore"].asString(), "js").string(),
+					".js"));
+	jsAndCss_.emplace("js", jsFiles);
+	//load css
+	auto cssFiles =
+			getLibFiles(
+					bib::files::make_path(config_["seqServerCore"].asString(), "css").string(),
+					".css");
+	addOtherVec(cssFiles,
+			getOwnFiles(
+					bib::files::make_path(config_["seqServerCore"].asString(), "css").string(),
+					".css"));
+	jsAndCss_.emplace("css", cssFiles);
 	//set root name
 	rootName_ = config_["name"].asString();
 	debug_ = config_["debug"].asBool();
+
+	seqs_ = std::make_shared<SeqCache>(config_["workingDir"].asString());
 
 	messFac_ = std::make_shared<LogMessageFactory>(std::cout, debug_);
 }
@@ -124,10 +105,8 @@ SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
 std::vector<std::shared_ptr<restbed::Resource>> SeqAppRestbed::getAllResources() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	std::vector<std::shared_ptr<restbed::Resource>> ret;
-	ret.emplace_back(jsOwn());
-	ret.emplace_back(jsLibs());
-	ret.emplace_back(cssLibs());
-	ret.emplace_back(cssOwn());
+	ret.emplace_back(js());
+	ret.emplace_back(css());
 
 	ret.emplace_back(getProteinColors());
 	ret.emplace_back(getDNAColors());
@@ -151,7 +130,7 @@ SeqAppRestbed::~SeqAppRestbed() {
 }
 
 VecStr SeqAppRestbed::requiredOptions() const {
-	return VecStr { "seqServerCore", "name" };
+	return VecStr { "seqServerCore", "name", "workingDir" };
 }
 
 void SeqAppRestbed::getDNAColorsHandler(
@@ -199,23 +178,25 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getDNAColors() const {
 std::shared_ptr<restbed::Resource> SeqAppRestbed::getProteinColors() const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(
-			UrlPathFactory::createUrl( { { rootName_ }, { "proteinColors" } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
+			"proteinColors" } }));
 	resource->set_method_handler("GET",
-			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::getProteinColorsHandler, this,
-							std::placeholders::_1)));
+			std::function<void(const std::shared_ptr<restbed::Session>)>(
+					[this](const std::shared_ptr<restbed::Session> & ses) {
+						getProteinColorsHandler(ses);
+					}));
 	return resource;
 }
 std::shared_ptr<restbed::Resource> SeqAppRestbed::getColors() const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "getColors" }, {
-			"number", UrlPathFactory::pat_nums_ } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
+			{ "getColors" }, { "number", UrlPathFactory::pat_nums_ } }));
 	resource->set_method_handler("GET",
-			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::getColorsHandler, this,
-							std::placeholders::_1)));
+			std::function<void(const std::shared_ptr<restbed::Session>)>(
+					[this](const std::shared_ptr<restbed::Session> & ses) {
+						getColorsHandler(ses);
+					}));
 	return resource;
 }
 
@@ -235,16 +216,6 @@ void SeqAppRestbed::addPages(const bfs::path & dir) {
 	}
 }
 
-std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData) {
-	std::vector<uint32_t> selected { };
-	if (postData.isMember("selected")) {
-		selected = bib::json::jsonArrayToVec(postData["selected"],
-				std::function<uint32_t(const Json::Value &)>(
-						[](const Json::Value & val)->uint32_t {return val.asUInt();}));
-	}
-	return selected;
-}
-
 void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 		const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
@@ -255,136 +226,22 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if(bib::in(sessionUID, seqsBySession_)){
-		if(seqsBySession_[sessionUID]->containsRecord(uid)){
-			if(seqsBySession_[sessionUID]->recordValid(uid)){
-				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->sort(uid,           sortBy);
-				}else{
-					seqData = seqsBySession_[sessionUID]->sort(uid, selected, sortBy);
-					seqData["selected"] = bib::json::toJson(selected);
-				}
-				seqData["uid"] = uid;
-				seqData["sessionUID"] = bib::json::toJson(sessionUID);
-			}else{
-				std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->sort(uid, sortBy);
+			} else {
+				seqData = seqsBySession_[sessionUID]->sort(uid, selected, sortBy);
+				seqData["selected"] = bib::json::toJson(selected);
 			}
-		}else{
+			seqData["uid"] = uid;
+			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
-	}else{
-		std::cerr << "sessionUID: " << sessionUID << " is not currently in seqsBySession_" << std::endl;
-	}
-
-
-	auto retBody = seqData.toStyledString();
-	std::multimap<std::string, std::string> headers =
-			HeaderFactory::initiateAppJsonHeader(retBody);
-	headers.emplace("Connection", "close");
-	session->close(restbed::OK, retBody, headers);
-}
-
-void SeqAppRestbed::muscleAlnPostHandler(std::shared_ptr<restbed::Session> session,
-		const restbed::Bytes & body) {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
-	if(debug_){
-		std::cout << postData << std::endl;
-	}
-	std::vector<uint32_t> selected = parseJsonForSelected(postData);
-	const std::string uid = postData["uid"].asString();
-	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	Json::Value seqData;
-	if(bib::in(sessionUID, seqsBySession_)){
-		if(seqsBySession_[sessionUID]->containsRecord(uid)){
-			if(seqsBySession_[sessionUID]->recordValid(uid)){
-				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->muscle(uid);
-				}else{
-					seqData = seqsBySession_[sessionUID]->muscle(uid, selected);
-					seqData["selected"] = bib::json::toJson(selected);
-				}
-				seqData["uid"] = uid;
-				seqData["sessionUID"] = bib::json::toJson(sessionUID);
-			}else{
-				std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
-			}
-		}else{
-			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
-		}
-	}else{
-		std::cerr << "sessionUID: " << sessionUID << " is not currently in seqsBySession_" << std::endl;
-	}
-	auto retBody = seqData.toStyledString();
-	std::multimap<std::string, std::string> headers =
-			HeaderFactory::initiateAppJsonHeader(retBody);
-	headers.emplace("Connection", "close");
-	session->close(restbed::OK, retBody, headers);
-}
-
-
-void SeqAppRestbed::removeGapsPostHandler(std::shared_ptr<restbed::Session> session,
-		const restbed::Bytes & body) {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
-	std::vector<uint32_t> selected = parseJsonForSelected(postData);
-	const std::string uid = postData["uid"].asString();
-	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	Json::Value seqData;
-	if(bib::in(sessionUID, seqsBySession_)){
-		if(seqsBySession_[sessionUID]->containsRecord(uid)){
-			if(seqsBySession_[sessionUID]->recordValid(uid)){
-				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->removeGaps(uid);
-				}else{
-					seqData = seqsBySession_[sessionUID]->removeGaps(uid, selected);
-					seqData["selected"] = bib::json::toJson(selected);
-				}
-				seqData["uid"] = uid;
-				seqData["sessionUID"] = bib::json::toJson(sessionUID);
-			}else{
-				std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
-			}
-		}else{
-			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
-		}
-	}else{
-		std::cerr << "sessionUID: " << sessionUID << " is not currently in seqsBySession_" << std::endl;
-	}
-	auto retBody = seqData.toStyledString();
-	std::multimap<std::string, std::string> headers =
-			HeaderFactory::initiateAppJsonHeader(retBody);
-	headers.emplace("Connection", "close");
-	session->close(restbed::OK, retBody, headers);
-}
-
-void SeqAppRestbed::complementSeqsPostHandler(std::shared_ptr<restbed::Session> session,
-		const restbed::Bytes & body) {
-	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
-	std::vector<uint32_t> selected = parseJsonForSelected(postData);
-	const std::string uid = postData["uid"].asString();
-	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	Json::Value seqData;
-	if(bib::in(sessionUID, seqsBySession_)){
-		if(seqsBySession_[sessionUID]->containsRecord(uid)){
-			if(seqsBySession_[sessionUID]->recordValid(uid)){
-				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->rComplement(uid);
-				}else{
-					seqData = seqsBySession_[sessionUID]->rComplement(uid, selected);
-					seqData["selected"] = bib::json::toJson(selected);
-				}
-				seqData["uid"] = uid;
-				seqData["sessionUID"] = bib::json::toJson(sessionUID);
-			}else{
-				std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
-			}
-		}else{
-			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
-		}
-	}else{
-		std::cerr << "sessionUID: " << sessionUID << " is not currently in seqsBySession_" << std::endl;
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
 	auto retBody = seqData.toStyledString();
@@ -394,37 +251,94 @@ void SeqAppRestbed::complementSeqsPostHandler(std::shared_ptr<restbed::Session> 
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::translateToProteinPostHandler(std::shared_ptr<restbed::Session> session,
-		const restbed::Bytes & body) {
+void SeqAppRestbed::muscleAlnPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	uint32_t start =  bib::lexical_cast<uint32_t>(postData["start"].asString());
-  bool complement = false;
-  bool reverse = false;
 	Json::Value seqData;
-	if(bib::in(sessionUID, seqsBySession_)){
-		if(seqsBySession_[sessionUID]->containsRecord(uid)){
-			if(seqsBySession_[sessionUID]->recordValid(uid)){
-				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->translate(uid,           complement, reverse, start);
-				}else{
-					seqData = seqsBySession_[sessionUID]->translate(uid, selected, complement, reverse, start);
-					//seqData["selected"] = bib::json::toJson(selected);
-				}
-				seqData["baseColor"] = bib::json::parse(ColorFactory::AAColorsJson);
-				seqData["uid"] = uid + "_protein";
-				seqData["sessionUID"] = bib::json::toJson(sessionUID);
-			}else{
-				std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->muscle(uid);
+			} else {
+				seqData = seqsBySession_[sessionUID]->muscle(uid, selected);
+				seqData["selected"] = bib::json::toJson(selected);
 			}
-		}else{
+			seqData["uid"] = uid;
+			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
-	}else{
-		std::cerr << "sessionUID: " << sessionUID << " is not currently in seqsBySession_" << std::endl;
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+	auto retBody = seqData.toStyledString();
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
+void SeqAppRestbed::removeGapsPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	Json::Value seqData;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->removeGaps(uid);
+			} else {
+				seqData = seqsBySession_[sessionUID]->removeGaps(uid, selected);
+				seqData["selected"] = bib::json::toJson(selected);
+			}
+			seqData["uid"] = uid;
+			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+	auto retBody = seqData.toStyledString();
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
+void SeqAppRestbed::complementSeqsPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	Json::Value seqData;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->rComplement(uid);
+			} else {
+				seqData = seqsBySession_[sessionUID]->rComplement(uid, selected);
+				seqData["selected"] = bib::json::toJson(selected);
+			}
+			seqData["uid"] = uid;
+			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
 	auto retBody = seqData.toStyledString();
@@ -434,34 +348,73 @@ void SeqAppRestbed::translateToProteinPostHandler(std::shared_ptr<restbed::Sessi
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::minTreeDataDetailedPostHandler(std::shared_ptr<restbed::Session> session,
-		const restbed::Bytes & body) {
+void SeqAppRestbed::translateToProteinPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-  uint32_t numDiffs = bib::lexical_cast<uint32_t>(postData["numDiff"].asString());
+	uint32_t start = bib::lexical_cast<uint32_t>(postData["start"].asString());
+	bool complement = false;
+	bool reverse = false;
 	Json::Value seqData;
-	if(bib::in(sessionUID, seqsBySession_)){
-		if(seqsBySession_[sessionUID]->containsRecord(uid)){
-			if(seqsBySession_[sessionUID]->recordValid(uid)){
-				if(selected.empty()){
-					seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, numDiffs);
-				}else{
-					seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, selected, numDiffs);
-					seqData["selected"] = bib::json::toJson(selected);
-				}
-				seqData["uid"] = uid;
-				seqData["sessionUID"] = bib::json::toJson(sessionUID);
-			}else{
-				std::cerr << "uid: " << uid << " is not currently valid" << std::endl;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->translate(uid, complement,
+						reverse, start);
+			} else {
+				seqData = seqsBySession_[sessionUID]->translate(uid, selected,
+						complement, reverse, start);
+				//seqData["selected"] = bib::json::toJson(selected);
 			}
-		}else{
+			seqData["baseColor"] = bib::json::parse(ColorFactory::AAColorsJson);
+			seqData["uid"] = uid + "_protein";
+			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
-	}else{
-		std::cerr << "sessionUID: " << sessionUID << " is not currently in seqsBySession_" << std::endl;
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+
+	auto retBody = seqData.toStyledString();
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
+void SeqAppRestbed::minTreeDataDetailedPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	uint32_t numDiffs = bib::lexical_cast<uint32_t>(
+			postData["numDiff"].asString());
+	Json::Value seqData;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
+						numDiffs);
+			} else {
+				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, selected,
+						numDiffs);
+				seqData["selected"] = bib::json::toJson(selected);
+			}
+			seqData["uid"] = uid;
+			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
 	auto retBody = seqData.toStyledString();
@@ -481,11 +434,13 @@ void SeqAppRestbed::sortHandler(std::shared_ptr<restbed::Session> session) {
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::sortPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						sortPostHandler(ses, body);
+					}));
 }
 
-void SeqAppRestbed::muscleAlnHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::muscleAlnHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
@@ -494,12 +449,13 @@ void SeqAppRestbed::muscleAlnHandler(std::shared_ptr<restbed::Session> session){
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::muscleAlnPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
-
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						muscleAlnPostHandler(ses, body);
+					}));
 }
 
-void SeqAppRestbed::removeGapsHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::removeGapsHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
@@ -508,12 +464,13 @@ void SeqAppRestbed::removeGapsHandler(std::shared_ptr<restbed::Session> session)
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::removeGapsPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
-
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						removeGapsPostHandler(ses, body);
+					}));
 }
 
-void SeqAppRestbed::complementSeqsHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::complementSeqsHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
@@ -522,12 +479,14 @@ void SeqAppRestbed::complementSeqsHandler(std::shared_ptr<restbed::Session> sess
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::complementSeqsPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						complementSeqsPostHandler(ses, body);
+					}));
 
 }
 
-void SeqAppRestbed::translateToProteinHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::translateToProteinHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
@@ -536,12 +495,14 @@ void SeqAppRestbed::translateToProteinHandler(std::shared_ptr<restbed::Session> 
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::translateToProteinPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						translateToProteinPostHandler(ses, body);
+					}));
 
 }
 
-void SeqAppRestbed::minTreeDataDetailedHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::minTreeDataDetailedHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
@@ -550,57 +511,62 @@ void SeqAppRestbed::minTreeDataDetailedHandler(std::shared_ptr<restbed::Session>
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::minTreeDataDetailedPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
-
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						minTreeDataDetailedPostHandler(ses, body);
+					}));
 }
 
-
-std::shared_ptr<restbed::Resource> SeqAppRestbed::sort(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::sort() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(
-			UrlPathFactory::createUrl( { { rootName_ }, { "sort" }, {"sortBy", UrlPathFactory::pat_word_} }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "sort" }, {
+			"sortBy", UrlPathFactory::pat_word_ } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::sortHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						sortHandler(ses);
+					}));
+
 	return resource;
 
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::muscleAln(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::muscleAln() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
 			UrlPathFactory::createUrl( { { rootName_ }, { "muscle" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::muscleAlnHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						muscleAlnHandler(ses);
+					}));
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::removeGaps(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::removeGaps() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(
-			UrlPathFactory::createUrl( { { rootName_ }, { "removeGaps" } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
+			{ "removeGaps" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::removeGapsHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						removeGapsHandler(ses);
+					}));
+
 	return resource;
 }
-std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(
-			UrlPathFactory::createUrl( { { rootName_ }, { "complement" } }));
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
+			{ "complement" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::complementSeqsHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						complementSeqsHandler(ses);
+					}));
 	return resource;
 }
 std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
@@ -610,8 +576,9 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
 			UrlPathFactory::createUrl( { { rootName_ }, { "translate" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::translateToProteinHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						translateToProteinHandler(ses);
+					}));
 	return resource;
 }
 
@@ -622,32 +589,32 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::minTreeDataDetailed() {
 			"minTreeDataDetailed" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::minTreeDataDetailedHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						minTreeDataDetailedHandler(ses);
+					}));
 	return resource;
 }
 
-
-void SeqAppRestbed::closeSessionPostHandler(std::shared_ptr<restbed::Session> session,
-			const restbed::Bytes & body){
+void SeqAppRestbed::closeSessionPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	uint32_t sessionUID = postData["sessionUID"].asUInt();
 	try {
 		sesUIDFac_.removeSessionUID(sessionUID);
+		if (debug_) {
+			std::cout << "Removed: " << sessionUID << std::endl;
+			std::cout << "IDs left: " << std::endl;
+			printVector(sesUIDFac_.getUIDs());
+			if (bib::in(sessionUID, seqsBySession_)) {
+				seqsBySession_.erase(sessionUID);
+			}
+		}
 	} catch (std::exception & e) {
-		std::cerr << bib::bashCT::red << e.what() << bib::bashCT::reset << std::endl;
+		std::cerr << bib::bashCT::red << e.what() << bib::bashCT::reset
+				<< std::endl;
 	}
 
-	if(debug_){
-		std::cout << "Removed: " << sessionUID << std::endl;
-		std::cout << "IDs left: " << std::endl;
-		printVector(sesUIDFac_.getUIDs());
-	}
-
-	if(bib::in(sessionUID, seqsBySession_)){
-		seqsBySession_.erase(sessionUID);
-	}
 	auto retBody = bib::json::toJson(sesUIDFac_.getUIDs()).toStyledString();
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
@@ -655,7 +622,8 @@ void SeqAppRestbed::closeSessionPostHandler(std::shared_ptr<restbed::Session> se
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::closeSessionHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::closeSessionHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
@@ -664,19 +632,20 @@ void SeqAppRestbed::closeSessionHandler(std::shared_ptr<restbed::Session> sessio
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
-					std::bind(&SeqAppRestbed::closeSessionPostHandler, this,
-							std::placeholders::_1, std::placeholders::_2)));
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						closeSessionPostHandler(ses, body);
+					}));
 }
 
 uint32_t SeqAppRestbed::startSeqCacheSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = sesUIDFac_.genSessionUID();
-	seqsBySession_[ret] = std::make_unique<seqCache>(*seqs_);
+	seqsBySession_[ret] = std::make_unique<SeqCache>(*seqs_);
 	return ret;
 }
 
-
-void SeqAppRestbed::openSessionHandler(std::shared_ptr<restbed::Session> session){
+void SeqAppRestbed::openSessionHandler(
+		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	Json::Value ret;
 	ret["sessionUID"] = startSeqCacheSession();
@@ -686,30 +655,31 @@ void SeqAppRestbed::openSessionHandler(std::shared_ptr<restbed::Session> session
 	session->close(restbed::OK, body, headers);
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::closeSession(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::closeSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
 			"closeSession" } }));
 	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::closeSessionHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						closeSessionHandler(ses);
+					}));
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::openSession(){
+std::shared_ptr<restbed::Resource> SeqAppRestbed::openSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
-	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
-			"openSession" } }));
-	resource->set_method_handler("GET",
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
+			{ "openSession" } }));
+	resource->set_method_handler("POST",
 			std::function<void(std::shared_ptr<restbed::Session>)>(
-					std::bind(&SeqAppRestbed::openSessionHandler, this,
-							std::placeholders::_1)));
+					[this](std::shared_ptr<restbed::Session> ses) {
+						openSessionHandler(ses);
+					}));
 	return resource;
 }
-
 
 std::string SeqAppRestbed::genHtmlDoc(std::string rName,
 		bib::files::FileCache & cache) {
@@ -718,10 +688,9 @@ std::string SeqAppRestbed::genHtmlDoc(std::string rName,
 			"<html>\n"
 			"	<meta charset=\"utf-8\">\n"
 			"  <head>\n"
-			"		<script type=\"text/javascript\" src=\"/" + rName + "/jsLibs\"></script>\n"
-					"		<script type=\"text/javascript\" src=\"/" + rName + "/jsOwn\"></script>\n"
-					"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName + "/cssLibs\">\n"
-					"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName + "/cssOwn\">\n"
+			"		<script type=\"text/javascript\" src=\"/" + rName + "/js\"></script>\n"
+			"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName
+			+ "/css\">\n"
 					"  </head>\n"
 					"  <body>\n"
 					"    <script>\n";
@@ -732,8 +701,5 @@ std::string SeqAppRestbed::genHtmlDoc(std::string rName,
 			"</html>\n";
 	return header + body + footer;
 }
-
-
-
 
 }  // namespace bibseq

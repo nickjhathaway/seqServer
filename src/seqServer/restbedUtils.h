@@ -8,8 +8,9 @@
 
 
 
-#include <restbed>
+
 #include "seqServer/restbedUtils/UrlPathFactory.hpp"
 #include "seqServer/restbedUtils/HeaderFactory.hpp"
+#include "seqServer/restbedUtils/restbedUtils.hpp"
 
 
