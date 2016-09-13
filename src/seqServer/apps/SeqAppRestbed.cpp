@@ -607,6 +607,9 @@ void SeqAppRestbed::closeSessionPostHandler(
 			std::cout << "IDs left: " << std::endl;
 			printVector(sesUIDFac_.getUIDs());
 			if (bib::in(sessionUID, seqsBySession_)) {
+				if(bib::beginsWith(seqsBySession_[sessionUID]->workingDir_.string(), "/tmp/")){
+					bib::files::rmDirForce(seqsBySession_[sessionUID]->workingDir_.string());
+				}
 				seqsBySession_.erase(sessionUID);
 			}
 		}
@@ -641,6 +644,9 @@ uint32_t SeqAppRestbed::startSeqCacheSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = sesUIDFac_.genSessionUID();
 	seqsBySession_[ret] = std::make_unique<SeqCache>(*seqs_);
+	auto sesDir = bib::files::make_path(seqs_->workingDir_, "seqServerSes_ses-" + estd::to_string(ret));
+	bib::files::makeDirP(bib::files::MkdirPar(sesDir.string()));
+	seqsBySession_[ret]->setWorkingDir(sesDir);
 	return ret;
 }
 

@@ -12,11 +12,13 @@ $(document).ready(function(){
 		method: "GET"
 	}).then(function (datums) {
 		var mainData = JSON.parse(datums);
+		var sesUid = mainData["sessionUID"];
 		var SeqViewer = new njhSeqView("#viewer", mainData);
 		gifLoading.remove();
-		setUpCloseSession(mainData["sessionUID"]);		
+		setUpCloseSession(sesUid);
 	}).catch(function(err){
   		removeAllDivGifLoading();
   		logRequestError(err);
   	});
+
 });

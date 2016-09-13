@@ -51,7 +51,15 @@ public:
 		std::shared_ptr<std::vector<readObject>> reads_;
 		uint32_t blockSize_ = 10000;
 		uint32_t blockStart_ = 0;
+		std::function<void(CacheRecord &)> updateFunc_;
+
 	public:
+
+		void readsToNull();
+
+		bool readsAreNull();
+
+		void addUpdateFunc(std::function<void(CacheRecord &)> updateFunc);
 
 		void setBlockSize(const uint32_t blockSize);
 		uint32_t getBlockSize() const;
@@ -82,9 +90,14 @@ public:
 	SeqCache(const SeqCache & other);
 	SeqCache(SeqCache && other);
 
+	~SeqCache();
+
+	void setWorkingDir(const bfs::path & dir);
+	bfs::path workingDir_;
+
 private:
 
-	const bfs::path workingDir_;
+
 
 	std::unordered_map<std::string, CacheRecord> cache_;
 	VecStr currentCache_;
@@ -92,6 +105,8 @@ private:
 	//uint32_t cacheSizeLimit_ = 10;
 
 	std::shared_timed_mutex mut_;
+
+
 
 	bool containsRecordNoLock(const std::string & uid);
 	void addToCacheNoCheck(const std::string & uid,
@@ -109,7 +124,7 @@ public:
 	void updateAddCache(const std::string & uid,
 			const SeqIOOptions & ioOpts);
 
-	std::shared_ptr<std::vector<readObject>> getRecord(const std::string & uid);
+	CacheRecord & getRecord(const std::string & uid);
 
 	/*These currently assume cache is valid and is current in cache_ */
 	Json::Value sort(const std::string & uid, const std::string & sortOption);

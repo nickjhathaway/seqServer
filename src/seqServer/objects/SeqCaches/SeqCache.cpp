@@ -41,8 +41,11 @@ SeqCache::CacheRecord::CacheRecord(const CacheRecord & other) :
 		uid_(other.uid_),
 		ioOpts_(other.ioOpts_.opts_),
 		reads_(nullptr == other.reads_ ? nullptr : std::make_shared<std::vector<readObject>>(*other.reads_)),
+
 		blockSize_(other.blockSize_),
-		blockStart_(other.blockStart_) {
+		blockStart_(other.blockStart_),
+		updateFunc_(other.updateFunc_){
+	ioOpts_.setTime(other.ioOpts_.getTime());
 }
 
 SeqCache::CacheRecord::CacheRecord(CacheRecord && other) :
@@ -50,7 +53,17 @@ SeqCache::CacheRecord::CacheRecord(CacheRecord && other) :
 		ioOpts_(other.ioOpts_),
 		reads_(std::move(other.reads_)),
 		blockSize_(other.blockSize_),
-		blockStart_(other.blockStart_){
+		blockStart_(other.blockStart_),
+		updateFunc_(std::move(other.updateFunc_)){
+	ioOpts_.setTime(other.ioOpts_.getTime());
+}
+
+void SeqCache::CacheRecord::readsToNull(){
+	reads_ = nullptr;
+}
+
+bool SeqCache::CacheRecord::readsAreNull(){
+	return nullptr == reads_;
 }
 
 void SeqCache::CacheRecord::setBlockSize(const uint32_t blockSize) {
@@ -64,11 +77,16 @@ uint32_t SeqCache::CacheRecord::getBlockSize() const {
 uint32_t SeqCache::CacheRecord::getBlockStart() const {
 	return blockStart_;
 }
-
+void SeqCache::CacheRecord::addUpdateFunc(std::function<void(CacheRecord &)> updateFunc){
+	updateFunc_ = updateFunc;
+}
 
 void SeqCache::CacheRecord::reload(bool force){
 	if(nullptr == reads_ || ioOpts_.outDated() || force){
 		reads_ = std::make_shared<std::vector<readObject>>(ioOpts_.get<readObject>(blockStart_, blockSize_));
+		if(nullptr != updateFunc_){
+			updateFunc_(*this);
+		}
 	}
 }
 
@@ -161,6 +179,12 @@ SeqCache::SeqCache(SeqCache && other) :
 		cache_(std::move(other.cache_)),
 		currentCache_(std::move(other.currentCache_)),
 		cachePos_(other.cachePos_) {
+}
+
+SeqCache::~SeqCache(){
+	for(const auto & uids : cache_){
+
+	}
 }
 
 Json::Value SeqCache::getJson(const std::string & uid){
@@ -259,7 +283,9 @@ Json::Value SeqCache::translate(const std::string & uid, bool complement,
 	return ret;
 }
 
-
+void SeqCache::setWorkingDir(const bfs::path & dir){
+	workingDir_ = dir;
+}
 
 bool SeqCache::containsRecordNoLock(const std::string & uid){
 	return cache_.find(uid) != cache_.end();
@@ -314,9 +340,11 @@ void SeqCache::addToCache(const std::string & uid,
 	}
 }
 
-std::shared_ptr<std::vector<readObject>> SeqCache::getRecord(const std::string & uid){
+SeqCache::CacheRecord & SeqCache::getRecord(const std::string & uid){
 	std::shared_lock<std::shared_timed_mutex> lock(mut_);
-	return cache_.find(uid)->second.get();
+	auto ret = cache_.find(uid);
+	ret->second.reload();
+	return ret->second;
 }
 
 void SeqCache::updateAddCache(const std::string & uid,

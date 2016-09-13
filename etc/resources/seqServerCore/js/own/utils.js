@@ -410,6 +410,8 @@ function getLastValue(set){
 
 
 function setUpCloseSession(sessionID){
+	var locSplit = window.location.toString().split(/[\/]+/);
+	var rName = locSplit[2];
 	$(window).on('beforeunload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',
