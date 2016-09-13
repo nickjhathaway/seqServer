@@ -65,11 +65,15 @@ uint32_t SeqCache::CacheRecord::getBlockStart() const {
 	return blockStart_;
 }
 
-std::shared_ptr<std::vector<readObject>> SeqCache::CacheRecord::get(){
-	if(nullptr == reads_ || ioOpts_.outDated()){
-		std::cout << blockStart_ << std::endl;
+
+void SeqCache::CacheRecord::reload(bool force){
+	if(nullptr == reads_ || ioOpts_.outDated() || force){
 		reads_ = std::make_shared<std::vector<readObject>>(ioOpts_.get<readObject>(blockStart_, blockSize_));
 	}
+}
+
+std::shared_ptr<std::vector<readObject>> SeqCache::CacheRecord::get(){
+	reload();
 	return reads_;
 }
 
@@ -79,6 +83,65 @@ std::shared_ptr<std::vector<readObject>> SeqCache::CacheRecord::get(uint32_t blo
 		reads_ = nullptr;
 	}
 	return get();
+}
+
+
+void SeqCache::CacheRecord::sort(const std::string & sortOption){
+	reload();
+	readVecSorter::sortReadVector(*reads_, sortOption);
+}
+
+void SeqCache::CacheRecord::muscle(){
+	reload();
+	bib::for_each(*reads_, [](readObject & read) {getSeqBase(read).removeGaps();});
+	sys::muscleSeqs(*reads_);
+}
+
+void SeqCache::CacheRecord::removeGaps(){
+	reload();
+	bib::for_each(*reads_, [](readObject & read) {getSeqBase(read).removeGaps();});
+}
+
+void SeqCache::CacheRecord::rComplement(){
+	reload();
+	bib::for_each(*reads_,
+			[]( readObject & read) {getSeqBase(read).reverseComplementRead(true,true);});
+}
+
+void SeqCache::CacheRecord::sort(const std::string & sortOption,
+		std::vector<uint32_t> positions) {
+	reload();
+	bib::sort(positions);
+	readVecSorter::sortReadVector(*reads_, positions, sortOption);
+}
+
+void SeqCache::CacheRecord::muscle(const std::vector<uint32_t> & positions) {
+	reload();
+	bib::for_each_pos(*reads_, positions,
+			[](readObject & read) {getSeqBase(read).removeGaps();});
+	sys::muscleSeqs(*reads_, positions);
+}
+
+void SeqCache::CacheRecord::removeGaps(
+		const std::vector<uint32_t> & positions) {
+	reload();
+	bib::for_each_pos(*reads_, positions,
+			[](readObject & read) {getSeqBase(read).removeGaps();});
+}
+
+void SeqCache::CacheRecord::rComplement(
+		const std::vector<uint32_t> & positions) {
+	reload();
+	bib::for_each_pos(*reads_, positions,
+			[]( readObject & read) {getSeqBase(read).reverseComplementRead(true,true);});
+}
+
+void SeqCache::CacheRecord::erase(std::vector<uint32_t> positions){
+	reload();
+	std::sort(positions.rbegin(), positions.rend());
+	for(const auto & pos : positions){
+		reads_->erase(reads_->begin() + pos);
+	}
 }
 
 
@@ -105,19 +168,23 @@ Json::Value SeqCache::getJson(const std::string & uid){
 }
 
 Json::Value SeqCache::sort(const std::string & uid, const std::string & sortOption){
-	return SeqToJsonFactory::sort(getRef((cache_.at(uid).get())), sortOption, uid);
+	cache_.at(uid).sort(sortOption);
+	return getJson(uid);
 }
 
 Json::Value SeqCache::muscle(const std::string & uid){
-	return SeqToJsonFactory::muscle(getRef((cache_.at(uid).get())), uid);
+	cache_.at(uid).muscle();
+	return getJson(uid);
 }
 
 Json::Value SeqCache::removeGaps(const std::string & uid){
-	return SeqToJsonFactory::removeGaps(getRef((cache_.at(uid).get())), uid);
+	cache_.at(uid).removeGaps();
+	return getJson(uid);
 }
 
 Json::Value SeqCache::rComplement(const std::string & uid){
-	return SeqToJsonFactory::rComplement(getRef((cache_.at(uid).get())), uid);
+	cache_.at(uid).rComplement();
+	return getJson(uid);
 }
 
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid, uint32_t numDiff){
@@ -130,20 +197,23 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid, const std::ve
 
 Json::Value SeqCache::sort(const std::string & uid,
 		const std::vector<uint32_t> & positions, const std::string & sortOption) {
-	return SeqToJsonFactory::sort(getRef((cache_.at(uid).get())), sortOption,
-			positions, uid);
+	cache_.at(uid).sort(sortOption, positions);
+	return getJson(uid, positions);
 }
 
 Json::Value SeqCache::muscle(const std::string & uid,const std::vector<uint32_t> & positions){
-	return SeqToJsonFactory::muscle(getRef((cache_.at(uid).get())), positions, uid);
+	cache_.at(uid).muscle(positions);
+	return getJson(uid, positions);
 }
 
 Json::Value SeqCache::removeGaps(const std::string & uid, const std::vector<uint32_t> & positions){
-	return SeqToJsonFactory::removeGaps(getRef((cache_.at(uid).get())), positions, uid);
+	cache_.at(uid).removeGaps(positions);
+	return getJson(uid, positions);
 }
 
 Json::Value SeqCache::rComplement(const std::string & uid, const std::vector<uint32_t> & positions){
-	return SeqToJsonFactory::rComplement(getRef((cache_.at(uid).get())), positions, uid);
+	cache_.at(uid).rComplement(positions);
+	return getJson(uid, positions);
 }
 
 Json::Value SeqCache::getJson(const std::string & uid, const std::vector<uint32_t> & positions){

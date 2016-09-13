@@ -60,6 +60,22 @@ public:
 		std::shared_ptr<std::vector<readObject>> get();
 		std::shared_ptr<std::vector<readObject>> get(uint32_t blockStart);
 
+		void reload(bool force = false);
+
+
+		void sort(const std::string & sortOption);
+		void muscle();
+		void removeGaps();
+		void rComplement();
+
+		void sort(const std::string & sortOption, std::vector<uint32_t> positions);
+		void muscle(const std::vector<uint32_t> & positions);
+		void removeGaps(const std::vector<uint32_t> & positions);
+		void rComplement(const std::vector<uint32_t> & positions);
+
+		void erase(std::vector<uint32_t> positions);
+
+		friend class SeqCache;
 	};
 
 	SeqCache(const bfs::path & workingDir);
@@ -100,9 +116,11 @@ public:
 	Json::Value muscle(const std::string & uid);
 	Json::Value removeGaps(const std::string & uid);
 	Json::Value rComplement(const std::string & uid);
+
 	Json::Value translate(const std::string & uid, bool complement, bool reverse,
 			uint64_t start);
 	Json::Value minTreeDataDetailed(const std::string & uid, uint32_t numDiff);
+
 	Json::Value getJson(const std::string & uid);
 
 	Json::Value sort(const std::string & uid,

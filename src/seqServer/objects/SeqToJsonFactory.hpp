@@ -41,7 +41,7 @@ public:
 		auto& seqs = ret["seqs"];
 		//find number of reads
 		ret["numReads"] = bib::json::toJson(positions.size());
-		// get the maximum length
+		// get the maximum length and make sure pos is not greater than read vec size
 		uint64_t maxLen = 0;
 		for (auto pos : positions) {
 			if (pos >= reads.size()) {
