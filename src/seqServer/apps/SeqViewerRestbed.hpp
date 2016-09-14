@@ -37,6 +37,7 @@ public:
 };
 
 
+
 int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */

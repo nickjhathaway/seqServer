@@ -182,9 +182,7 @@ SeqCache::SeqCache(SeqCache && other) :
 }
 
 SeqCache::~SeqCache(){
-	for(const auto & uids : cache_){
 
-	}
 }
 
 Json::Value SeqCache::getJson(const std::string & uid){
