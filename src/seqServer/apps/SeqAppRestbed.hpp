@@ -15,6 +15,8 @@
 namespace bibseq {
 
 
+
+
 class SeqAppRestbed {
 
 	void getDNAColorsHandler(
@@ -62,7 +64,8 @@ class SeqAppRestbed {
 
 protected:
 	std::map<std::string, bib::files::FileCache> pages_;
-	std::map<std::string, bib::files::FilesCache> jsAndCss_;
+	std::unique_ptr<bib::files::FilesCache> jsFiles_;
+	std::unique_ptr<bib::files::FilesCache> cssFiles_;
 	std::string rootName_;
 	bool debug_ = false;
 

@@ -33,7 +33,7 @@ void SeqAppRestbed::checkConfigThrow() const {
 
 void SeqAppRestbed::cssHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	std::string body = jsAndCss_.find("css")->second.get();
+	std::string body = cssFiles_->get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtCssHeader(body);
 	session->close(restbed::OK, body, headers);
@@ -41,7 +41,7 @@ void SeqAppRestbed::cssHandler(std::shared_ptr<restbed::Session> session) {
 
 void SeqAppRestbed::jsHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	std::string body = jsAndCss_.find("js")->second.get();
+	std::string body = jsFiles_->get();
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateTxtJavascriptHeader(body);
 	session->close(restbed::OK, body, headers);
@@ -82,7 +82,7 @@ SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
 			getOwnFiles(
 					bib::files::make_path(config_["seqServerCore"].asString(), "js").string(),
 					".js"));
-	jsAndCss_.emplace("js", jsFiles);
+	jsFiles_ = std::make_unique<bib::files::FilesCache>(jsFiles);
 	//load css
 	auto cssFiles =
 			getLibFiles(
@@ -92,7 +92,7 @@ SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
 			getOwnFiles(
 					bib::files::make_path(config_["seqServerCore"].asString(), "css").string(),
 					".css"));
-	jsAndCss_.emplace("css", cssFiles);
+	cssFiles_ = std::make_unique<bib::files::FilesCache>(cssFiles);
 	//set root name
 	rootName_ = config_["name"].asString();
 	debug_ = config_["debug"].asBool();

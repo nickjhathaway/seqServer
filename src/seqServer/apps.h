@@ -26,6 +26,7 @@
  *      Author: nickhathaway
  */
 
+#include "seqServer/apps/pars.h"
 #include "seqServer/apps/seqApp.hpp"
 #include "seqServer/apps/seqViewer.hpp"
 #include "seqServer/apps/SeqAppRestbed.hpp"

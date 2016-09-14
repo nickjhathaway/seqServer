@@ -7,6 +7,8 @@
 
 #include "SeqViewerRestbed.hpp"
 
+#include "seqServer/apps/pars.h"
+
 namespace bibseq {
 
 
@@ -102,12 +104,11 @@ void error_handler(const int statusCode, const std::exception& exception,
 
 int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	std::string clusDir = "";
-	uint32_t port = 8881;
-	std::string name = "ssv";
+	SeqAppCorePars corePars;
+	corePars.port_ = 8881;
+	corePars.name_ = "ssv";
 	std::string resourceDirName = bib::files::make_path(seqServer::getSeqServerInstallDir(),
 			"etc/resources").string();
-	std::string seqServerCore = seqServer::getSeqServerInstallCoreDir();
-	bfs::path workingDir = "/tmp/";
 	bool protein = false;
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
@@ -115,33 +116,22 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 			"Name of the resource Directory where the js and html is located",
 			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
-	setUp.setOption(seqServerCore, "-seqServerCore",
-			"Name of the seqServerCore Directory where the js and html for the core seqServer code is located",
-			!bfs::exists(seqServerCore));
-	bib::appendAsNeeded(seqServerCore, "/");
 	setUp.processDefaultReader(true);
-	setUp.setOption(port, "-port", "Port Number to Serve On");
-	setUp.setOption(name, "-name", "Nmae of root of the server");
-	setUp.setOption(workingDir, "--workingDir", "The working directory to store temporary files");
 	setUp.processDebug();
 	setUp.processVerbose();
+	corePars.setCoreOptions(setUp);
 	setUp.finishSetUp(std::cout);
-	name = "/" + name;
+
   //
   Json::Value appConfig;
-
-  appConfig["name"] =  bib::json::toJson(name);
-  appConfig["port"] = bib::json::toJson( estd::to_string(port));
+  corePars.addCoreOpts(appConfig);
   auto optsJson = setUp.pars_.ioOptions_.toJson();
   appConfig["ioOptions"] =  bib::json::toJson(optsJson.toStyledString());
   appConfig["resources"] = bib::json::toJson(resourceDirName);
-  appConfig["seqServerCore"] = bib::json::toJson(seqServerCore);
-  appConfig["debug"] =  bib::json::toJson(setUp.pars_.debug_);
   appConfig["protein"] = bib::json::toJson(protein);
-  appConfig["workingDir"] = bib::json::toJson(workingDir);
 
   if(setUp.pars_.verbose_){
-    std::cout << "localhost:"  << port << name << std::endl;
+    std::cout <<  corePars.getAddress()<< std::endl;
   }
 
 	SeqViewerRestbed viewerModel(appConfig);
@@ -149,7 +139,7 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
 	auto resources = viewerModel.getAllResources();
 
 	auto settings = std::make_shared<restbed::Settings>();
-	settings->set_port(port);
+	settings->set_port(corePars.port_);
 	//settings->set_root(name);
 	settings->set_default_header("Connection", "close");
 
