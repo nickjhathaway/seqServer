@@ -200,18 +200,31 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getColors() const {
 	return resource;
 }
 
+//
+
+void SeqAppRestbed::addScripts(const bfs::path & dir) {
+	auto files = bib::files::listAllFiles(dir.string(), false,
+			{ std::regex(".*.js$") });
+	for (const auto & file : files) {
+		if (bfs::is_regular_file(file.first)) {
+			if (bib::in(file.first.filename().string(), pages_)) {
+				pages_.erase(file.first.filename().string());
+			}
+			pages_.emplace(file.first.filename().string(), bfs::absolute(file.first));
+		}
+	}
+}
+
 void SeqAppRestbed::addPages(const bfs::path & dir) {
 	auto files = bib::files::listAllFiles(dir.string(), false,
 			VecStr { ".html" });
 	for (const auto & file : files) {
 		if (bfs::is_regular_file(file.first)
 				&& bib::endsWith(file.first.string(), ".html")) {
-			auto base = bfs::path(bfs::basename(file.first));
-			base.replace_extension("");
-			if (bib::in(base.string(), pages_)) {
-				pages_.erase(base.string());
+			if (bib::in(file.first.filename().string(), pages_)) {
+				pages_.erase(file.first.filename().string());
 			}
-			pages_.emplace(base.string(), bfs::absolute(file.first));
+			pages_.emplace(file.first.filename().string(), bfs::absolute(file.first));
 		}
 	}
 }

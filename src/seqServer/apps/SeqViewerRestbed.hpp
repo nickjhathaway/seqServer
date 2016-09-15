@@ -9,7 +9,6 @@
 
 #include "seqServer/apps/SeqAppRestbed.hpp"
 
-
 namespace bibseq {
 
 class SeqViewerRestbed: public SeqAppRestbed {

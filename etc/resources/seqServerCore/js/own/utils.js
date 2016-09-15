@@ -25,43 +25,9 @@ String.prototype.replaceAll = function(str1, str2, ignore)
 	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
 
-function getPromise(url) {
-  // Return a new promise.
-  return new Promise(function(resolve, reject) {
-    // Do the usual XHR stuff
-    var req = new XMLHttpRequest();
-    req.open('GET', url);
 
-    req.onload = function() {
-      // This is called even on 404 etc
-      // so check the status
-      if (req.status == 200) {
-        // Resolve the promise with the response text
-        resolve(req.response);
-      }
-      else {
-        // Otherwise reject with the status text
-        // which will hopefully be a meaningful error
-        reject(Error(req.statusText));
-      }
-    };
 
-    // Handle network errors
-    req.onerror = function() {
-      reject(Error("Network Error"));
-    };
 
-    // Make the request
-    req.send();
-  });
-}
-
-function getJSON(url) {
-  return getPromise(url).then(JSON.parse).catch(function(err) {
-    console.log("getJSON failed for", url, err);
-    throw err;
-  });
-}
 
 
 function makeRequest (opts) {
@@ -101,6 +67,23 @@ function makeRequest (opts) {
     	}
     }
     xhr.send(params);
+  });
+}
+
+function getJSON(url) {
+  return makeRequest({url:url, method:"GET"}).then(JSON.parse).catch(function(err) {
+    console.log("getJSON failed for", url, err);
+    throw err;
+  });
+}
+
+function postJSON(url, postData) {
+  return makeRequest({url: url,
+  		method: "POST",
+  		params: postData,
+  		headers: {"Content-Type" : "application/json"}}).then(JSON.parse).catch(function(err) {
+    console.log("getJSON failed for", url, err);
+    throw err;
   });
 }
 
@@ -408,10 +391,17 @@ function getLastValue(set){
   return value;
 }
 
-
-function setUpCloseSession(sessionID){
+function getRootName(){
 	var locSplit = window.location.toString().split(/[\/]+/);
 	var rName = locSplit[2];
+	//make sure there isn't a # at the end of rName or the links created from it won't work
+	rName = rName.replace(new RegExp("#" + "$"), "");
+	return rName;
+}
+
+
+function setUpCloseSession(sessionID){
+	var rName = getRootName();
 	$(window).on('beforeunload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',

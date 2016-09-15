@@ -114,6 +114,7 @@ public:
 
 
 	void addPages(const bfs::path & dir);
+	void addScripts(const bfs::path & dir);
 
 	static std::string genHtmlDoc(std::string rName,
 			bib::files::FileCache & cache);
