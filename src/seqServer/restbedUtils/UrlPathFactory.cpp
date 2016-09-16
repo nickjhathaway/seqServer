@@ -12,21 +12,23 @@ namespace bibseq {
 
 std::string UrlPathFactory::createUrl(const std::vector<PathSeg> & segments){
 	std::string ret = "";
+	VecStr pathParams{"/"};
 	for(const auto & seg : segments){
-		ret += "/";
 		if("" == seg.pat_){
-			ret += seg.name_;
+			pathParams.emplace_back(seg.name_);
 		}else{
-			ret += "{" + seg.name_ + ": " + seg.pat_ + "}";
+			pathParams.emplace_back("{" + seg.name_ + ": " + seg.pat_ + "}");
 		}
 	}
+	ret = bib::files::make_path(pathParams).string();
+
 	return ret;
 }
 
-const std::string UrlPathFactory::pat_wordNumsDash_ { R"([A-Za-z0-9\-\_\.]+)" };
-const std::string UrlPathFactory::pat_wordNums_ { R"([A-Za-z0-9]+)" };
-const std::string UrlPathFactory::pat_word_ { R"([A-Za-z]+)" };
-const std::string UrlPathFactory::pat_nums_ { R"([0-9]+)" };
+const std::string UrlPathFactory::pat_wordNumsDash_ { "[A-Za-z0-9\\-_\\.]+" };
+const std::string UrlPathFactory::pat_wordNums_ { "[A-Za-z0-9]+" };
+const std::string UrlPathFactory::pat_word_ { "[A-Za-z]+" };
+const std::string UrlPathFactory::pat_nums_ { "[0-9]+" };
 
 
 } /* namespace bibseq */

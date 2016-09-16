@@ -37,25 +37,25 @@ seqCache::cacheRecord::cacheRecord(const std::string & uid,
 }
 
 seqCache::cacheRecord::cacheRecord(const cacheRecord & other) :
-		uid_(other.uid_),
-		reads_(std::make_shared<std::vector<readObject>>(*other.reads_)) {
+		uid_(other.uid_), reads_(
+				std::make_shared<std::vector<readObject>>(*other.reads_)) {
 }
 
 seqCache::cacheRecord::cacheRecord(cacheRecord && other) :
 		uid_(other.uid_), reads_(std::move(other.reads_)) {
 }
 
-
 seqCache::seqCache() {
 }
 
 seqCache::seqCache(const seqCache & other) :
-		cache_(other.cache_), currentCache_(other.currentCache_), cachePos_(other.cachePos_) {
+		cache_(other.cache_), currentCache_(other.currentCache_), cachePos_(
+				other.cachePos_) {
 }
 
 seqCache::seqCache(seqCache && other) :
-		cache_(std::move(other.cache_)), currentCache_(std::move(other.currentCache_)), cachePos_(
-				other.cachePos_) {
+		cache_(std::move(other.cache_)), currentCache_(
+				std::move(other.currentCache_)), cachePos_(other.cachePos_) {
 }
 
 

@@ -204,17 +204,21 @@ Json::Value SeqCache::removeGaps(const std::string & uid){
 	return getJson(uid);
 }
 
-Json::Value SeqCache::rComplement(const std::string & uid){
+Json::Value SeqCache::rComplement(const std::string & uid) {
 	cache_.at(uid).rComplement();
 	return getJson(uid);
 }
 
-Json::Value SeqCache::minTreeDataDetailed(const std::string & uid, uint32_t numDiff){
-	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())), uid, numDiff);
+Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
+		uint32_t numDiff) {
+	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
+			uid, numDiff);
 }
 
-Json::Value SeqCache::minTreeDataDetailed(const std::string & uid, const std::vector<uint32_t> & positions, uint32_t numDiff){
-	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),positions, uid, numDiff);
+Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
+		const std::vector<uint32_t> & positions, uint32_t numDiff) {
+	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
+			positions, uid, numDiff);
 }
 
 Json::Value SeqCache::sort(const std::string & uid,

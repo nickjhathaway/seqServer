@@ -52,7 +52,7 @@ void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session)
 		seqData["baseColor"] = bib::json::parse(ColorFactory::DNAColorsJson);
 	}
 
-	auto body = seqData.toStyledString();
+	auto body = bib::json::writeAsOneLine(seqData);
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(body);
 	session->close(restbed::OK, body, headers);
