@@ -964,7 +964,7 @@ njhSeqView.prototype.paintSeqs = function(){
 			.on("mouseenter", function(d, i){
 				updateTable(self.popTab,[{"name": d3.select(this.parentNode).datum()["name"]}], ["name"]);
 			}).on("mousedown", function(d,i){
-				self.currentSeq = d3.select(this.parentNode).datum()["position"];
+				self.currentSeq = d3.select(this.parentNode).datum()["selected"];
 				if(d3.event.shiftKey ){
 	    			if(self.selected.size > 0){
 	    				var lastAdded = getLastValue(self.selected);
@@ -1017,12 +1017,6 @@ njhSeqView.prototype.paintSeqs = function(){
 											 "base": d,
 											 "qual": d3.select(this.parentNode).datum()["qual"][self.baseStart + i],
 											 "pos" : (self.baseStart + i)}], ["name", "base", "qual", "pos"]);
-					/*
-					$("#info", self.popUp)[0].innerHTML = "name: " 
-					+ d3.select(this.parentNode).datum()["name"]
-		        	+ "<br>base: "  + d
-		        	+ "<br>qual: " + d3.select(this.parentNode).datum()["qual"][self.baseStart + i]
-		        	+ "<br>pos: " + (self.baseStart + i);*/
 				});
 		//get rid of any base that no longer have data
 		seqGroupsBaseRects

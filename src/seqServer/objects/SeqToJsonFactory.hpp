@@ -12,24 +12,29 @@ namespace bibseq {
 
 class SeqToJsonFactory {
 public:
+
 	template<typename T>
 	static Json::Value seqsToJson(const std::vector<T> & reads,
 			const std::string & uid) {
 		Json::Value ret;
 		auto& seqs = ret["seqs"];
-		//find number of reads
-		ret["numReads"] = bib::json::toJson(reads.size());
-		// get the maximum length
 		uint64_t maxLen = 0;
-		bibseq::readVec::getMaxLength(reads, maxLen);
-		ret["maxLen"] = bib::json::toJson(maxLen);
 		ret["uid"] = uid;
 		ret["selected"] = bib::json::toJson(std::vector<uint32_t> { });
-		//seqs.
+		uint32_t count = 0;
 		for (const auto & pos : iter::range<uint32_t>(reads.size())) {
-			seqs[pos] = bib::json::toJson(getSeqBase(reads[pos]));
-			seqs[pos]["position"] = pos;
+			if(getSeqBase(reads[pos]).on_){
+				bibseq::readVec::getMaxLength(getSeqBase(reads[pos]), maxLen);
+				seqs[count] = bib::json::toJson(getSeqBase(reads[pos]));
+				seqs[count]["position"] = pos;
+				seqs[count]["selected"] = count;
+				++count;
+			}
 		}
+		//find number of reads
+		ret["numReads"] = bib::json::toJson(count);
+		// get the maximum length
+		ret["maxLen"] = bib::json::toJson(maxLen);
 		return ret;
 	}
 

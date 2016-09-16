@@ -47,8 +47,9 @@ public:
 
 
 
-	private:
+
 		std::shared_ptr<std::vector<readObject>> reads_;
+	private:
 		uint32_t blockSize_ = 10000;
 		uint32_t blockStart_ = 0;
 		std::function<void(CacheRecord &)> updateFunc_;
@@ -94,12 +95,12 @@ public:
 
 	void setWorkingDir(const bfs::path & dir);
 	bfs::path workingDir_;
-
+	std::unordered_map<std::string, CacheRecord> cache_;
 private:
 
 
 
-	std::unordered_map<std::string, CacheRecord> cache_;
+
 	VecStr currentCache_;
 	uint32_t cachePos_ = 0;
 	//uint32_t cacheSizeLimit_ = 10;
