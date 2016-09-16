@@ -235,7 +235,10 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	const auto request = session->get_request();
 	const std::string sortBy = request->get_path_parameter("sortBy");
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::cout << postData << std::endl;
+
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
@@ -244,7 +247,7 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->sort(uid, sortBy);
 			} else {
-				seqData = seqsBySession_[sessionUID]->sort(uid, selected, sortBy);
+				seqData = seqsBySession_[sessionUID]->sort(uid,positions, selected, sortBy);
 				seqData["selected"] = bib::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -269,6 +272,7 @@ void SeqAppRestbed::muscleAlnPostHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
@@ -277,7 +281,7 @@ void SeqAppRestbed::muscleAlnPostHandler(
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->muscle(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->muscle(uid, selected);
+				seqData = seqsBySession_[sessionUID]->muscle(uid,positions, selected);
 				seqData["selected"] = bib::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -301,6 +305,7 @@ void SeqAppRestbed::removeGapsPostHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
@@ -309,7 +314,7 @@ void SeqAppRestbed::removeGapsPostHandler(
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->removeGaps(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->removeGaps(uid, selected);
+				seqData = seqsBySession_[sessionUID]->removeGaps(uid,positions, selected);
 				seqData["selected"] = bib::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -333,6 +338,7 @@ void SeqAppRestbed::complementSeqsPostHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
@@ -341,7 +347,7 @@ void SeqAppRestbed::complementSeqsPostHandler(
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->rComplement(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->rComplement(uid, selected);
+				seqData = seqsBySession_[sessionUID]->rComplement(uid,positions, selected);
 				seqData["selected"] = bib::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -366,6 +372,7 @@ void SeqAppRestbed::translateToProteinPostHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	uint32_t start = bib::lexical_cast<uint32_t>(postData["start"].asString());
@@ -378,7 +385,7 @@ void SeqAppRestbed::translateToProteinPostHandler(
 				seqData = seqsBySession_[sessionUID]->translate(uid, complement,
 						reverse, start);
 			} else {
-				seqData = seqsBySession_[sessionUID]->translate(uid, selected,
+				seqData = seqsBySession_[sessionUID]->translate(uid, positions,
 						complement, reverse, start);
 				//seqData["selected"] = bib::json::toJson(selected);
 			}
@@ -405,6 +412,7 @@ void SeqAppRestbed::minTreeDataDetailedPostHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	uint32_t numDiffs = bib::lexical_cast<uint32_t>(
@@ -416,7 +424,7 @@ void SeqAppRestbed::minTreeDataDetailedPostHandler(
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
 						numDiffs);
 			} else {
-				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, selected,
+				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, positions,
 						numDiffs);
 				seqData["selected"] = bib::json::toJson(selected);
 			}

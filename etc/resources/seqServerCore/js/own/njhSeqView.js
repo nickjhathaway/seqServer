@@ -320,15 +320,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/sort/seq',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/sort/seq', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -337,15 +336,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/sort/seqCondensed',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/sort/seqCondensed', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -354,15 +352,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/sort/totalCount',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/sort/totalCount', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -371,15 +368,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/sort/size',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/sort/size', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -388,15 +384,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/sort/name',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/sort/name', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -405,15 +400,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/sort/reverse',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/sort/reverse', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -424,15 +418,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/muscle',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/muscle', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -440,15 +433,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
 			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
 		}
 		var gifLoading = prsentDivGifLoading();
-		makeRequest({
-	  		url: '/' + rName + '/removeGaps',
-	  		method: "POST",
-	  		params: postData,
-	  		headers: {"Content-Type" : "application/json"}
-	  	}).then(function (datums) {
-	  		self.updateData(JSON.parse(datums));
+		postJSON('/' + rName + '/removeGaps', postData).then(function (seqData) {
+	  		self.updateData(seqData);
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
@@ -461,15 +453,14 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
+				postData["positions"] = [];
+				for(selPos in postData["selected"]){
+					postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+				}
 			}
 			var gifLoading = prsentDivGifLoading();
-			makeRequest({
-		  		url: '/' + rName + '/complement',
-		  		method: "POST",
-		  		params: postData,
-		  		headers: {"Content-Type" : "application/json"}
-		  	}).then(function (datums) {
-		  		self.updateData(JSON.parse(datums));
+			postJSON('/' + rName + '/complement', postData).then(function (seqData) {
+		  		self.updateData(seqData);
 		  		gifLoading.remove();
 		  	}).catch(logRequestError);
 		}));
@@ -483,21 +474,18 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID, "start" : $("#startSiteInput", self.topDivName).val()};
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
+				postData["positions"] = [];
+				for(selPos in postData["selected"]){
+					postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+				}
 			}
 			var gifLoading = prsentDivGifLoading();
-			makeRequest({
-		  		url: '/' + rName + '/translate',
-		  		method: "POST",
-		  		params: postData,
-		  		headers: {"Content-Type" : "application/json"}
-		  	}).then(function (datums) {
+			postJSON('/' + rName + '/translate', postData).then(function (seqData){
 			    if($("#" + self.topDivName.substring(1) + "_protein").length){
-			    	self.proteinViewer.updateData(JSON.parse(datums));
+			    	self.proteinViewer.updateData(seqData);
 			    }else{
-			    	var mainData = JSON.parse(datums);
-			    	console.log(mainData);
 			    	$( "<div id = \"" + self.topDivName.substring(1) + "_protein" +   "\"></div>" ).insertAfter( self.topDivName );
-			    	self.proteinViewer = new njhSeqView("#" + self.topDivName.substring(1) + "_protein", mainData, self.cw, self.ch,false);
+			    	self.proteinViewer = new njhSeqView("#" + self.topDivName.substring(1) + "_protein", seqData, self.cw, self.ch,false);
 			    	self.proteinViewer.setUp();
 			    	self.proteinViewer.paint();
 			    }
@@ -540,16 +528,15 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
+				postData["positions"] = [];
+				for(selPos in postData["selected"]){
+					postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+				}
 			}
 			postData["numDiff"] = $("#numDiffInput", self.topDivName).val();
 			var gifLoading = prsentDivGifLoading();
-			makeRequest({
-		  		url: '/' + rName + '/minTreeDataDetailed',
-		  		method: "POST",
-		  		params: postData,
-		  		headers: {"Content-Type" : "application/json"}
-		  	}).then(function (datums) {
-				drawPsuedoMinTreeDetailed(JSON.parse(datums), self.topDivName + " #minTreeChart", "minTreeChart",
+			postJSON('/' + rName + '/minTreeDataDetailed', postData).then(function (seqData){
+				drawPsuedoMinTreeDetailed(seqData, self.topDivName + " #minTreeChart", "minTreeChart",
 						$("#treeWidthInput", self.topDivName).val(),$("#treeHeightInput", self.topDivName).val());
 				$('#minTreeChart').scrollView();
 		  		gifLoading.remove();
@@ -687,7 +674,7 @@ njhSeqView.prototype.updateData = function(inputSeqData){
 		this.seqData["uid"] = inputSeqData["uid"];
 		this.seqData["sessionUID"] = inputSeqData["sessionUID"];
 		for(seq in inputSeqData["seqs"]){
-			this.seqData["seqs"][inputSeqData["seqs"][seq]["position"]] = inputSeqData["seqs"][seq];
+			this.seqData["seqs"][inputSeqData["seqs"][seq]["selected"]] = inputSeqData["seqs"][seq];
 		}
 	}else{
 		this.seqData = inputSeqData;

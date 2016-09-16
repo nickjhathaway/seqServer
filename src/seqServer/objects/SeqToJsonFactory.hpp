@@ -36,6 +36,7 @@ public:
 	template<typename T>
 	static Json::Value seqsToJson(const std::vector<T> & reads,
 			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected,
 			const std::string & uid) {
 		Json::Value ret;
 		auto& seqs = ret["seqs"];
@@ -52,13 +53,21 @@ public:
 			}
 			readVec::getMaxLength(reads[pos], maxLen);
 		}
+		if(selected.size() != positions.size()){
+			std::stringstream ss;
+			ss << __PRETTY_FUNCTION__ << ": error, size of positions and size of selected aren't equal" << "\n";
+			ss << "size of positions: " << positions.size() << ", size of selected: " << selected.size() << "\n";
+			throw std::runtime_error{ss.str()};
+		}
 		ret["maxLen"] = bib::json::toJson(maxLen);
 		ret["uid"] = uid;
-		ret["selected"] = bib::json::toJson(positions);
+		ret["selected"] = bib::json::toJson(selected);
+		ret["positions"] = bib::json::toJson(positions);
 		uint32_t count = 0;
-		for (const auto & pos : positions) {
-			seqs[count] = bib::json::toJson(getSeqBase(reads[pos]));
-			seqs[count]["position"] = pos;
+		for (const auto & posIndex : iter::range(positions.size())) {
+			seqs[count] = bib::json::toJson(getSeqBase(reads[positions[posIndex]]));
+			seqs[count]["position"] = positions[posIndex];
+			seqs[count]["selected"] = selected[posIndex];
 			++count;
 		}
 		return ret;
@@ -73,13 +82,11 @@ public:
 
 	template<typename T>
 	static Json::Value sort(std::vector<T> & reads,
-			const std::string & sortOption,
-			std::vector<uint32_t> selected,
-			const std::string & uid) {
+			const std::string & sortOption, std::vector<uint32_t> positions,
+			std::vector<uint32_t> selected, const std::string & uid) {
 		bib::sort(selected);
-		readVecSorter::sortReadVector(reads, selected, sortOption);
-
-		return seqsToJson(reads, selected, uid);
+		readVecSorter::sortReadVector(reads, positions, sortOption);
+		return seqsToJson(reads, positions, selected, uid);
 	}
 
 	template<typename T>
@@ -93,11 +100,13 @@ public:
 	template<typename T>
 	static Json::Value muscle(
 			std::vector<T> & reads,
-			const std::vector<uint32_t> & selected, const std::string & uid) {
-		bib::for_each_pos(reads, selected,
+			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected,
+			const std::string & uid) {
+		bib::for_each_pos(reads, positions,
 				[](T & read) {getSeqBase(read).removeGaps();});
-		sys::muscleSeqs(reads, selected);
-		return seqsToJson(reads, selected, uid);
+		sys::muscleSeqs(reads, positions);
+		return seqsToJson(reads, positions, selected, uid);
 	}
 
 	template<typename T>
@@ -110,11 +119,12 @@ public:
 	template<typename T>
 	static Json::Value removeGaps(
 			std::vector<T> & reads,
+			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected,
 			const std::string & uid) {
-		bib::for_each_pos(reads, selected,
+		bib::for_each_pos(reads, positions,
 				[](T & read) {getSeqBase(read).removeGaps();});
-		return seqsToJson(reads,selected, uid);
+		return seqsToJson(reads, positions, selected, uid);
 	}
 
 	template<typename T>
@@ -125,12 +135,12 @@ public:
 	}
 
 	template<typename T>
-	static Json::Value rComplement(
-			std::vector<T> & reads,
+	static Json::Value rComplement(std::vector<T> & reads,
+			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected, const std::string & uid) {
-		bib::for_each_pos(reads, selected,
+		bib::for_each_pos(reads, positions,
 				[]( T & read) {getSeqBase(read).reverseComplementRead(true,true);});
-		return seqsToJson(reads,selected, uid);
+		return seqsToJson(reads, positions, selected, uid);
 	}
 
 	template<typename T>
@@ -145,10 +155,11 @@ public:
 	template<typename T>
 	static Json::Value translate(
 			std::vector<T> & reads,
-			const std::vector<uint32_t> & selected, const std::string & uid,
+			const std::vector<uint32_t> & positions,
+			const std::string & uid,
 			bool complement, bool reverse, uint64_t start) {
 		std::vector<baseReadObject> ret;
-		for (const auto & readPos : selected) {
+		for (const auto & readPos : positions) {
 			ret.emplace_back(
 					baseReadObject(
 							getSeqBase(reads[readPos]).translateRet(complement, reverse,
@@ -173,20 +184,19 @@ public:
 	}
 
 	template<typename T>
-	static Json::Value minTreeDataDetailed(
-			const std::vector<T> & reads,
-			const std::vector<uint32_t> & selected, const std::string & uid,
+	static Json::Value minTreeDataDetailed(const std::vector<T> & reads,
+			const std::vector<uint32_t> & positions, const std::string & uid,
 			uint32_t numDiff) {
 		std::vector<T> selReads;
-		for (const auto & pos : selected) {
+		for (const auto & pos : positions) {
 			selReads.emplace_back(reads[pos]);
 		}
-		if(numDiff > 0){
+		if (numDiff > 0) {
 			comparison cutOff;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
-			return genDetailMinTreeData(selReads,2, cutOff, true);
-		}else{
-			return genDetailMinTreeData(selReads,2);
+			return genDetailMinTreeData(selReads, 2, cutOff, true);
+		} else {
+			return genDetailMinTreeData(selReads, 2);
 		}
 	}
 

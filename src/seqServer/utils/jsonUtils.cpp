@@ -214,4 +214,15 @@ std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData) {
 	return selected;
 }
 
+
+std::vector<uint32_t> parseJsonForPosition(const Json::Value & postData){
+	std::vector<uint32_t> positions { };
+	if (postData.isMember("positions")) {
+		positions = bib::json::jsonArrayToVec(postData["positions"],
+				std::function<uint32_t(const Json::Value &)>(
+						[](const Json::Value & val)->uint32_t {return val.asUInt();}));
+	}
+	return positions;
+}
+
 } /* namespace bibseq */

@@ -139,20 +139,26 @@ public:
 	Json::Value getJson(const std::string & uid);
 
 	Json::Value sort(const std::string & uid,
-			const std::vector<uint32_t> & positions, const std::string & sortOption);
+			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected,
+			const std::string & sortOption);
 	Json::Value muscle(const std::string & uid,
-			const std::vector<uint32_t> & positions);
+			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected);
 	Json::Value removeGaps(const std::string & uid,
-			const std::vector<uint32_t> & positions);
+			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected);
 	Json::Value translate(const std::string & uid,
 			const std::vector<uint32_t> & positions, bool complement, bool reverse,
 			uint64_t start);
 	Json::Value rComplement(const std::string & uid,
-			const std::vector<uint32_t> & positions);
+			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected);
 	Json::Value minTreeDataDetailed(const std::string & uid,
 			const std::vector<uint32_t> & positions, uint32_t numDiff);
 	Json::Value getJson(const std::string & uid,
-			const std::vector<uint32_t> & positions);
+			const std::vector<uint32_t> & positions,
+			const std::vector<uint32_t> & selected);
 
 };
 

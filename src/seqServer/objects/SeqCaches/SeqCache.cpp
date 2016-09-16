@@ -218,28 +218,37 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid, const std::ve
 }
 
 Json::Value SeqCache::sort(const std::string & uid,
-		const std::vector<uint32_t> & positions, const std::string & sortOption) {
+		const std::vector<uint32_t> & positions,
+		const std::vector<uint32_t> & selected, const std::string & sortOption) {
 	cache_.at(uid).sort(sortOption, positions);
-	return getJson(uid, positions);
+	return getJson(uid, positions, selected);
 }
 
-Json::Value SeqCache::muscle(const std::string & uid,const std::vector<uint32_t> & positions){
+Json::Value SeqCache::muscle(const std::string & uid,
+		const std::vector<uint32_t> & positions,
+		const std::vector<uint32_t> & selected) {
 	cache_.at(uid).muscle(positions);
-	return getJson(uid, positions);
+	return getJson(uid, positions, selected);
 }
 
-Json::Value SeqCache::removeGaps(const std::string & uid, const std::vector<uint32_t> & positions){
+Json::Value SeqCache::removeGaps(const std::string & uid,
+		const std::vector<uint32_t> & positions,
+		const std::vector<uint32_t> & selected) {
 	cache_.at(uid).removeGaps(positions);
-	return getJson(uid, positions);
+	return getJson(uid, positions, selected);
 }
 
-Json::Value SeqCache::rComplement(const std::string & uid, const std::vector<uint32_t> & positions){
+Json::Value SeqCache::rComplement(const std::string & uid,
+		const std::vector<uint32_t> & positions,
+		const std::vector<uint32_t> & selected) {
 	cache_.at(uid).rComplement(positions);
-	return getJson(uid, positions);
+	return getJson(uid, positions, selected);
 }
 
-Json::Value SeqCache::getJson(const std::string & uid, const std::vector<uint32_t> & positions){
-	return SeqToJsonFactory::seqsToJson(getRef((cache_.at(uid).get())), positions, uid);
+Json::Value SeqCache::getJson(const std::string & uid,
+		const std::vector<uint32_t> & positions,
+		const std::vector<uint32_t> & selected){
+	return SeqToJsonFactory::seqsToJson(getRef((cache_.at(uid).get())), positions, selected, uid);
 }
 
 Json::Value SeqCache::translate(const std::string & uid,
