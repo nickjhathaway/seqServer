@@ -7,6 +7,8 @@
  */
 
 #include "seqServer/utils.h"
+#include "seqServer/objects/ColorFactory.hpp"
+
 
 namespace bibseq {
 
@@ -35,6 +37,9 @@ public:
 		ret["numReads"] = bib::json::toJson(count);
 		// get the maximum length
 		ret["maxLen"] = bib::json::toJson(maxLen);
+		//default seq type is dna @todo could check seq alphabet to determine this
+		ret["seqType"] = bib::json::toJson("dna");
+		ret["baseColor"] = bib::json::parse(ColorFactory::DNAColorsJson);
 		return ret;
 	}
 

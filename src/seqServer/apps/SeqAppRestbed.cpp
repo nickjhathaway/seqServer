@@ -260,7 +260,7 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = seqData.toStyledString();
+	auto retBody = bib::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -293,7 +293,7 @@ void SeqAppRestbed::muscleAlnPostHandler(
 		std::cerr << "sessionUID: " << sessionUID
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
-	auto retBody = seqData.toStyledString();
+	auto retBody = bib::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -326,7 +326,7 @@ void SeqAppRestbed::removeGapsPostHandler(
 		std::cerr << "sessionUID: " << sessionUID
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
-	auto retBody = seqData.toStyledString();
+	auto retBody = bib::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -360,7 +360,7 @@ void SeqAppRestbed::complementSeqsPostHandler(
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = seqData.toStyledString();
+	auto retBody = bib::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -400,7 +400,7 @@ void SeqAppRestbed::translateToProteinPostHandler(
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = seqData.toStyledString();
+	auto retBody = bib::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -438,7 +438,7 @@ void SeqAppRestbed::minTreeDataDetailedPostHandler(
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = seqData.toStyledString();
+	auto retBody = bib::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");

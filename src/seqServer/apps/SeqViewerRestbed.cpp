@@ -37,11 +37,6 @@ void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session
 void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto sesUid = startSeqCacheSession();
-	seqsBySession_[sesUid]->cache_.at(rootName_.substr(1)).reload();
-	for(uint32_t i = 5; i < 10; ++i){
-		seqsBySession_[sesUid]->cache_.at(rootName_.substr(1)).reads_->at(i).seqBase_.on_ = false;
-	}
-
 	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
 	seqData["sessionUID"] = bib::json::toJson(sesUid);
 	if(protein_){
