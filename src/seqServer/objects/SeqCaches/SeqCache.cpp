@@ -162,6 +162,24 @@ void SeqCache::CacheRecord::erase(std::vector<uint32_t> positions){
 	}
 }
 
+void SeqCache::CacheRecord::ensureNonEmptyReads() {
+	uint32_t count = 0;
+	if (nullptr != reads_) {
+		for (const auto & seq : *reads_) {
+			if (seq.seqBase_.on_) {
+				++count;
+			}
+		}
+		if (0 == count) {
+			reads_->emplace_back(seqInfo { "No Seqs", "AACCGGTT" });
+		} else {
+			if ("No Seqs" == reads_->back().seqBase_.name_) {
+				reads_->erase(reads_->end() - 1);
+			}
+		}
+	}
+}
+
 
 SeqCache::SeqCache(const bfs::path & workingDir):workingDir_(workingDir) {
 

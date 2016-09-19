@@ -235,8 +235,6 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	const auto request = session->get_request();
 	const std::string sortBy = request->get_path_parameter("sortBy");
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
-	std::cout << postData << std::endl;
-
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();

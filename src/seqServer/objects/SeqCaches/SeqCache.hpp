@@ -84,6 +84,8 @@ public:
 
 		void erase(std::vector<uint32_t> positions);
 
+		void ensureNonEmptyReads();
+
 		friend class SeqCache;
 	};
 
