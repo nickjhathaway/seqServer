@@ -75,7 +75,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	}
 	if(this.tableMasterData["hideOnStartColNames"].length > 0){
 		this.tableMasterData["hideOnStartColNames"].forEach(function(d){
-			menuOrganized.select("#" + String(d).replaceAll(".", "\\.")).property("checked", false);
+			menuOrganized.select("#" + String(d).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).property("checked", false);
 		});
 		this.updateTableOnClickOrganized();
 	}
