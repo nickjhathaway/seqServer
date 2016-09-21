@@ -181,6 +181,18 @@ void SeqCache::CacheRecord::ensureNonEmptyReads() {
 }
 
 
+void SeqCache::CacheRecord::toggleSeqs(std::function<bool(const readObject &)> func){
+	reload();
+	for(auto & seq : *reads_){
+		if(func(seq)){
+			seq.seqBase_.on_ = true;
+		}else{
+			seq.seqBase_.on_ = false;
+		}
+	}
+}
+
+
 SeqCache::SeqCache(const bfs::path & workingDir):workingDir_(workingDir) {
 
 }

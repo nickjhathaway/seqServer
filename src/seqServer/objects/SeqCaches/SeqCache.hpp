@@ -86,6 +86,12 @@ public:
 
 		void ensureNonEmptyReads();
 
+		/**@brief turn seqs one and off with a function, if func returns true seq is turned on, false turned off
+		 *
+		 * @param func function to control turning off and on seqs
+		 */
+		void toggleSeqs(std::function<bool(const readObject &)> func);
+
 		friend class SeqCache;
 	};
 

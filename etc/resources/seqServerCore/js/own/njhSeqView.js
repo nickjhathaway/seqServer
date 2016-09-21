@@ -460,6 +460,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			}
 			var gifLoading = prsentDivGifLoading();
 			postJSON('/' + rName + '/complement', postData).then(function (seqData) {
+				//console.log(seqData);
 		  		self.updateData(seqData);
 		  		gifLoading.remove();
 		  	}).catch(logRequestError);
