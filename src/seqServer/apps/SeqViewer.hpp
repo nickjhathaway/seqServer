@@ -7,13 +7,13 @@
  */
 
 
-#include "seqServer/apps/SeqAppRestbed.hpp"
+#include "seqServer/apps/SeqApp.hpp"
 
 namespace bibseq {
 
-class SeqViewerRestbed: public SeqAppRestbed {
+class SeqViewer: public SeqApp {
 
-	typedef bibseq::SeqAppRestbed super;
+	typedef bibseq::SeqApp super;
 
 	bool protein_;
 
@@ -22,7 +22,7 @@ class SeqViewerRestbed: public SeqAppRestbed {
 
 public:
 
-	SeqViewerRestbed(const Json::Value & config);
+	SeqViewer(const Json::Value & config);
 
 
 	virtual VecStr requiredOptions() const ;
@@ -37,7 +37,7 @@ public:
 
 
 
-int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands);
+int seqViewerRun(const bib::progutils::CmdArgs & inputCommands);
 
 } /* namespace bibseq */
 

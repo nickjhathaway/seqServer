@@ -1,15 +1,15 @@
 /*
- * SeqAppRestbed.cpp
+ * SeqApp.cpp
  *
  *  Created on: Aug 25, 2016
  *      Author: nick
  */
 
-#include "SeqAppRestbed.hpp"
+#include "SeqApp.hpp"
 
 namespace bibseq {
 
-void SeqAppRestbed::checkConfigThrow() const {
+void SeqApp::checkConfigThrow() const {
 	VecStr missing;
 	for (const auto & required : requiredOptions()) {
 		if (debug_) {
@@ -31,7 +31,7 @@ void SeqAppRestbed::checkConfigThrow() const {
 	}
 }
 
-void SeqAppRestbed::cssHandler(std::shared_ptr<restbed::Session> session) {
+void SeqApp::cssHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	std::string body = cssFiles_->get();
 	const std::multimap<std::string, std::string> headers =
@@ -39,7 +39,7 @@ void SeqAppRestbed::cssHandler(std::shared_ptr<restbed::Session> session) {
 	session->close(restbed::OK, body, headers);
 }
 
-void SeqAppRestbed::jsHandler(std::shared_ptr<restbed::Session> session) {
+void SeqApp::jsHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	std::string body = jsFiles_->get();
 	const std::multimap<std::string, std::string> headers =
@@ -47,7 +47,7 @@ void SeqAppRestbed::jsHandler(std::shared_ptr<restbed::Session> session) {
 	session->close(restbed::OK, body, headers);
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::css() {
+std::shared_ptr<restbed::Resource> SeqApp::css() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "css" } }));
@@ -59,7 +59,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::css() {
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::js() {
+std::shared_ptr<restbed::Resource> SeqApp::js() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "js" } }));
@@ -71,7 +71,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::js() {
 	return resource;
 }
 
-SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
+SeqApp::SeqApp(const Json::Value & config) :
 		config_(config) {
 	checkConfigThrow();
 	//load js
@@ -102,7 +102,7 @@ SeqAppRestbed::SeqAppRestbed(const Json::Value & config) :
 	messFac_ = std::make_shared<LogMessageFactory>(std::cout, debug_);
 }
 
-std::vector<std::shared_ptr<restbed::Resource>> SeqAppRestbed::getAllResources() {
+std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	std::vector<std::shared_ptr<restbed::Resource>> ret;
 	ret.emplace_back(js());
@@ -125,15 +125,15 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqAppRestbed::getAllResources()
 	return ret;
 }
 
-SeqAppRestbed::~SeqAppRestbed() {
+SeqApp::~SeqApp() {
 
 }
 
-VecStr SeqAppRestbed::requiredOptions() const {
+VecStr SeqApp::requiredOptions() const {
 	return VecStr { "seqServerCore", "name", "workingDir" };
 }
 
-void SeqAppRestbed::getDNAColorsHandler(
+void SeqApp::getDNAColorsHandler(
 		std::shared_ptr<restbed::Session> session) const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const std::multimap<std::string, std::string> headers =
@@ -141,7 +141,7 @@ void SeqAppRestbed::getDNAColorsHandler(
 	session->close(restbed::OK, ColorFactory::DNAColorsJson, headers);
 }
 
-void SeqAppRestbed::getProteinColorsHandler(
+void SeqApp::getProteinColorsHandler(
 		std::shared_ptr<restbed::Session> session) const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const std::multimap<std::string, std::string> headers =
@@ -149,7 +149,7 @@ void SeqAppRestbed::getProteinColorsHandler(
 	session->close(restbed::OK, ColorFactory::AAColorsJson, headers);
 }
 
-void SeqAppRestbed::getColorsHandler(
+void SeqApp::getColorsHandler(
 		std::shared_ptr<restbed::Session> session) const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	uint32_t num = 0;
@@ -162,7 +162,7 @@ void SeqAppRestbed::getColorsHandler(
 
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::getDNAColors() const {
+std::shared_ptr<restbed::Resource> SeqApp::getDNAColors() const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
@@ -175,7 +175,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getDNAColors() const {
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::getProteinColors() const {
+std::shared_ptr<restbed::Resource> SeqApp::getProteinColors() const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
@@ -187,7 +187,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getProteinColors() const {
 					}));
 	return resource;
 }
-std::shared_ptr<restbed::Resource> SeqAppRestbed::getColors() const {
+std::shared_ptr<restbed::Resource> SeqApp::getColors() const {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
@@ -202,7 +202,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::getColors() const {
 
 //
 
-void SeqAppRestbed::addScripts(const bfs::path & dir) {
+void SeqApp::addScripts(const bfs::path & dir) {
 	auto files = bib::files::listAllFiles(dir.string(), false,
 			{ std::regex(".*.js$") });
 	for (const auto & file : files) {
@@ -215,7 +215,7 @@ void SeqAppRestbed::addScripts(const bfs::path & dir) {
 	}
 }
 
-void SeqAppRestbed::addPages(const bfs::path & dir) {
+void SeqApp::addPages(const bfs::path & dir) {
 	auto files = bib::files::listAllFiles(dir.string(), false,
 			VecStr { ".html" });
 	for (const auto & file : files) {
@@ -229,7 +229,7 @@ void SeqAppRestbed::addPages(const bfs::path & dir) {
 	}
 }
 
-void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
+void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 		const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -265,7 +265,7 @@ void SeqAppRestbed::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::muscleAlnPostHandler(
+void SeqApp::muscleAlnPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
@@ -298,7 +298,7 @@ void SeqAppRestbed::muscleAlnPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::removeGapsPostHandler(
+void SeqApp::removeGapsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
@@ -331,7 +331,7 @@ void SeqAppRestbed::removeGapsPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::complementSeqsPostHandler(
+void SeqApp::complementSeqsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
@@ -365,7 +365,7 @@ void SeqAppRestbed::complementSeqsPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::translateToProteinPostHandler(
+void SeqApp::translateToProteinPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
@@ -405,7 +405,7 @@ void SeqAppRestbed::translateToProteinPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::minTreeDataDetailedPostHandler(
+void SeqApp::minTreeDataDetailedPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
@@ -443,7 +443,7 @@ void SeqAppRestbed::minTreeDataDetailedPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::sortHandler(std::shared_ptr<restbed::Session> session) {
+void SeqApp::sortHandler(std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	//std::string sortBy
 	const auto request = session->get_request();
@@ -458,7 +458,7 @@ void SeqAppRestbed::sortHandler(std::shared_ptr<restbed::Session> session) {
 					}));
 }
 
-void SeqAppRestbed::muscleAlnHandler(
+void SeqApp::muscleAlnHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -473,7 +473,7 @@ void SeqAppRestbed::muscleAlnHandler(
 					}));
 }
 
-void SeqAppRestbed::removeGapsHandler(
+void SeqApp::removeGapsHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -488,7 +488,7 @@ void SeqAppRestbed::removeGapsHandler(
 					}));
 }
 
-void SeqAppRestbed::complementSeqsHandler(
+void SeqApp::complementSeqsHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -504,7 +504,7 @@ void SeqAppRestbed::complementSeqsHandler(
 
 }
 
-void SeqAppRestbed::translateToProteinHandler(
+void SeqApp::translateToProteinHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -520,7 +520,7 @@ void SeqAppRestbed::translateToProteinHandler(
 
 }
 
-void SeqAppRestbed::minTreeDataDetailedHandler(
+void SeqApp::minTreeDataDetailedHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -535,7 +535,7 @@ void SeqAppRestbed::minTreeDataDetailedHandler(
 					}));
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::sort() {
+std::shared_ptr<restbed::Resource> SeqApp::sort() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "sort" }, {
@@ -550,7 +550,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::sort() {
 
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::muscleAln() {
+std::shared_ptr<restbed::Resource> SeqApp::muscleAln() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
@@ -563,7 +563,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::muscleAln() {
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::removeGaps() {
+std::shared_ptr<restbed::Resource> SeqApp::removeGaps() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
@@ -576,7 +576,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::removeGaps() {
 
 	return resource;
 }
-std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs() {
+std::shared_ptr<restbed::Resource> SeqApp::complementSeqs() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
@@ -588,7 +588,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::complementSeqs() {
 					}));
 	return resource;
 }
-std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
+std::shared_ptr<restbed::Resource> SeqApp::translateToProtein() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
@@ -601,7 +601,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::translateToProtein() {
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::minTreeDataDetailed() {
+std::shared_ptr<restbed::Resource> SeqApp::minTreeDataDetailed() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
@@ -614,7 +614,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::minTreeDataDetailed() {
 	return resource;
 }
 
-void SeqAppRestbed::closeSessionPostHandler(
+void SeqApp::closeSessionPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
@@ -644,7 +644,7 @@ void SeqAppRestbed::closeSessionPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
-void SeqAppRestbed::closeSessionHandler(
+void SeqApp::closeSessionHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
@@ -659,7 +659,7 @@ void SeqAppRestbed::closeSessionHandler(
 					}));
 }
 
-uint32_t SeqAppRestbed::startSeqCacheSession() {
+uint32_t SeqApp::startSeqCacheSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = sesUIDFac_.genSessionUID();
 	seqsBySession_[ret] = std::make_unique<SeqCache>(*seqs_);
@@ -669,7 +669,7 @@ uint32_t SeqAppRestbed::startSeqCacheSession() {
 	return ret;
 }
 
-void SeqAppRestbed::openSessionHandler(
+void SeqApp::openSessionHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	Json::Value ret;
@@ -680,7 +680,7 @@ void SeqAppRestbed::openSessionHandler(
 	session->close(restbed::OK, body, headers);
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::closeSession() {
+std::shared_ptr<restbed::Resource> SeqApp::closeSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, {
@@ -693,7 +693,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::closeSession() {
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqAppRestbed::openSession() {
+std::shared_ptr<restbed::Resource> SeqApp::openSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
@@ -706,7 +706,7 @@ std::shared_ptr<restbed::Resource> SeqAppRestbed::openSession() {
 	return resource;
 }
 
-std::string SeqAppRestbed::genHtmlDoc(std::string rName,
+std::string SeqApp::genHtmlDoc(std::string rName,
 		bib::files::FileCache & cache) {
 	bib::lstrip(rName, '/');
 	std::string header = "<!DOCTYPE HTML>\n"

@@ -29,7 +29,6 @@
 #include <bibseq.h>
 #include <bibcpp.h>
 #include <cppitertools/range.hpp>
-#include <cppcms/json.h>
 
 namespace bibseq {
 
@@ -42,12 +41,6 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 		const VecStr & excludeFromNum = VecStr { });
 
 Json::Value tableToJsonColumnWise(const bibseq::table & tab);
-
-cppcms::json::object server_config(std::string name, uint32_t port);
-Json::Value cppcmsJsonToJson(const cppcms::json::object& obj);
-Json::Value cppcmsJsonToJson(const cppcms::json::value& val);
-cppcms::json::value jsonToCppcmsJson(const Json::Value & val);
-
 
 
 std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData);

@@ -170,39 +170,7 @@ Json::Value tableToJsonColumnWise(const bibseq::table & tab){
 	return ret;
 }
 
-cppcms::json::object server_config(std::string name, uint32_t port){
-  cppcms::json::object args;
-  args["service"]["api"] = "http";
-  args["service"]["port"] = port;
-  args["service"]["ip"] = "0.0.0.0";
 
-  args["http"]["script"] = name;
-  return args;
-}
-
-Json::Value cppcmsJsonToJson(const cppcms::json::object& obj ){
-	std::stringstream ss;
-	ss << obj;
-	Json::Value ret;
-	ss >> ret;
-	return ret;
-}
-
-Json::Value cppcmsJsonToJson(const cppcms::json::value& val ){
-	std::stringstream ss;
-	ss << val;
-	Json::Value ret;
-	ss >> ret;
-	return ret;
-}
-
-cppcms::json::value jsonToCppcmsJson(const Json::Value & val ){
-	std::stringstream ss;
-	ss << val;
-	cppcms::json::value ret;
-	ss >> ret;
-	return ret;
-}
 
 std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData) {
 	std::vector<uint32_t> selected { };

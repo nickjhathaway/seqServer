@@ -1,18 +1,18 @@
 /*
- * SeqViewerRestbed.cpp
+ * SeqViewer.cpp
  *
  *  Created on: Aug 25, 2016
  *      Author: nick
  */
 
-#include "SeqViewerRestbed.hpp"
+#include "SeqViewer.hpp"
 
 #include "seqServer/apps/pars.h"
 
 namespace bibseq {
 
 
-SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(config){
+SeqViewer::SeqViewer(const Json::Value & config) : SeqApp(config){
 
 	protein_ = config_["protein"].asBool();
 	pages_.emplace("mainPageJs",
@@ -26,7 +26,7 @@ SeqViewerRestbed::SeqViewerRestbed(const Json::Value & config) : SeqAppRestbed(c
 }
 
 
-void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session){
+void SeqViewer::mainPageHandler(std::shared_ptr<restbed::Session> session){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto body = genHtmlDoc(rootName_, pages_.at("mainPageJs"));
 	const std::multimap<std::string, std::string> headers =
@@ -34,7 +34,7 @@ void SeqViewerRestbed::mainPageHandler(std::shared_ptr<restbed::Session> session
 	session->close(restbed::OK, body, headers);
 }
 
-void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session){
+void SeqViewer::seqDataHandler(std::shared_ptr<restbed::Session> session){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto sesUid = startSeqCacheSession();
 	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
@@ -53,7 +53,7 @@ void SeqViewerRestbed::seqDataHandler(std::shared_ptr<restbed::Session> session)
 	session->close(restbed::OK, body, headers);
 }
 
-std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqData(){
+std::shared_ptr<restbed::Resource> SeqViewer::seqData(){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
@@ -66,7 +66,7 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::seqData(){
 	return resource;
 }
 
-std::shared_ptr<restbed::Resource> SeqViewerRestbed::mainPage(){
+std::shared_ptr<restbed::Resource> SeqViewer::mainPage(){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto resource = std::make_shared<restbed::Resource>();
 	resource->set_path(
@@ -80,7 +80,7 @@ std::shared_ptr<restbed::Resource> SeqViewerRestbed::mainPage(){
 }
 
 
-std::vector<std::shared_ptr<restbed::Resource>> SeqViewerRestbed::getAllResources(){
+std::vector<std::shared_ptr<restbed::Resource>> SeqViewer::getAllResources(){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = super::getAllResources();
 	ret.emplace_back(mainPage());
@@ -89,7 +89,7 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqViewerRestbed::getAllResource
 }
 
 
-VecStr SeqViewerRestbed::requiredOptions() const{
+VecStr SeqViewer::requiredOptions() const{
 	return catenateVectors(super::requiredOptions(), VecStr{"resources", "ioOptions"});
 }
 
@@ -102,7 +102,7 @@ void error_handler(const int statusCode, const std::exception& exception,
 	}
 }
 
-int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
+int seqViewerRun(const bib::progutils::CmdArgs & inputCommands){
 	std::string clusDir = "";
 	SeqAppCorePars corePars;
 	corePars.port_ = 8881;
@@ -134,7 +134,7 @@ int seqViewerRestbed(const bib::progutils::CmdArgs & inputCommands){
     std::cout <<  corePars.getAddress()<< std::endl;
   }
 
-	SeqViewerRestbed viewerModel(appConfig);
+	SeqViewer viewerModel(appConfig);
 
 	auto resources = viewerModel.getAllResources();
 

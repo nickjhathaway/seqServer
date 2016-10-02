@@ -1,6 +1,6 @@
 #pragma once
 /*
- * SeqAppRestbed.hpp
+ * SeqApp.hpp
  *
  *  Created on: Aug 25, 2016
  *      Author: nick
@@ -17,7 +17,7 @@ namespace bibseq {
 
 
 
-class SeqAppRestbed {
+class SeqApp {
 
 	void getDNAColorsHandler(
 			std::shared_ptr<restbed::Session> session) const;
@@ -95,7 +95,7 @@ public:
 	std::shared_ptr<restbed::Resource> closeSession();
 	std::shared_ptr<restbed::Resource> openSession();
 
-	SeqAppRestbed(const Json::Value & config);
+	SeqApp(const Json::Value & config);
 
 
 
@@ -104,7 +104,7 @@ public:
 
 	std::unordered_map<uint32_t, std::unique_ptr<SeqCache>> seqsBySession_;
 
-	virtual ~SeqAppRestbed();
+	virtual ~SeqApp();
 
 	virtual VecStr requiredOptions() const;
 

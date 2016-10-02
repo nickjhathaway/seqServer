@@ -27,10 +27,7 @@
  */
 
 #include "seqServer/apps/pars.h"
-#include "seqServer/apps/seqApp.hpp"
-#include "seqServer/apps/seqViewer.hpp"
-#include "seqServer/apps/SeqAppRestbed.hpp"
-#include "seqServer/apps/SeqViewerRestbed.hpp"
-#include "seqServer/apps/viewTable.hpp"
-#include "seqServer/apps/viewBamBases.hpp"
+#include "seqServer/apps/SeqApp.hpp"
+#include "seqServer/apps/SeqViewer.hpp"
+
 
