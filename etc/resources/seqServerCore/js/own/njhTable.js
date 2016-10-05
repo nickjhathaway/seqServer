@@ -26,18 +26,36 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
 	this.tableDownloadStubName = tableDownloadStubName;
-	d3.select(masterDivId).attr("style", "margin-top:10px; margin-bottom:10px;")
+	d3.select(masterDivId)
+		.attr("style", "margin-top:10px; margin-bottom:10px;")
 		.attr("class", "njhTable");
 	//create internal table divs
 	//d3.select(masterDivId).attr("class", "njhTableMenu");
 	d3.select(masterDivId).append("div").attr("class", "njhTableMenuOrganized");
-	this.tabDiv = createTable(this.masterDivId);
+	this.masterTabDiv = d3.select(masterDivId)
+		.append("div")
+		.attr("class", "njhMasterTableDiv")
+		.style("overflow", "auto")
+		.style("max-height", window.innerWidth/2.0 + "px" );
+	//add header table so headers can float
+	/*this.masterTabDiv
+		.append("div")
+		.attr("class", "njhHeadersDiv")
+		.style("position", "absolute")
+		.style("background-color", "#AAA")
+			.append("table")
+			.attr("class", "njhNewHeaders")
+			.append("thead").append("tr");
+	*/
+	//add the actual table 
+	this.masterTabDiv.append("div").attr("class", "njhTableDiv");
+	
+	this.tabDiv = createTable(this.masterDivId + " ." + "njhTableDiv");
 	d3.select(masterDivId).append("div").attr("class", "njhTableChart");
 	//populate table 
 	updateTable(this.tabDiv,this.tableMasterData["tab"],this.tableMasterData["columnNames"]);
-	//var menu = d3.select(this.masterDivId + " .njhTableMenu");
-	//this.menu = new njhCheckboxMenu(this.masterDivId + " .njhTableMenu", this.tableMasterData["columnNames"],this.updateTableOnClick.bind(this) );
 	
+
 	var menuOrganized = d3.select(this.masterDivId + " .njhTableMenuOrganized");
 	this.menuOrganized = new njhCheckboxMenuOrganized(this.masterDivId + " .njhTableMenuOrganized", this.tableMasterData["columnNames"],this.updateTableOnClickOrganized.bind(this) );
 	
@@ -78,10 +96,45 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 			menuOrganized.select("#" + String(d).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).property("checked", false);
 		});
 		this.updateTableOnClickOrganized();
-	}
+	}else{
+		this.updateHeaders();
+	}	
 }
 
-
+njhTable.prototype.updateHeaders = function(){
+	/*
+	var self = this;
+	var headersWidths = [];
+	var tab = $(self.masterDivId + " ." + "njhTableDiv table")[0];
+	console.log(tab.rows[0]);
+	this.tabDiv.selectAll("th").each(function(d,i){
+		console.log(d);
+		console.log(d3.select(this).style("width"));
+		for(var row=0; row<tab.rows.length; ++row){
+			console.log(d3.select(tab.rows[row].cells[i]).style("width"));
+		}
+		headersWidths.push({"head":d, "width":d3.select(this).style("width")});
+	});
+	console.log(headersWidths);
+	var headers = d3.select(this.masterDivId + " .njhNewHeaders").select("thead").select("tr")
+	    .selectAll("th")
+	    .data(headersWidths);
+	//create headers as needed and add bold 
+	headers
+	    .enter()
+		.append("th")
+			.style("font-weight", "bold")
+			.style("padding", "2px 4px")
+			.style("white-space", "nowrap");
+	//remove any headers that don't have data attached to them
+	headers.exit()
+			.remove();
+	//update the text and width
+	headers
+		.text(function(column) { return column.head; })
+		.style("width",function(column){ return column.width; });
+	*/
+}
 
 njhTable.prototype.updateTableOnClickOrganized = function() {
 	var allVals = [];
@@ -107,6 +160,8 @@ njhTable.prototype.updateTableOnClickOrganized = function() {
 		this.chart.show(showCols);
 		this.chart.hide(hidCols);
 	}
+	this.updateHeaders();
+
 }; 
 
 njhTable.prototype.addChart = function(){
