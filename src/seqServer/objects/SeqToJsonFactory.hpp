@@ -184,12 +184,19 @@ public:
 	static Json::Value minTreeDataDetailed(
 			const std::vector<T> & reads, const std::string & uid,
 			uint32_t numDiff) {
+		std::vector<T> selReads;
+		for (const auto & seq : reads) {
+			if(getSeqBase(seq).on_){
+				selReads.emplace_back(seq);
+			}
+
+		}
 		if (numDiff > 0) {
 			comparison cutOff;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
-			return genDetailMinTreeData(reads, 2, cutOff, true);
+			return genDetailMinTreeData(selReads, 2, cutOff, true);
 		} else {
-			return genDetailMinTreeData(reads, 2);
+			return genDetailMinTreeData(selReads, 2);
 		}
 	}
 
