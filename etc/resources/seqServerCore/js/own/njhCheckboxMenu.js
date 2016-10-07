@@ -122,7 +122,7 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 		.html(function(d){ return d.name + "<span class=\"caret\"></span>"});
 	var labs = cats.append("ul")
 		.attr("class", "dropdown-menu dropdown-menu-form")
-		.attr("id", function(d){ return "menu_" + d.name.replace(".", "");})
+		.attr("id", function(d){ return "menu_" + d.name;})
 		.selectAll("li")
 		.data(function(d){ return d.subNames;})
 		.enter().append("li")
@@ -130,27 +130,28 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 				.attr("class", "checkbox")
 				.attr("style", "margin: 2px")
 			.append("label");
-	labs.html(function(d){return "<input type=\"checkbox\" name=\"check\" checked=\"true\" value=" + d + " id=" + d + ">" + d;})
+	//labs.html(function(d){return "<input type=\"checkbox\" name=\"check\" checked=\"true\" value=" + d + " id=" + d + ">" + d;})
 		;//.attr("style", "border:2px solid black; padding: 2px;margin: 1px");
-	/*labs.append("input")
+	labs.append("input")
 		.attr("type","checkbox")
 		.attr("name", "check")
 		.attr("checked", true)
 		.attr("value",function(d){return d;})
-		.attr("id", function(d){return d;});*/
+		.attr("id", function(d){return d;});
+	labs.append("div").text(function(d){return d;});
 
 		
 	var drops = cats.select("ul");
 	drops.append("li").append("a")
 		.attr("href", "javascript:void(0);")
 		.text("Check All").on("click", function(d){
-			cats.select("#menu_" + d.name.replace(".", "")).selectAll("input").property("checked", true);
+			cats.select("#menu_" + String(d.name).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).selectAll("input").property("checked", true);
 			self.updateFunc();
 		});
 	drops.append("li").append("a")
 		.attr("href", "javascript:void(0);")
 		.text("Uncheck All").on("click", function(d){
-			cats.select("#menu_" + d.name.replace(".", "")).selectAll("input").property("checked", false);
+			cats.select("#menu_" + String(d.name).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).selectAll("input").property("checked", false);
 			self.updateFunc();
 		});
 	//Add check all and uncheck all buttons on their own lines
