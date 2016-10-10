@@ -797,6 +797,8 @@ njhSeqView.prototype.mouseWheelUp = function(steps){
     	$(this.rSlider).bootstrapSlider('setValue', this.seqStart);
     	this.needToPaint = true;
     	this.paint();
+    }else{
+    	console.log(steps);
     }
 };
 
@@ -883,7 +885,70 @@ njhSeqView.prototype.clicked = function(e){
 njhSeqView.prototype.setUpListeners = function(){
 	var self = this;
    	// add scrolling listener
-	addMouseScrollListener(this.seqSvgMaster.node(), this.mouseWheelUp.bind(this), this.mouseWheelDown.bind(this));
+	// addMouseScrollListener(this.seqSvgMaster.node(), this.mouseWheelUp.bind(this), this.mouseWheelDown.bind(this));
+	var mouseScroll = function(deltas){
+		//change in x
+		if(Math.abs(deltas["deltaX"]) > 0){
+			//console.log("change in x");
+			//console.log(deltas);
+			var changeInBaseStart = false;
+			if(deltas["deltaX"] > 0){
+				//positive x delta, decrease base start 
+				if(self.baseStart > 0){
+					changeInBaseStart = true;
+					self.baseStart = Math.max(0, self.baseStart - deltas["deltaX"]);
+				}
+			}else{
+				//negative x delta, increase base start
+				if(self.baseStart < self.seqData["maxLen"] - self.nBases){
+					changeInBaseStart = true;
+					self.baseStart = Math.min(self.seqData["maxLen"] - self.nBases, self.baseStart - deltas["deltaX"]);
+				}
+			}
+			if(changeInBaseStart){
+				//console.log("change in baseStart");
+				d3.event.preventDefault();
+				$(self.bSlider).bootstrapSlider('setValue', self.baseStart);
+		    	self.needToPaint = true;
+			}
+		}
+		//change in y
+		if(Math.abs(deltas["deltaY"]) > 0){
+			//console.log("change in y");
+			//console.log(deltas);
+			var changeInSeqStart = false;
+			if(deltas["deltaY"] > 0){
+				//positive y delta, decrease seq start
+				if(self.seqStart > 0){
+					changeInSeqStart = true;
+					self.seqStart = Math.max(0, self.seqStart - deltas["deltaY"]);
+				}
+			}else{
+				//negative y delta, increase seq start
+				if(self.seqStart < self.seqData["numReads"] - self.nSeqs){
+					changeInSeqStart = true;
+					self.seqStart = Math.min(self.seqData["numReads"] - self.nSeqs, self.seqStart - deltas["deltaY"]);
+				}
+			}
+			if(changeInSeqStart){
+				//console.log("change in seqStart");
+				d3.event.preventDefault();
+				$(self.rSlider).bootstrapSlider('setValue', self.seqStart);
+		    	self.needToPaint = true;
+			}
+		}
+		self.paint();
+	};
+	self.seqSvgMaster.on("mousewheel.zoom", function(){
+			var deltas = getDeltasFromEvent(d3.event);
+			var modDeltas = {deltaX : Math.round(deltas["deltaX"]/3.0) , deltaY:Math.round(deltas.deltaY/3.0) };
+			mouseScroll(modDeltas);
+		});
+	self.seqSvgMaster.on("DOMMouseScroll", function(){
+			var deltas = getDeltasFromEvent(d3.event);
+			mouseScroll(deltas);
+		});
+	
 	this.seqSvgMaster.node().addEventListener("mousedown", this.clicked.bind(this), false);
 	//add hover box listening 
 	var moveLeft = 20;

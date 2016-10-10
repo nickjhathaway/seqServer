@@ -255,6 +255,14 @@ function addMouseScrollListener(obj, up, down) {
 	}
 }
 
+function getDeltasFromEvent(eve){
+	var eo = d3.event;
+	var xy = eo.wheelDelta || -eo.detail; 
+	var x = eo.wheelDeltaX || (eo.axis==1?xy:0);
+	var y = eo.wheelDeltaY || (eo.axis==2?xy:0); 
+	return {deltaX:x,deltaY:y};
+}
+
 
 var getRelCursorPosition = function(event, obj) {
 	// from http://stackoverflow.com/a/5417934
@@ -402,7 +410,21 @@ function getRootName(){
 
 function setUpCloseSession(sessionID){
 	var rName = getRootName();
+	/**@todo need to figure out the subtles between the browsers and event calls, currently just this is just hack 
+	 * to make the close session called for at least most of the time  */
 	$(window).on('beforeunload', function(){
+	  	makeRequest({
+	  		url: '/' + rName + '/closeSession',
+	  		method: "POST",
+	  		params: {"sessionUID" : sessionID },
+	  		headers: {"Content-Type" : "application/json"}
+	  	}).then(function (datums) {
+	  		console.log(JSON.parse(datums));
+	  	}).catch(function(err){
+	  		logRequestError(err);
+	  	});
+	});
+	$(window).on('unload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',
 	  		method: "POST",
