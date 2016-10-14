@@ -38,7 +38,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 		.style("overflow", "auto")
 		.style("max-height", window.innerWidth/2.0 + "px" );
 	//add header table so headers can float
-	/*this.masterTabDiv
+	this.masterTabDiv
 		.append("div")
 		.attr("class", "njhHeadersDiv")
 		.style("position", "absolute")
@@ -46,9 +46,12 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 			.append("table")
 			.attr("class", "njhNewHeaders")
 			.append("thead").append("tr");
-	*/
+	
 	//add the actual table 
-	this.masterTabDiv.append("div").attr("class", "njhTableDiv");
+	this.masterTabDiv.append("div")
+		.attr("class", "njhTableDiv");
+		//.style("overflow-y", "hidden")
+		//.style("max-height", window.innerWidth/2.0 + "px" );;
 	
 	this.tabDiv = createTable(this.masterDivId + " ." + "njhTableDiv");
 	d3.select(masterDivId).append("div").attr("class", "njhTableChart");
@@ -62,7 +65,10 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	var self = this;
 	//add download button for table 
 	menuOrganized.append("br");
-	menuOrganized.append("button").text("Download Table").attr("class", "njhTabSaveButton btn btn-success");
+	menuOrganized.append("button")
+		.style("margin", "5px")
+		.text("Download Table")
+		.attr("class", "njhTabSaveButton btn btn-success");
 	menuOrganized.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
 	menuOrganized.select(".njhTabSaveButton").on("click", function() {
 		var allVals = [];
