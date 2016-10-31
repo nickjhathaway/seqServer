@@ -47,8 +47,10 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	    "columns": self.tableMasterData["columnNames"].map(function(col){return {data:col, title:col, name:col}}),
 	    "scrollY":        window.innerHeight * 3/4.0 + "px",
 	    "scrollX":        true,
-        "scrollCollapse": true,
+//        "scrollCollapse": true,
         "paging":         false,
+        "deferRender":    true,
+        "scroller:":      true,
         "buttons": ["csvHtml5"]
 	});
 	
