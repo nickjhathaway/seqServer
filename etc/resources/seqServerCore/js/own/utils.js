@@ -438,4 +438,12 @@ function setUpCloseSession(sessionID){
 	});
 }
 
+function escapeSpecialChars(inputStr){
+	return String(inputStr).replaceAll(".", "\\.")
+	.replaceAll("(", "\\(")
+	.replaceAll(")", "\\)")
+	.replaceAll("<", "\\<")
+	.replaceAll(">", "\\>");
+}
+
 

@@ -21,6 +21,7 @@
 //
 // Allow Bootstrap dropdown menus to have forms/checkboxes inside, 
 // and when clicking on a dropdown item, the menu doesn't disappear.
+
 $(document).on('click', '.dropdown-menu.dropdown-menu-form', function(e) {
   e.stopPropagation();
 });
@@ -70,14 +71,15 @@ function njhCheckboxMenu(divSelector, names, updateFunction){
 };
 
 
-function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
+function njhCheckboxMenuOrganized(divSelector,
+		names,
+		updateFunction){
 	this.divSelector = divSelector;
 	this.names = names;
 	this.updateFunc = updateFunction;
 	var self = this;
 	var menuCats = {"misc": []}
 	for (obj in names){
-		
 		if(names[obj].indexOf("_") > -1){
 			var pre = names[obj].substr(0, names[obj].indexOf("_") + 1);
 			if(pre in menuCats){
@@ -85,14 +87,14 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 			}else{
 				menuCats[pre] = [names[obj]];
 			}
-		}else if (names[obj].indexOf(".") > -1){
+		} else if (names[obj].indexOf(".") > -1){
 			var pre = names[obj].substr(0, names[obj].indexOf(".") + 1);
 			if(pre in menuCats){
 				menuCats[pre].push(names[obj]);
-			}else{
+			} else {
 				menuCats[pre] = [names[obj]];
 			}
-		}else{
+		} else {
 			menuCats["misc"].push(names[obj]);
 		}
 	}
@@ -145,14 +147,32 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 	drops.append("li").append("a")
 		.attr("href", "javascript:void(0);")
 		.text("Check All").on("click", function(d){
+			var allBoxs = [];
 			cats.select("#menu_" + String(d.name).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).selectAll("input").property("checked", true);
-			self.updateFunc();
+			cats.select("#menu_" + String(d.name).replaceAll(".", "\\.")
+					.replaceAll("(", "\\(")
+					.replaceAll(")", "\\)")
+					.replaceAll("<", "\\<")
+					.replaceAll(">", "\\>")).selectAll("input").each(function() {
+						allBoxs.push({name:$(this).val(), on:$(this)[0].checked});
+					});
+			console.log(allBoxs);
+			self.updateFunc(allBoxs);
 		});
 	drops.append("li").append("a")
 		.attr("href", "javascript:void(0);")
 		.text("Uncheck All").on("click", function(d){
+			var allBoxs = [];
 			cats.select("#menu_" + String(d.name).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).selectAll("input").property("checked", false);
-			self.updateFunc();
+			cats.select("#menu_" + String(d.name).replaceAll(".", "\\.")
+					.replaceAll("(", "\\(")
+					.replaceAll(")", "\\)")
+					.replaceAll("<", "\\<")
+					.replaceAll(">", "\\>")).selectAll("input").each(function() {
+						allBoxs.push({name:$(this).val(), on:$(this)[0].checked});
+					});
+			console.log(allBoxs);
+			self.updateFunc(allBoxs);
 		});
 	//Add check all and uncheck all buttons on their own lines
 	menu.append("a")
@@ -168,14 +188,24 @@ function njhCheckboxMenuOrganized(divSelector, names, updateFunction){
 	//add the un-check all and check all functions
 
 	menu.select(".njhCheckAll").on("click", function(){
+		var allBoxs = [];
 		menu.selectAll("input").property("checked", true);
-		self.updateFunc();
+		menu.selectAll("input").each(function(){
+			allBoxs.push({name:$(this).val(), on:$(this)[0].checked});
+		});
+		self.updateFunc(allBoxs);
 	});
 	menu.select(".njhUncheckAll").on("click", function(){
+		var allBoxs = [];
 		menu.selectAll("input").property("checked", false);
-		self.updateFunc();
+		menu.selectAll("input").each(function(){
+			allBoxs.push({name:$(this).val(), on:$(this)[0].checked});
+		});
+		self.updateFunc(allBoxs);
 	});
 	//add update function to the checkboxes
-	menu.selectAll("input").on("click", this.updateFunc);
+	menu.selectAll("input").on("click", function(){
+		self.updateFunc([{name:$(this).val(), on:$(this)[0].checked}]);
+	});
 };
 

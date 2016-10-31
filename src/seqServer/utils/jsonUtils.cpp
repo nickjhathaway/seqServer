@@ -108,6 +108,12 @@ Json::Value dotToJson(const std::string& dotFilename) {
 Json::Value tableToJsonByRow(const bibseq::table & tab,
 		const std::string mainColName, const VecStr & initialVisibleColumns,
 		const VecStr & excludeFromNum) {
+
+	auto columnNamesMod = tab.columnNames_;
+	for (auto & col : columnNamesMod) {
+		col = bib::replaceString(col, ".", "_");
+	}
+
 	Json::Value ret;
 	VecStr numericCols;
 	if(tab.empty()){
@@ -116,29 +122,29 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 	}else{
 		auto & outTab = ret["tab"];
 		std::unordered_map<uint32_t, bool> numCheck;
-		for (const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())) {
+		for (const auto & colPos : iter::range<uint32_t>(columnNamesMod.size())) {
 			numCheck[colPos] = bibseq::isVecOfDoubleStr(tab.getColumn(colPos));
 			if (numCheck[colPos]) {
-				if (!bib::in(tab.columnNames_[colPos], excludeFromNum)) {
-					numericCols.emplace_back(tab.columnNames_[colPos]);
+				if (!bib::in(columnNamesMod[colPos], excludeFromNum)) {
+					numericCols.emplace_back(columnNamesMod[colPos]);
 				}
 			}
 		}
 
 		for (const auto & rowPos : iter::range<uint32_t>(tab.content_.size())) {
-			for (const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())) {
+			for (const auto & colPos : iter::range<uint32_t>(columnNamesMod.size())) {
 				if (numCheck[colPos]) {
-					outTab[rowPos][tab.columnNames_[colPos]] = bib::lexical_cast<double>(
+					outTab[rowPos][columnNamesMod[colPos]] = bib::lexical_cast<double>(
 							tab.content_[rowPos][colPos]);
 				} else {
-					outTab[rowPos][tab.columnNames_[colPos]] = tab.content_[rowPos][colPos];
+					outTab[rowPos][columnNamesMod[colPos]] = tab.content_[rowPos][colPos];
 				}
 			}
 		}
 		ret["numericColNames"] = bib::json::toJson(numericCols);
 	}
 
-	ret["columnNames"] = bib::json::toJson(tab.columnNames_);
+	ret["columnNames"] = bib::json::toJson(columnNamesMod);
 
 
 	/**@todo hide checks for presence of actual names for mainColName and hideOnSTartColNames*/
@@ -146,7 +152,7 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 
 	VecStr hideOnStartColNames;
 	if(!initialVisibleColumns.empty()){
-		for(const auto & col : tab.columnNames_){
+		for(const auto & col : columnNamesMod){
 			if(!bib::in(col, initialVisibleColumns)){
 				hideOnStartColNames.emplace_back(col);
 			}

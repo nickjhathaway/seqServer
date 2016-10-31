@@ -23,151 +23,176 @@
 
 
 function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart){
+	var self = this;
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
 	this.tableDownloadStubName = tableDownloadStubName;
 	d3.select(masterDivId)
-		.attr("style", "margin-top:10px; margin-bottom:10px;")
+		.style("margin-top", "10px")
+		.style("margin-bottom", "10px")
 		.attr("class", "njhTable");
 	//create internal table divs
-	//d3.select(masterDivId).attr("class", "njhTableMenu");
 	d3.select(masterDivId).append("div").attr("class", "njhTableMenuOrganized");
 	this.masterTabDiv = d3.select(masterDivId)
 		.append("div")
-		.attr("class", "njhMasterTableDiv")
-		.style("overflow", "auto")
-		.style("max-height", window.innerWidth/2.0 + "px" );
-	//add header table so headers can float
-	this.masterTabDiv
-		.append("div")
-		.attr("class", "njhHeadersDiv")
-		.style("position", "absolute")
-		.style("background-color", "#AAA")
-			.append("table")
-			.attr("class", "njhNewHeaders")
-			.append("thead").append("tr");
-	
-	//add the actual table 
-	this.masterTabDiv.append("div")
+		.attr("class", "njhMasterTableDiv");
+	this.actualTabDiv = this.masterTabDiv.append("div")
 		.attr("class", "njhTableDiv");
-		//.style("overflow-y", "hidden")
-		//.style("max-height", window.innerWidth/2.0 + "px" );;
+	this.datTabsD3Dom = this.actualTabDiv.append("table")
+		.attr("id", this.masterDivId + "_datTabs" )
+		.attr("class", "table table-condensed table-hover nowrap table-nowrap");
+	//add data table 
+	this.datTable = $(this.datTabsD3Dom.node()).DataTable( {
+	    "data": self.tableMasterData["tab"],
+	    "columns": self.tableMasterData["columnNames"].map(function(col){return {data:col, title:col, name:col}}),
+	    "scrollY":        window.innerHeight * 3/4.0 + "px",
+	    "scrollX":        true,
+        "scrollCollapse": true,
+        "paging":         false,
+        "buttons": ["csvHtml5"]
+	});
 	
-	this.tabDiv = createTable(this.masterDivId + " ." + "njhTableDiv");
-	d3.select(masterDivId).append("div").attr("class", "njhTableChart");
-	//populate table 
-	updateTable(this.tabDiv,this.tableMasterData["tab"],this.tableMasterData["columnNames"]);
+	this.colorTable();
 	
-
-	var menuOrganized = d3.select(this.masterDivId + " .njhTableMenuOrganized");
-	this.menuOrganized = new njhCheckboxMenuOrganized(this.masterDivId + " .njhTableMenuOrganized", this.tableMasterData["columnNames"],this.updateTableOnClickOrganized.bind(this) );
+	this.datTable.on("order", function(){
+		self.colorTable();
+	})
 	
-	var self = this;
+	
+	//add menu
+	this.menuOrganizedDiv = d3.select(this.masterDivId + " .njhTableMenuOrganized");
+	this.menuOrganized = new njhCheckboxMenuOrganized(this.masterDivId + " .njhTableMenuOrganized", this.tableMasterData["columnNames"], this.toggleColumns.bind(this) );
 	//add download button for table 
-	menuOrganized.append("br");
-	menuOrganized.append("button")
-		.style("margin", "5px")
+	this.menuOrganizedDiv.append("br");
+	this.menuOrganizedDiv.append("button")
+		.style("margin-top", "5px")
 		.text("Download Table")
 		.attr("class", "njhTabSaveButton btn btn-success");
-	menuOrganized.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
-	menuOrganized.select(".njhTabSaveButton").on("click", function() {
-		var allVals = [];
-		menuOrganized.selectAll("input:checked").each(function() {
-			allVals.push($(this).val());
-		});
-		var currentColumnNames = _.intersection(self.tableMasterData["columnNames"], allVals);
-		var mainTable = [];
-		mainTable.push(currentColumnNames);
-		//
-		for ( i = 0; i < self.tableMasterData["tab"].length; i++) {
-			var currentRow = [];
-			for (colNum in currentColumnNames) {
-				currentRow.push(self.tableMasterData["tab"][i][currentColumnNames[colNum]]);
-			}
-			mainTable.push(currentRow);
-		}
-		var dataSrc = 'data:text/csv;base64,' + btoa(d3.tsv.format(mainTable));
-		var downLink = menuOrganized.select(".njhTabDownLink");
+	this.menuOrganizedDiv.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
+	this.menuOrganizedDiv.select(".njhTabSaveButton").on("click", function() {
+		var dataSrc = self.tableToDownloadData();
+		var downLink = self.menuOrganizedDiv.select(".njhTabDownLink");
 		downLink.attr("download", self.tableDownloadStubName + ".tab.csv");
 		downLink.attr("href", dataSrc);
 		downLink.node().click();
 	});
 	//create chart of numeric columns if needed
-	this.chart;
+	d3.select(masterDivId).append("div")
+		.attr("class", "njhTableChart");
+	this.chart = null;
 	if (addChart) {
 		this.addChart();
 	}
+	//uncheck the hidden columns
 	if(this.tableMasterData["hideOnStartColNames"].length > 0){
 		this.tableMasterData["hideOnStartColNames"].forEach(function(d){
-			menuOrganized.select("#" + String(d).replaceAll(".", "\\.").replaceAll("(", "\\(").replaceAll(")", "\\)").replaceAll("<", "\\<").replaceAll(">", "\\>")).property("checked", false);
+			self.menuOrganizedDiv.select("#" + escapeSpecialChars(d))
+				.property("checked", false);
 		});
-		this.updateTableOnClickOrganized();
-	}else{
-		this.updateHeaders();
-	}	
+		this.updateAllColumnsVisibility();
+	}
 }
 
-njhTable.prototype.updateHeaders = function(){
-	/*
-	var self = this;
-	var headersWidths = [];
-	var tab = $(self.masterDivId + " ." + "njhTableDiv table")[0];
-	console.log(tab.rows[0]);
-	this.tabDiv.selectAll("th").each(function(d,i){
-		console.log(d);
-		console.log(d3.select(this).style("width"));
-		for(var row=0; row<tab.rows.length; ++row){
-			console.log(d3.select(tab.rows[row].cells[i]).style("width"));
+njhTable.prototype.colorTable = function(){
+	var rowCount = 0;
+	var currentColor = "#e9e9e9";
+	var currentValue = "";
+	this.datTabsD3Dom.selectAll("tbody tr .sorting_1").each(function(d){
+		if(0 != rowCount){
+			if(currentValue != d3.select(this).html()){
+				if("#e9e9e9" == currentColor){
+					currentColor = "#c9c9c9";
+				}else{
+					currentColor = "#e9e9e9";
+				}
+			}
 		}
-		headersWidths.push({"head":d, "width":d3.select(this).style("width")});
+		d3.select(this.parentNode).style("background-color", currentColor);
+		currentValue = d3.select(this).html();
+		++rowCount;
 	});
-	console.log(headersWidths);
-	var headers = d3.select(this.masterDivId + " .njhNewHeaders").select("thead").select("tr")
-	    .selectAll("th")
-	    .data(headersWidths);
-	//create headers as needed and add bold 
-	headers
-	    .enter()
-		.append("th")
-			.style("font-weight", "bold")
-			.style("padding", "2px 4px")
-			.style("white-space", "nowrap");
-	//remove any headers that don't have data attached to them
-	headers.exit()
-			.remove();
-	//update the text and width
-	headers
-		.text(function(column) { return column.head; })
-		.style("width",function(column){ return column.width; });
-	*/
 }
 
-njhTable.prototype.updateTableOnClickOrganized = function() {
+
+njhTable.prototype.tableToDownloadData = function(){
+	var self = this;
 	var allVals = [];
+	this.menuOrganizedDiv.selectAll("input:checked").each(function() {
+		allVals.push($(this).val());
+	});
+	var currentColumnNames = _.intersection(self.tableMasterData["columnNames"], allVals);
+	var mainTable = [];
+	mainTable.push(currentColumnNames);
+	//
+	for ( i = 0; i < self.tableMasterData["tab"].length; ++i) {
+		var currentRow = [];
+		for (colNum in currentColumnNames) {
+			currentRow.push(self.tableMasterData["tab"][i][currentColumnNames[colNum]]);
+		}
+		mainTable.push(currentRow);
+	}
+	var dataSrc = 'data:text/csv;base64,' + btoa(d3.tsv.format(mainTable));
+	return dataSrc;
+}
+
+
+njhTable.prototype.toggleColumns = function(columns) {
+	//columns should be an array of objects with at least two fields, a name field for the column name and a visible boolean field 
+	var self = this;
+	var showCols = [];
+	var hideCols = [];
+	var chartShowCols = [];
+	var chartHideCols = [];
+	columns.forEach(function(col){
+		if(col["on"]){
+			showCols.push(col["name"]);
+			if(arrayContains(self.tableMasterData["numericColNames"], col["name"])){
+				chartShowCols.push(col["name"]);
+			}
+		}else{
+			hideCols.push(col["name"]);
+			if(arrayContains(self.tableMasterData["numericColNames"], col["name"])){
+				chartHideCols.push(col["name"]);
+			}
+		}
+	});
+	
+	self.datTable.columns(showCols.map(function(col){return col + ":name";}) ).visible(true);
+	self.datTable.columns(hideCols.map(function(col){return col + ":name";}) ).visible(false);
+	
+	if(this.chart){
+		this.chart.show(chartShowCols);
+		this.chart.hide(chartHideCols);
+	}
+};
+
+njhTable.prototype.updateAllColumnsVisibility = function() {
+	var self = this;
+	var allVals = [];
+	
 	d3.selectAll(this.masterDivId + " .njhTableMenuOrganized input:checked").each(function() {
 		allVals.push($(this).val());
 	});
-	var currentColumnNames = _.intersection(this.tableMasterData["columnNames"], allVals);
+
+	var currentOnCols = _.intersection(this.tableMasterData["columnNames"], allVals);
+	var currentOffCols = _.difference(this.tableMasterData["columnNames"], allVals);
 	
-	updateTable(this.tabDiv, this.tableMasterData["tab"], currentColumnNames);
+	self.datTable.columns(currentOnCols.map(function(col){return col + ":name";}) ).visible(true);
+	self.datTable.columns(currentOffCols.map(function(col){return col + ":name";}) ).visible(false);
+	
 	if(this.chart){
 		var showCols = [];
 		var hidCols = [];
 		for(col in this.tableMasterData["numericColNames"]){
-			//console.log(this.tableMasterData["numericColNames"][col]);
-			if(arrayContains(currentColumnNames,this.tableMasterData["numericColNames"][col])){
+			if(arrayContains(currentOnCols,this.tableMasterData["numericColNames"][col])){
 				showCols.push(this.tableMasterData["numericColNames"][col]);
-				//this.chart.show([this.tableMasterData["numericColNames"][col]]);
 			}else{
 				hidCols.push(this.tableMasterData["numericColNames"][col]);
-				//this.chart.hide([this.tableMasterData["numericColNames"][col]]);
 			}
 		}
 		this.chart.show(showCols);
 		this.chart.hide(hidCols);
 	}
-	this.updateHeaders();
-
 }; 
 
 njhTable.prototype.addChart = function(){
@@ -196,17 +221,16 @@ njhTable.prototype.addChart = function(){
 		},
 		bindto : this.masterDivId + " .njhTableChart"
 	});
-	if(this.tableMasterData["hideOnStartColNames"].length > 0){
-		this.chart.hide(this.tableMasterData["hideOnStartColNames"]);
-	}
 };
 
 njhTable.prototype.updateWithData = function(updatedDataTab){
+	var self = this;
 	//as long as there isn't different column names this should work, other wise the table menu has to change
 	/**@todo might want to add in the ability to update with new column names*/
 	this.tableMasterData = updatedDataTab;
-	//this.updateTableOnClick();
-	this.updateTableOnClickOrganized();
+	this.datTable.clear().rows.add(this.tableMasterData["tab"]);
+	this.datTable.draw();
+	this.updateAllColumnsVisibility();
 	if(this.addedChart){
 		this.addChart();
 	}

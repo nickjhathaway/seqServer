@@ -58,9 +58,12 @@
 	    return table;
 	}
 	
-	function createTable(divId) {
+	function createTable(divId, id) {
 		/**create the table and return it to be manipulate*/
 		var table = d3.select(divId).append("table");
+		if(id !== null){
+			table.attr("id", id);
+		}
 		table.append("thead").append("tr");
 		table.append("tbody");
 		return table;

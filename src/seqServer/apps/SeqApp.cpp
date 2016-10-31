@@ -93,6 +93,14 @@ SeqApp::SeqApp(const Json::Value & config) :
 					bib::files::make_path(config_["seqServerCore"].asString(), "css").string(),
 					".css"));
 	cssFiles_ = std::make_unique<bib::files::FilesCache>(cssFiles);
+
+
+	auto fontsDir = bib::files::make_path(config_["seqServerCore"].asString(), "fonts");
+	auto fontsDirFiles = bib::files::filesInFolder(fontsDir);
+	for(const auto & f : fontsDirFiles){
+		bootstrapFonts_.emplace(f.filename().string(), f);
+	}
+
 	//set root name
 	rootName_ = config_["name"].asString();
 	debug_ = config_["debug"].asBool();
@@ -111,6 +119,20 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 	ret.emplace_back(getProteinColors());
 	ret.emplace_back(getDNAColors());
 	ret.emplace_back(getColors());
+
+	//add fonts
+	for(const auto & fontFile : bootstrapFonts_){
+		auto resource = std::make_shared<restbed::Resource>();
+		resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
+				{ "fonts" }, { fontFile.first} }));
+		resource->set_method_handler("GET",
+				std::function<void(const std::shared_ptr<restbed::Session>)>(
+						[this,&fontFile](const std::shared_ptr<restbed::Session> & ses) {
+							const auto request = ses->get_request();
+							ses->close(restbed::OK, bootstrapFonts_.at(fontFile.first).get());
+						}));
+		ret.emplace_back(resource);
+	}
 
 	ret.emplace_back(sort());
 	ret.emplace_back(muscleAln());
@@ -714,11 +736,17 @@ std::string SeqApp::genHtmlDoc(std::string rName,
 			"	<meta charset=\"utf-8\">\n"
 			"  <head>\n"
 			"		<script type=\"text/javascript\" src=\"/" + rName + "/js\"></script>\n"
-			"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName
-			+ "/css\">\n"
-					"  </head>\n"
-					"  <body>\n"
-					"    <script>\n";
+			"		<link rel=\"stylesheet\" type=\"text/css\" href=\"/" + rName + "/css\">\n"
+			"   <style>\n"
+			"     @font-face {\n"
+			"       font-family: 'Glyphicons Halflings';\n"
+			"       src: url('/" + rName + "/fonts/glyphicons-halflings-regular.eot');\n"
+			"       src: url('/" + rName + "/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/" + rName + "/fonts/glyphicons-halflings-regular.woff') format('woff'), url('/" + rName + "/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/" + rName + "/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');\n"
+			"     }\n"
+			"  </style>\n"
+			"  </head>\n"
+			"  <body>\n"
+			"    <script>\n";
 	std::string body = cache.get();
 
 	std::string footer = "    </script> \n"
