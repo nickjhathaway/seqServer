@@ -111,8 +111,14 @@ void SeqCache::CacheRecord::sort(const std::string & sortOption){
 
 void SeqCache::CacheRecord::muscle(){
 	reload();
-	bib::for_each(*reads_, [](readObject & read) {getSeqBase(read).removeGaps();});
-	sys::muscleSeqs(*reads_);
+	std::vector<uint32_t> positions;
+	for(const auto pos : iter::range(reads_->size())){
+		if((*reads_)[pos].seqBase_.on_){
+			positions.emplace_back(pos);
+		}
+	}
+	bib::for_each_pos(*reads_,positions, [](readObject & read) {getSeqBase(read).removeGaps();});
+	sys::muscleSeqs(*reads_, positions);
 }
 
 void SeqCache::CacheRecord::removeGaps(){

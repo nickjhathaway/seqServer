@@ -301,7 +301,7 @@ void SeqApp::muscleAlnPostHandler(
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->muscle(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->muscle(uid,positions, selected);
+				seqData = seqsBySession_[sessionUID]->muscle(uid, positions, selected);
 				seqData["selected"] = bib::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
