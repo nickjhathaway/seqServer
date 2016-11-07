@@ -70,7 +70,6 @@
 	}
 	
 	function updateTable(tab, data, columns){
-		//console.log(data);
 		//ensure header row
 		var headerRow = tab.select("thead")
 			.selectAll("tr")
@@ -87,18 +86,17 @@
 				.style("padding", "2px 4px")
 				.style("white-space", "nowrap")
 	            .text(function(column) { return column; });;
-	   //create headers as needed and add bolding 
 
 	  //remove any headers that don't have data attached to them
-	  //console.log(columns);
 	  header.exit()
         		.remove();
 		
 	    // create a row for each object in the data
-	    var newRows = tab.select("tbody").selectAll("tr")
-	        .data(data)
-	        .enter()
-	        .append("tr");
+	    var newRows = tab.select("tbody")
+	    	.selectAll("tr")
+		        .data(data)
+		        .enter()
+		         .append("tr");
 	    //remove
 	    tab.select("tbody").selectAll("tr")
 	        .data(data)
@@ -119,9 +117,7 @@
 	        		}
 	        		return currentColor;
 	        		});;
-	    //create a cell in each row for each column
-	    //console.log(rows);
-	    
+	    //create a cell in each row for each column	    
 	    var cells = rows.selectAll("td")
 	        .data(function(row) {
 	        	var ret = columns.map(function(column) {
@@ -129,16 +125,16 @@
 	            });         
 	            return ret;
 	        });
-	   	cells.enter()
-	        .append("td");
-	            
-	   	
-	    cells.style("padding", "2px 4px")
-			.style("white-space", "nowrap")
-	        .text(function(d) { return d.value; });
 	    //remove cells as needed
 	    cells.exit()
         	 .remove();
+	   	cells.enter()
+	        .append("td")
+	        .merge(cells)
+		        .style("padding", "2px 4px")
+				.style("white-space", "nowrap")
+		        .text(function(d) { return d.value; });
+
        
 	}
 	function updateTableWithColors(tab, data, columns){
@@ -190,16 +186,16 @@
 	            });         
 	            return ret;
 	        });
-	   	cells.enter()
-	        .append("td");
-	            
-	   	
-	    cells.style("padding", "2px 4px")
-			.style("white-space", "nowrap")
-	        .text(function(d) { return d.value; });
 	    //remove cells as needed
 	    cells.exit()
         	 .remove();
+	   	cells.enter()
+	        .append("td")
+	        .merge(cells)
+		        .style("padding", "2px 4px")
+				.style("white-space", "nowrap")
+		        .text(function(d) { return d.value; });
+
 	}
 	
 			function createLinksTable(addToSelector,linkPrefix, links, colNum, mouseOverColor, mouseLeaveColor){
