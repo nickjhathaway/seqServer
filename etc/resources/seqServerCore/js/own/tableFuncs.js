@@ -24,7 +24,7 @@
 		 *
 		 */
 		//adapted from http://stackoverflow.com/questions/9268645/creating-a-table-linked-to-a-csv-file
-	    var table = d3.select(divId).append("table"),
+	    var table = d34.select(divId).append("table"),
 	        thead = table.append("thead"),
 	        tbody = table.append("tbody");
 	
@@ -60,7 +60,7 @@
 	
 	function createTable(divId, id) {
 		/**create the table and return it to be manipulate*/
-		var table = d3.select(divId).append("table");
+		var table = d34.select(divId).append("table");
 		if(id !== null){
 			table.attr("id", id);
 		}
@@ -209,7 +209,7 @@
 				    }
 				    dataset.push(tmpDataset);
 				}
-				var tab = d3.select(addToSelector)
+				var tab = d34.select(addToSelector)
 				    .append("table")
 				    .style("border-collapse", "collapse")
 				    .style("border", "2px black solid")
@@ -223,8 +223,8 @@
 				    .enter().append("td")
 				    .style("border", "1px black solid")
 				    .style("padding", "10px")
-				    .on("mouseover", function(){d3.select(this).style("background-color", mouseOverColor);}) 
-				    .on("mouseout", function(){d3.select(this).style("background-color", mouseLeaveColor);}) 
+				    .on("mouseover", function(){d34.select(this).style("background-color", mouseOverColor);}) 
+				    .on("mouseout", function(){d34.select(this).style("background-color", mouseLeaveColor);}) 
 				    .append("a")
 		  				.attr("href", function(d){return d.link;})
 		  				.html(function(d){return d.text;});
@@ -242,7 +242,7 @@
 				    }
 				    dataset.push(tmpDataset);
 				}
-				var tab = d3.select(addToSelector)
+				var tab = d34.select(addToSelector)
 				    .append("table")
 				    .style("border-collapse", "collapse")
 				    .style("border", "2px black solid")
@@ -256,8 +256,8 @@
 				    .enter().append("td")
 				    .style("border", "1px black solid")
 				    .style("padding", "10px")
-				    .on("mouseover", function(){d3.select(this).style("background-color", mouseOverColor);}) 
-				    .on("mouseout", function(){d3.select(this).style("background-color", mouseLeaveColor);}) 
+				    .on("mouseover", function(){d34.select(this).style("background-color", mouseOverColor);}) 
+				    .on("mouseout", function(){d34.select(this).style("background-color", mouseLeaveColor);}) 
 				    .append("a")
 		  				.attr("href", function(d){return d.link;})
 		  				.html(function(d){return d.text;});

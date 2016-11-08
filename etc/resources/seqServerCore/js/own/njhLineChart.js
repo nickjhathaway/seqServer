@@ -3,9 +3,9 @@
  */
 
 
-d3.njh = d3.njh || {};
+d34.njh = d34.njh || {};
 
-d3.njh.LineChart = function() {			
+d34.njh.LineChart = function() {			
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
 	    width = 960,
 	    height = 500,
@@ -14,18 +14,18 @@ d3.njh.LineChart = function() {
 	    xScale, yScale, color,
 	    xAxis, yAxis,
 	    svg,
-	    line = d3.line()
+	    line = d34.line()
 		    .x(function(d,i) { return xScale(i); })
 		    .y(function(d) { return yScale(d); }),
 		  yValue = "quals",
 		  nameValue = "name",
-			getMaxX = function(inputData){ return d3.max(inputData, function(d) { return d[yValue].length;   }); },
-		 	getMinY = function(inputData){ return d3.min(inputData, function(q) { return d3.min(q[yValue]); }); },
-		 	getMaxY = function(inputData){ return d3.max(inputData, function(q) { return d3.max(q[yValue]); }); };
+			getMaxX = function(inputData){ return d34.max(inputData, function(d) { return d[yValue].length;   }); },
+		 	getMinY = function(inputData){ return d34.min(inputData, function(q) { return d34.min(q[yValue]); }); },
+		 	getMaxY = function(inputData){ return d34.max(inputData, function(q) { return d34.max(q[yValue]); }); };
 
     /**
      * This function creates the graph using the selection as container
-     * @param  {D3Selection} _selection A d3 selection that represents
+     * @param  {d34Selection} _selection A d34 selection that represents
      * the container(s) where the chart(s) will be rendered
      */
     function chart(_selection){
@@ -52,11 +52,11 @@ d3.njh.LineChart = function() {
         });
     }
     /**
-     * Creates the d3 x and y axis, setting orientations
+     * Creates the d34 x and y axis, setting orientations
      * @private
      */
     function buildAxis(){
-        xAxis = d3.axisBottom(xScale).tickFormat(function(e){
+        xAxis = d34.axisBottom(xScale).tickFormat(function(e){
 	         if(Math.floor(e) != e)
 	         {
 	             return;
@@ -64,7 +64,7 @@ d3.njh.LineChart = function() {
 
 	         return e;
 	     });
-        yAxis = d3.axisLeft(yScale);
+        yAxis = d34.axisLeft(yScale);
     }
     
     /**
@@ -109,7 +109,7 @@ d3.njh.LineChart = function() {
      */
     function buildSVG(container){
         if (!svg) {
-            svg = d3.select(container)
+            svg = d34.select(container)
                 .append('svg')
                 .classed('bar-chart', true);
             buildContainerGroups();
@@ -128,15 +128,15 @@ d3.njh.LineChart = function() {
 	 	var minY = getMinY(data);
 	 	var maxY = getMaxY(data);
 
-		color = d3.scaleOrdinal(d3.schemeAccent)
+		color = d34.scaleOrdinal(d34.schemeAccent)
 				.domain(data.map(function(c) { return c[nameValue]; }));
 	 
-        xScale = d3.scaleLinear()
+        xScale = d34.scaleLinear()
             .domain([0,  maxX])
             .range([0, chartWidth]);
 
-        yScale = d3.scaleLinear()
-            .domain([d3.min([0,  minY]),d3.max([42, maxY])])
+        yScale = d34.scaleLinear()
+            .domain([d34.min([0,  minY]),d34.max([42, maxY])])
             .range([chartHeight, 0]);
     }
     
@@ -169,8 +169,8 @@ d3.njh.LineChart = function() {
 	    //add paths and labels for entering groupings;
 		g.on("mousemove", function(){
 			/*
-			var xPos = Math.floor(xScale.invert(d3.mouse(this)[0]));
-			tooltip.style("left", d3.mouse(svg.node())[0] + "px").style("top", d3.mouse(svg.node())[1] + "px");
+			var xPos = Math.floor(xScale.invert(d34.mouse(this)[0]));
+			tooltip.style("left", d34.mouse(svg.node())[0] + "px").style("top", d34.mouse(svg.node())[1] + "px");
 			tooltip.html(quals.map(function(d){ 
 					 if(xPos < d[yValue].length){
 						return {"name":d[nameValue] , "value":d[yValue][xPos]};

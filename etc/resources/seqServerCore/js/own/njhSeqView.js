@@ -29,7 +29,7 @@ function njhMenuItem(idName, displayName, func){
 
 function createSeqMenu(idNameOfParentDiv, menuContent){
 	//console.log(idNameOfParentDiv);
-	var nav = d3.select(idNameOfParentDiv)
+	var nav = d34.select(idNameOfParentDiv)
 				.append("nav")
 					.attr("id", "myNavBar")
 					.attr("class", "navbar navbar-default")
@@ -117,8 +117,8 @@ function njhSeqView(viewName, seqData, params){
 
 njhSeqView.prototype.removeQualChart = function(){
 	this.showingQualChart = false;
-	d3.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Show Qual Graph");
-	d3.select(this.topDivName + " .qualChart").selectAll("*").remove();
+	d34.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Show Qual Graph");
+	d34.select(this.topDivName + " .qualChart").selectAll("*").remove();
 	this.qualChart = null;
 }
 
@@ -139,13 +139,13 @@ njhSeqView.prototype.getSelectedQualData = function(){
 njhSeqView.prototype.addQualChart = function(){
 	var self = this;
 	var qualData = this.getSelectedQualData();
-	this.qualChart = d3.njh.LineChart();
-	d3.select(this.topDivName + " .qualChart")
+	this.qualChart = d34.njh.LineChart();
+	d34.select(this.topDivName + " .qualChart")
 		.datum(qualData)
 		.call(self.qualChart);
 	
 	this.showingQualChart = true;
-	d3.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Hide Qual Graph");
+	d34.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Hide Qual Graph");
 }
 
 njhSeqView.prototype.toggleQualChart = function(){
@@ -159,18 +159,18 @@ njhSeqView.prototype.toggleQualChart = function(){
 njhSeqView.prototype.initDrawArea = function(){
 	var self = this;	
 	
-	this.masterDivD3 = d3.select(this.topDivName)
+	this.masterDivd34 = d34.select(this.topDivName)
 		.append("div")
 		.attr("class", "SeqViewDrawAreaDiv");
 	
-	this.masterDivD3
+	this.masterDivd34
 		.append("div")
 		.attr("class", "rightSliderDiv")
 		.append("input")
 			.attr("class", "rightSlider")
 			.attr("data-slider-id", "rightSliderCon");
 	
-	this.seqSvgMaster = this.masterDivD3
+	this.seqSvgMaster = this.masterDivd34
 		.append("svg")
 		.attr("class", "NjhSeqViewerMainSvg")
 		
@@ -180,14 +180,14 @@ njhSeqView.prototype.initDrawArea = function(){
 			.style("font-size", "15px")
 			.style("font-weight", "bold");
 
-	this.masterDivD3
+	this.masterDivd34
 		.append("div")
 		.attr("class", "bottomSliderDiv")
 		.append("input")
 			.attr("class", "bottomSlider")
 			.attr("data-slider-id", "bottomSliderCon");
 	
-	this.masterDivD3
+	this.masterDivd34
 		.append("div")
 		.attr("class", "pop-up");
 	
@@ -196,20 +196,20 @@ njhSeqView.prototype.initDrawArea = function(){
 		.style("box-shadow", "3px 3px 1.5px rgba(0, 0, 0, 0.5)")
 		.attr("id", "pop-up-tab");
 	
-	this.masterDivD3
+	this.masterDivd34
 		.append("div")
 		.attr("class", "select")
 		.style("width", this.cw + 2 + "px")
 		.style("height", this.ch + 2 + "px");
 	
-	this.chart = d3.select(this.topDivName).append("div")
+	this.chart = d34.select(this.topDivName).append("div")
 		.attr("class", "qualChart");
 	
-	d3.select(this.topDivName).append("div")
+	d34.select(this.topDivName).append("div")
 		.attr("id", "minTreeChartTop");
 
 	
-	this.masterDiv = this.masterDivD3.node();
+	this.masterDiv = this.masterDivd34.node();
 	
 	this.rSlider = $(".rightSlider", this.masterDiv)[0];
 	this.bSlider = $(".bottomSlider", this.masterDiv)[0];
@@ -222,12 +222,12 @@ njhSeqView.prototype.initDrawArea = function(){
 njhSeqView.prototype.initActionButtons = function(){
 	var self = this;	
 	//add download fasta button
-	d3.select(this.topDivName).append("div")
+	d34.select(this.topDivName).append("div")
 		.attr("class", "downFastaDiv")
 		.style("margin", "5px")
 		.style("float", "left");
 	
-	var linkButton = d3.select(this.topDivName + " .downFastaDiv")
+	var linkButton = d34.select(this.topDivName + " .downFastaDiv")
 		.append("button")
 			.text("Download Fasta")
 			.attr("class", "fastaSaveButton btn btn-success");
@@ -250,18 +250,18 @@ njhSeqView.prototype.initActionButtons = function(){
 				mainTable.push([self.seqData["seqs"][i]["seq"]]);
 			}
 	    }
-	  	var fastaData = 'data:text/plain;base64,'+ btoa(d3.tsvFormat(mainTable));
+	  	var fastaData = 'data:text/plain;base64,'+ btoa(d34.tsvFormat(mainTable));
 	  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
 	  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
 	});
 	
 	if(!this.protein){
 		//add fastq download button
-		d3.select(this.topDivName).append("div")
+		d34.select(this.topDivName).append("div")
 			.attr("class", "downFastqDiv")
 			.style("margin", "5px")
 			.style("float", "left");
-		var fastqLinkButton = d3.select(this.topDivName + " .downFastqDiv")
+		var fastqLinkButton = d34.select(this.topDivName + " .downFastqDiv")
 		.append("button")
 			.text("Download Fastq")
 			.attr("class", "fastqSaveButton btn btn-primary");
@@ -286,18 +286,18 @@ njhSeqView.prototype.initActionButtons = function(){
 					mainTable.push([self.seqData["seqs"][i]["qual"].map(function(q){return String.fromCharCode(33 + q);}).join("")]);
 				}
 		    }
-		  	var fastqData = 'data:text/plain;base64,'+ btoa(d3.tsvFormat(mainTable));
+		  	var fastqData = 'data:text/plain;base64,'+ btoa(d34.tsvFormat(mainTable));
 		  	fastqLinkButton.select(".fastqDownLink").attr("download", self.seqData["uid"] + ".fastq");
 		  	fastqLinkButton.select(".fastqDownLink").attr("href", fastqData).node().click();
 		});
 	}
 	//add de-select all button 
-	d3.select(this.topDivName).append("div")
+	d34.select(this.topDivName).append("div")
 		.attr("class", "deselectDiv")
 		.style("margin", "5px")
 		.style("float", "left");
 	
-	var deselectButton = d3.select(this.topDivName + " .deselectDiv")
+	var deselectButton = d34.select(this.topDivName + " .deselectDiv")
 		.append("button")
 			.text("Un-select All")
 			.attr("class", "deselectAllBut btn btn-info");
@@ -305,7 +305,7 @@ njhSeqView.prototype.initActionButtons = function(){
 		self.selected.clear();
 		self.updateHighlightedSeqs();
 		if(self.qualChart){
-			d3.select(self.topDivName + " .qualChart")
+			d34.select(self.topDivName + " .qualChart")
 				.datum([])
 				.call(self.qualChart);
 		}
@@ -314,7 +314,7 @@ njhSeqView.prototype.initActionButtons = function(){
 
 njhSeqView.prototype.initDefaultMenu = function(){
 	
-	this.menuDiv = d3.select(this.topDivName).append("div")
+	this.menuDiv = d34.select(this.topDivName).append("div")
 		.attr("class", "njhSeqViewMenu");
 	var locSplit = window.location.toString().split(/[\/]+/);
 	var rName = locSplit[2];
@@ -515,7 +515,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		
 		windowOptions.push(new njhMenuItem("GenTree", "Gen Difference Graph",function(){
 			if(!($(self.topDivName + " #minTreeChartTop #saveButton").length)){
-				d3.select(self.topDivName + " #minTreeChartTop").append("button")
+				d34.select(self.topDivName + " #minTreeChartTop").append("button")
 					.style("float", "top")
 					.attr("class", "btn btn-success")
 					.attr("id", "saveButton")
@@ -524,12 +524,12 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				addSvgSaveButton(self.topDivName + " #minTreeChartTop #saveButton", self.topDivName + " #minTreeChartTop #minTreeChart #chart", self.seqData["uid"])
 			}
 			if(!($(self.topDivName + " #minTreeChartTop #minTreeChart").length)){
-				d3.select(self.topDivName + " #minTreeChartTop").append("svg").attr("id", "minTreeChart")
+				d34.select(self.topDivName + " #minTreeChartTop").append("svg").attr("id", "minTreeChart")
 					.attr("width", "0px")
 					.attr("height", "0px")
 					.style("margin-left", "10px")
 			}else{
-				d3.select(self.topDivName + " #minTreeChart").selectAll("*").remove();
+				d34.select(self.topDivName + " #minTreeChart").selectAll("*").remove();
 			}
 			var jsonData;
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
@@ -550,7 +550,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		  	}).catch(logRequestError);
 		}));
 		windowOptions.push(new njhMenuItem("HideTree", "Hide Difference Graph",function(){
-			d3.select(self.topDivName + " #minTreeChartTop").selectAll("*").remove();
+			d34.select(self.topDivName + " #minTreeChartTop").selectAll("*").remove();
 		}));
 
 		menuItems["Graphs"] = windowOptions;
@@ -560,7 +560,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	createSeqMenu(this.topDivName + " .njhSeqViewMenu", menuItems);
 	
 	if(!this.protein){
-		var startSiteInput = d3.select(self.topDivName +  " .njhSeqViewMenu #TranslateDrops")
+		var startSiteInput = d34.select(self.topDivName +  " .njhSeqViewMenu #TranslateDrops")
 		.append("li")
 			.append("div")
 				.attr("style", "padding: 3px 20px;")
@@ -588,7 +588,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#startSiteForm').submit(function(e){
 	        e.preventDefault();
 	    });
-		var treeWidthInput = d3.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
+		var treeWidthInput = d34.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
 			.append("li")
 				.append("div")
 					.attr("style", "padding: 3px 20px;")
@@ -615,7 +615,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#treeWidthForm').submit(function(e){
 	        e.preventDefault();
 	    });
-		var treeHeightInput = d3.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
+		var treeHeightInput = d34.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
 			.append("li")
 				.append("div")
 					.attr("style", "padding: 3px 20px;")
@@ -643,7 +643,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	        e.preventDefault();
 	    });
 		
-		var numDiffInput = d3.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
+		var numDiffInput = d34.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
 			.append("li")
 				.append("div")
 					.attr("style", "padding: 3px 20px;")
@@ -765,7 +765,7 @@ njhSeqView.prototype.setSelector = function(){
 
 njhSeqView.prototype.updateHighlightedSeqs = function(){
 	var self = this;
-	var selectors = d3.select(this.topDivName + " .SeqViewDrawAreaDiv")
+	var selectors = d34.select(this.topDivName + " .SeqViewDrawAreaDiv")
 		.selectAll(".seqHighlight")
 		.data(setToArray(this.selected));
 	
@@ -880,8 +880,8 @@ njhSeqView.prototype.clicked = function(e){
         var currentQual = this.seqData["seqs"][this.currentSeq]["qual"];
     if(this.qualChart){
     	var qualData = this.getSelectedQualData();
-    	//this.qualChart = d3.njh.LineChart();
-    	d3.select(this.topDivName + " .qualChart")
+    	//this.qualChart = d34.njh.LineChart();
+    	d34.select(this.topDivName + " .qualChart")
     		.datum(qualData)
     		.call(self.qualChart);
         }
@@ -913,7 +913,7 @@ njhSeqView.prototype.setUpListeners = function(){
 			}
 			if(changeInBaseStart){
 				//console.log("change in baseStart");
-				d3.event.preventDefault();
+				d34.event.preventDefault();
 				$(self.bSlider).bootstrapSlider('setValue', self.baseStart);
 		    	self.needToPaint = true;
 			}
@@ -938,7 +938,7 @@ njhSeqView.prototype.setUpListeners = function(){
 			}
 			if(changeInSeqStart){
 				//console.log("change in seqStart");
-				d3.event.preventDefault();
+				d34.event.preventDefault();
 				$(self.rSlider).bootstrapSlider('setValue', self.seqStart);
 		    	self.needToPaint = true;
 			}
@@ -946,12 +946,12 @@ njhSeqView.prototype.setUpListeners = function(){
 		self.paint();
 	};
 	self.seqSvgMaster.on("mousewheel.zoom", function(){
-			var deltas = getDeltasFromEvent(d3.event);
+			var deltas = getDeltasFromEvent(d34.event);
 			var modDeltas = {deltaX : Math.round(deltas["deltaX"]/3.0) , deltaY:Math.round(deltas.deltaY/3.0) };
 			mouseScroll(modDeltas);
 		});
 	self.seqSvgMaster.on("DOMMouseScroll", function(){
-			var deltas = getDeltasFromEvent(d3.event);
+			var deltas = getDeltasFromEvent(d34.event);
 			mouseScroll(deltas);
 		});
 	
@@ -1035,14 +1035,14 @@ njhSeqView.prototype.paintSeqs = function(){
 		//set the names
 		seqGroups.selectAll(".nameText")
 			.text(function(d){
-				return d3.select(this.parentNode).datum()["name"];});
+				return d34.select(this.parentNode).datum()["name"];});
 		
 		seqGroups.selectAll(".nameRects")
 			.on("mouseenter", function(d, i){
-				updateTable(self.popTab,[{"name": d3.select(this.parentNode).datum()["name"]}], ["name"]);
+				updateTable(self.popTab,[{"name": d34.select(this.parentNode).datum()["name"]}], ["name"]);
 			}).on("mousedown", function(d,i){
-				self.currentSeq = d3.select(this.parentNode).datum()["selected"];
-				if(d3.event.shiftKey ){
+				self.currentSeq = d34.select(this.parentNode).datum()["selected"];
+				if(d34.event.shiftKey ){
 	    			if(self.selected.size > 0){
 	    				var lastAdded = getLastValue(self.selected);
 	    				if(lastAdded == self.currentSeq){
@@ -1095,9 +1095,9 @@ njhSeqView.prototype.paintSeqs = function(){
 				.attr("width", this.cw)
 				.attr("height", this.ch)
 				.on("mouseenter", function(d,i){
-					updateTable(self.popTab,[{"name": d3.select(this.parentNode).datum()["name"], 
+					updateTable(self.popTab,[{"name": d34.select(this.parentNode).datum()["name"], 
 											 "base": d,
-											 "qual": d3.select(this.parentNode).datum()["qual"][self.baseStart + i],
+											 "qual": d34.select(this.parentNode).datum()["qual"][self.baseStart + i],
 											 "pos" : (self.baseStart + i)}], ["name", "base", "qual", "pos"]);
 				}).merge(seqGroupsBaseRects)
 					.attr("fill", function(d){ return self.bColors[d]})
