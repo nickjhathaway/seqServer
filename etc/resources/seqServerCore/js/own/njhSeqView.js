@@ -119,30 +119,31 @@ njhSeqView.prototype.removeQualChart = function(){
 	this.showingQualChart = false;
 	d3.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Show Qual Graph");
 	d3.select(this.topDivName + " .qualChart").selectAll("*").remove();
-	this.chart = null;
+	this.qualChart = null;
+}
+
+njhSeqView.prototype.getSelectedQualData = function(){
+	var self = this;
+	var qualData = [];
+	if (self.selected.size > 0){
+    	var sels = setToArray(self.selected);
+	    sels.forEach(function(sel){
+	    	qualData.push({
+	    		name:self.seqData["seqs"][sel]["name"],
+	    		quals:self.seqData["seqs"][sel]["qual"]});
+	    });
+    }
+	return qualData;
 }
 
 njhSeqView.prototype.addQualChart = function(){
-	this.chart = c3.generate({
-		bindto: this.topDivName + " .qualChart",
-	    data: {
-	        json: {
-	            qual: this.seqData["seqs"][this.currentSeq]["qual"]
-	        }
-	    }, 
-		grid: {
-	        y: {
-	            lines: [{value: 20}]
-	        }
-	    },
-	    axis: {
-	    	y : {
-	    		max: 50,
-	            min: 0
-	    	}
-	    }
-	});
-	this.chart.xgrids([{value: this.currentBase, text:this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]}]);
+	var self = this;
+	var qualData = this.getSelectedQualData();
+	this.qualChart = d3.njh.LineChart();
+	d3.select(this.topDivName + " .qualChart")
+		.datum(qualData)
+		.call(self.qualChart);
+	
 	this.showingQualChart = true;
 	d3.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Hide Qual Graph");
 }
@@ -201,7 +202,7 @@ njhSeqView.prototype.initDrawArea = function(){
 		.style("width", this.cw + 2 + "px")
 		.style("height", this.ch + 2 + "px");
 	
-	d3.select(this.topDivName).append("div")
+	this.chart = d3.select(this.topDivName).append("div")
 		.attr("class", "qualChart");
 	
 	d3.select(this.topDivName).append("div")
@@ -249,7 +250,7 @@ njhSeqView.prototype.initActionButtons = function(){
 				mainTable.push([self.seqData["seqs"][i]["seq"]]);
 			}
 	    }
-	  	var fastaData = 'data:text/plain;base64,'+ btoa(d3.tsv.format(mainTable));
+	  	var fastaData = 'data:text/plain;base64,'+ btoa(d3.tsvFormat(mainTable));
 	  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
 	  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
 	});
@@ -285,7 +286,7 @@ njhSeqView.prototype.initActionButtons = function(){
 					mainTable.push([self.seqData["seqs"][i]["qual"].map(function(q){return String.fromCharCode(33 + q);}).join("")]);
 				}
 		    }
-		  	var fastqData = 'data:text/plain;base64,'+ btoa(d3.tsv.format(mainTable));
+		  	var fastqData = 'data:text/plain;base64,'+ btoa(d3.tsvFormat(mainTable));
 		  	fastqLinkButton.select(".fastqDownLink").attr("download", self.seqData["uid"] + ".fastq");
 		  	fastqLinkButton.select(".fastqDownLink").attr("href", fastqData).node().click();
 		});
@@ -303,6 +304,11 @@ njhSeqView.prototype.initActionButtons = function(){
 	deselectButton.on("click", function(){
 		self.selected.clear();
 		self.updateHighlightedSeqs();
+		if(self.qualChart){
+			d3.select(self.topDivName + " .qualChart")
+				.datum([])
+				.call(self.qualChart);
+		}
 	});
 }
 
@@ -763,6 +769,11 @@ njhSeqView.prototype.updateHighlightedSeqs = function(){
 		.selectAll(".seqHighlight")
 		.data(setToArray(this.selected));
 	
+	selectors.exit()
+		.remove();
+	
+	
+	
 	var lowerBound = this.seqStart;
 	var upperBound = this.seqStart + this.nSeqs;
 	selectors.enter()
@@ -770,25 +781,21 @@ njhSeqView.prototype.updateHighlightedSeqs = function(){
 		.attr("class", "seqHighlight")
 		.style("width", function(d){ 
 			return self.nameOffSet.toString() + "px";})
-		.style("height",function(d){ return self.ch.toString() + "px";});
-	
-	selectors.exit()
-		.remove();
-	
-	selectors
-		.style("visibility",function(d){ 
-			if(d >= lowerBound && d < upperBound){
-				return "visible";
-			}else{
-				return "hidden";
-			}})
-		.style("top", function(d){ 
-			if(d >= lowerBound && d < upperBound){
-				return ((d - self.seqStart) *self.ch).toString() + "px"; 
-			}else{
-				return 0;
-			}})
-		.style("left", 0);
+		.style("height",function(d){ return self.ch.toString() + "px";})
+		.merge(selectors)
+			.style("visibility",function(d){ 
+				if(d >= lowerBound && d < upperBound){
+					return "visible";
+				}else{
+					return "hidden";
+				}})
+			.style("top", function(d){ 
+				if(d >= lowerBound && d < upperBound){
+					return ((d - self.seqStart) *self.ch).toString() + "px"; 
+				}else{
+					return 0;
+				}})
+			.style("left", 0);
 };
 
 njhSeqView.prototype.mouseWheelUp = function(steps){
@@ -859,6 +866,7 @@ njhSeqView.prototype.updateOnResize = function(){
 };
 
 njhSeqView.prototype.clicked = function(e){
+	var self = this;
     var pt = getRelCursorPosition(e, this.seqSvgMaster.node());
     if(pt[1] <= this.nSeqs * this.ch && 
     		pt[0] <= this.nBases * this.cw + this.nameOffSet){
@@ -870,14 +878,12 @@ njhSeqView.prototype.clicked = function(e){
         this.paintSelectedSeq();
         this.setSelector();
         var currentQual = this.seqData["seqs"][this.currentSeq]["qual"];
-    if(this.chart){
-		this.chart.load({
-	        json: {
-	            qual: this.seqData["seqs"][this.currentSeq]["qual"]
-	        }
-	    });
-	    //this.chart.xgrids.remove();
-	    this.chart.xgrids([{value: this.currentBase, text:this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]}]);
+    if(this.qualChart){
+    	var qualData = this.getSelectedQualData();
+    	//this.qualChart = d3.njh.LineChart();
+    	d3.select(this.topDivName + " .qualChart")
+    		.datum(qualData)
+    		.call(self.qualChart);
         }
     }
 };
@@ -982,20 +988,24 @@ njhSeqView.prototype.setUpListeners = function(){
 	});
 };
    	
-	//draw all necessary seqs
+//draw all necessary seqs
 njhSeqView.prototype.paintSeqs = function(){
 	if(this.needToPaint){
 		var self = this;
-		var seqGroups = self.seqSvgMasterG
-			.selectAll(".seqGroup")
-			.data(self.seqData["seqs"].slice(self.seqStart, self.seqStart + this.nSeqs));
 		
 		//add any extra seq groups that need to be added
-		var enteringSeqGroups = seqGroups
+		var sGroups = self.seqSvgMasterG
+			.selectAll(".seqGroup")
+			.data(self.seqData["seqs"].slice(self.seqStart, self.seqStart + this.nSeqs));
+		sGroups.exit()
+			.remove();
+		var enteringSeqGroups = 
+			sGroups
 			.enter()
 				.append("g")
 					.attr("class", "seqGroup")
-					.attr("transform", function(d,i){return "translate(0," + i * self.ch + ")"});
+					.attr("transform", function(d,i){
+						return "translate(0," + i * self.ch + ")"});
 		
 		enteringSeqGroups.append("rect")
 			.attr("class", "nameRects")
@@ -1017,14 +1027,15 @@ njhSeqView.prototype.paintSeqs = function(){
 			.style("user-select","none")
 			.style("pointer-events", "none");
 		
+
 		//get rid of any groups that no longer have data
-		seqGroups
-			.exit()
-			.remove();
+		var seqGroups = self.seqSvgMasterG
+			.selectAll(".seqGroup")
 		
 		//set the names
 		seqGroups.selectAll(".nameText")
-			.text(function(d){return d3.select(this.parentNode).datum()["name"];});
+			.text(function(d){
+				return d3.select(this.parentNode).datum()["name"];});
 		
 		seqGroups.selectAll(".nameRects")
 			.on("mouseenter", function(d, i){
@@ -1071,6 +1082,11 @@ njhSeqView.prototype.paintSeqs = function(){
 		var seqGroupsBaseRects = seqGroups.selectAll(".baseRects")
 			.data(function(d){ return d["seq"].slice(self.baseStart, self.baseStart + self.nBases);});
 		
+		//get rid of any base that no longer have data
+		seqGroupsBaseRects
+			.exit()
+			.remove();
+		
 		seqGroupsBaseRects
 			.enter()
 				.append("rect")
@@ -1083,20 +1099,18 @@ njhSeqView.prototype.paintSeqs = function(){
 											 "base": d,
 											 "qual": d3.select(this.parentNode).datum()["qual"][self.baseStart + i],
 											 "pos" : (self.baseStart + i)}], ["name", "base", "qual", "pos"]);
-				});
-		//get rid of any base that no longer have data
-		seqGroupsBaseRects
-			.exit()
-			.remove();
-		
-		//set the rects colors
-		seqGroupsBaseRects
-			.attr("fill", function(d){ return self.bColors[d]})
-			.attr("stroke",function(d){ return self.bColors[d]});
-		
+				}).merge(seqGroupsBaseRects)
+					.attr("fill", function(d){ return self.bColors[d]})
+					.attr("stroke",function(d){ return self.bColors[d]});
+
+				
 		//add base texts that need to be added;
 		var seqGroupsBaseTexts = seqGroups.selectAll(".baseTexts")
 			.data(function(d){ return d["seq"].slice(self.baseStart, self.baseStart + self.nBases);});
+		//get rid of any text that no longer have data
+		seqGroupsBaseTexts
+			.exit()
+			.remove();
 		seqGroupsBaseTexts
 			.enter()
 				.append("text")
@@ -1110,15 +1124,8 @@ njhSeqView.prototype.paintSeqs = function(){
 				.style("pointer-events", "none")
 				.attr("x", function(d,i){ return self.nameOffSet + i * self.cw + self.cw/4;})
 				.attr("y", self.ch * .75)
-				.attr("fill", "#000000");
-		
-		//get rid of any text that no longer have data
-		seqGroupsBaseTexts
-			.exit()
-			.remove();
-		
-		//set the text for bases
-		seqGroupsBaseTexts
+				.attr("fill", "#000000")
+			.merge(seqGroupsBaseTexts)
 				.text(function(d,i){ return d;});
     	this.needToPaint = false;
 	}
