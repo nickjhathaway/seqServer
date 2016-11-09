@@ -256,7 +256,7 @@ function addMouseScrollListener(obj, up, down) {
 }
 
 function getDeltasFromEvent(eve){
-	var eo = d3.event;
+	var eo = d34.event;
 	var xy = eo.wheelDelta || -eo.detail; 
 	var x = eo.wheelDeltaX || (eo.axis==1?xy:0);
 	var y = eo.wheelDeltaY || (eo.axis==2?xy:0); 
