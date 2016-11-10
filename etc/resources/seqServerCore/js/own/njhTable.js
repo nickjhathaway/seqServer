@@ -133,7 +133,8 @@ njhTable.prototype.tableToDownloadData = function(){
 		}
 		mainTable.push(currentRow);
 	}
-	var dataSrc = 'data:text/csv;base64,' + btoa(d3.tsv.format(mainTable));
+	mainTable.push([]);
+	var dataSrc = 'data:text/csv;base64,' + btoa(d34.tsvFormatRows(mainTable));
 	return dataSrc;
 }
 

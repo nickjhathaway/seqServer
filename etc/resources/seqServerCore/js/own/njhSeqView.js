@@ -250,7 +250,8 @@ njhSeqView.prototype.initActionButtons = function(){
 				mainTable.push([self.seqData["seqs"][i]["seq"]]);
 			}
 	    }
-	  	var fastaData = 'data:text/plain;base64,'+ btoa(d34.tsvFormat(mainTable));
+	    mainTable.push([]);
+	  	var fastaData = 'data:text/plain;base64,'+ btoa(d34.tsvFormatRows(mainTable));
 	  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
 	  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
 	});
@@ -286,7 +287,8 @@ njhSeqView.prototype.initActionButtons = function(){
 					mainTable.push([self.seqData["seqs"][i]["qual"].map(function(q){return String.fromCharCode(33 + q);}).join("")]);
 				}
 		    }
-		  	var fastqData = 'data:text/plain;base64,'+ btoa(d34.tsvFormat(mainTable));
+		    mainTable.push([]);
+		  	var fastqData = 'data:text/plain;base64,'+ btoa(d34.tsvFormatRows(mainTable));
 		  	fastqLinkButton.select(".fastqDownLink").attr("download", self.seqData["uid"] + ".fastq");
 		  	fastqLinkButton.select(".fastqDownLink").attr("href", fastqData).node().click();
 		});

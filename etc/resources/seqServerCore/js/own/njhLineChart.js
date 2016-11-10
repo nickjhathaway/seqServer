@@ -206,7 +206,7 @@ d34.njh.LineChart = function() {
 		dots.enter()
 			.append("circle")
 				.attr("class", "dot")
-				.attr("r", 3.5)
+				.attr("r", 2)
 			.merge(dots)
 				.style("opacity", 0)
 			    .attr("cx", function(d, i) { return xScale(i); })
