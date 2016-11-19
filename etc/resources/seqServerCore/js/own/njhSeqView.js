@@ -545,8 +545,9 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			postData["numDiff"] = $("#numDiffInput", self.topDivName).val();
 			var gifLoading = prsentDivGifLoading();
 			postJSON('/' + rName + '/minTreeDataDetailed', postData).then(function (seqData){
-				drawPsuedoMinTreeDetailed(seqData, self.topDivName + " #minTreeChart", "minTreeChart",
-						$("#treeWidthInput", self.topDivName).val(),$("#treeHeightInput", self.topDivName).val());
+				njhDiffTree(seqData, self.topDivName + " #minTreeChart", "minTreeChart",
+						$("#treeWidthInput", self.topDivName).val(),
+						$("#treeHeightInput", self.topDivName).val());
 				$('#minTreeChart').scrollView();
 		  		gifLoading.remove();
 		  	}).catch(logRequestError);
