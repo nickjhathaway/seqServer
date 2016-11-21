@@ -28,10 +28,29 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	if(!height){
 		height = 1000;
 	}
+	
 	var simulation = d34.forceSimulation()
 	    .force("link", d34.forceLink().id(function(d) { return d.index; }))
-	    .force("charge", d34.forceManyBody().strength(-60))
+	    .force("charge", d34.forceManyBody().strength(-15))
+	    .force("collide",d34.forceCollide( function(d){return d.r + 8 }).iterations(16) )
 	    .force("center", d34.forceCenter(width / 2, height / 2));
+	
+	/*
+	var simulation = d34.forceSimulation()
+	    .force("link", d34.forceLink().id(function(d) { return d.index }))
+	    .force("collide",d34.forceCollide( function(d){return d.r + 8 }).iterations(16) )
+	    .force("charge", d34.forceManyBody().strength(-60))
+	    .force("center", d34.forceCenter(width / 2, height / 2))
+	    .force("y", d34.forceY(0))
+	    .force("x", d34.forceX(0));
+	*/
+	
+	/*
+	var simulation = d34.forceSimulation()
+	    .force("link", d34.forceLink().id(function(d) { return d.index; }))
+	    .force("charge", d34.forceManyBody().strength(-6))
+	    .force("center", d34.forceCenter(width / 2, height / 2));
+	*/
 	
 	d34.select(addTo)
 		.attr("width", width)
@@ -68,17 +87,17 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 		.data(jsonData.nodes)
 		.enter().append("g")
 			.attr("class", function(d) {return "node " + d.type;})
+				.call(d34.drag()
+			          .on("start", dragstarted)
+			          .on("drag", dragged)
+			          .on("end", dragended))
 			.append("circle");
 	var node = svg.selectAll(".node");
 	node.select("circle")
 		  .attr("r", function(d) { return Math.sqrt(d.size/Math.PI); })
 	      .style("fill", function(d) { return d.color; })
 	      .style("stroke", "#fff")
-	      .style("stroke-width", "1.5px")
-	      .call(d34.drag()
-				          .on("start", dragstarted)
-				          .on("drag", dragged)
-				          .on("end", dragended));
+	      .style("stroke-width", "1.5px");
 
   var indels = svg.selectAll(".indel");
   var snps = svg.selectAll(".snp");
@@ -118,7 +137,7 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	  .style("pointer-events", "none")
 	  .style("stroke", "#FFF")
 	  .style("stroke-width", "1px")
-	  .text(function(d) {return d.name;});
+	  .text(function(d) {return d.name;});;
 
 	function ticked() {
 	    link.attr("x1", function(d) { return d.source.x; })
@@ -126,9 +145,10 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	        .attr("x2", function(d) { return d.target.x; })
 	        .attr("y2", function(d) { return d.target.y; });
 	    
+	  
 	    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 	    
-	    /*node
+	    /*node.selectAll("circle")
 		    .attr("cx", function(d) { return d.x; })
 		    .attr("cy", function(d) { return d.y; });*/
 	};
