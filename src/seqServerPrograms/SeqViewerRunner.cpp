@@ -5,7 +5,7 @@
  *      Author: nick
  */
 
-#include "SeqViewer.hpp"
+#include "SeqViewerRunner.hpp"
 
 #include "seqServer/apps/pars.h"
 
@@ -102,7 +102,15 @@ void error_handler(const int statusCode, const std::exception& exception,
 	}
 }
 
-int seqViewerRun(const bib::progutils::CmdArgs & inputCommands){
+SeqViewerRunner::SeqViewerRunner()
+    : bib::progutils::programRunner(
+    		std::map<std::string, funcInfo>{
+					 addFunc("seqViewer", SeqViewerRunner::RunSeqViewer, false)
+           },//
+          "SeqViewerRunner") {}
+
+
+int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands){
 	std::string clusDir = "";
 	SeqAppCorePars corePars;
 	corePars.port_ = 8881;
@@ -112,7 +120,7 @@ int seqViewerRun(const bib::progutils::CmdArgs & inputCommands){
 	bool protein = false;
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.setOption(protein, "--protein", "Viewing Protein");
-	setUp.setOption(resourceDirName, "-resourceDirName",
+	setUp.setOption(resourceDirName, "--resourceDirName",
 			"Name of the resource Directory where the js and html is located",
 			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
@@ -156,6 +164,8 @@ int seqViewerRun(const bib::progutils::CmdArgs & inputCommands){
 
 	return 0;
 }
+
+
 
 
 } /* namespace bibseq */

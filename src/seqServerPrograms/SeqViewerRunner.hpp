@@ -6,8 +6,9 @@
  *      Author: nick
  */
 
+#include "seqServer.h"
 
-#include "seqServer/apps/SeqApp.hpp"
+
 
 namespace bibseq {
 
@@ -35,9 +36,18 @@ public:
 
 };
 
+class SeqViewerRunner : public bib::progutils::programRunner {
+ public:
+	SeqViewerRunner();
+
+	static int RunSeqViewer(const bib::progutils::CmdArgs & inputCommands);
+
+};
 
 
-int seqViewerRun(const bib::progutils::CmdArgs & inputCommands);
+
+
+
 
 } /* namespace bibseq */
 

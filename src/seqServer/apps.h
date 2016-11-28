@@ -28,6 +28,6 @@
 
 #include "seqServer/apps/pars.h"
 #include "seqServer/apps/SeqApp.hpp"
-#include "seqServer/apps/SeqViewer.hpp"
+
 
 
