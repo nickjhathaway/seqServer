@@ -48,9 +48,10 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	    "scrollY":        window.innerHeight * 3/4.0 + "px",
 	    "scrollX":        true,
 //        "scrollCollapse": true,
-        "paging":         false,
+	    "pageLength":     50,
+        "paging":         true,
         "deferRender":    true,
-        "scroller:":      true,
+//        "scroller:":      true,
         "buttons": ["csvHtml5"]
 	});
 	
@@ -58,7 +59,10 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	
 	this.datTable.on("order", function(){
 		self.colorTable();
-	})
+	});
+	this.datTable.on("draw", function(){
+		self.colorTable();
+	});
 	
 	
 	//add menu
