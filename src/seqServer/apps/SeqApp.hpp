@@ -64,7 +64,7 @@ class SeqApp {
 
 protected:
 	std::map<std::string, bib::files::FileCache> pages_;
-	std::map<std::string, bib::files::FileCache> bootstrapFonts_;
+	std::map<std::string, bib::files::FileCache> fonts_;
 	std::unique_ptr<bib::files::FilesCache> jsFiles_;
 	std::unique_ptr<bib::files::FilesCache> cssFiles_;
 	std::string rootName_;

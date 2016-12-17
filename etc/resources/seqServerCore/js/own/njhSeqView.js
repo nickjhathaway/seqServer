@@ -229,9 +229,13 @@ njhSeqView.prototype.initActionButtons = function(){
 	
 	var linkButton = d34.select(this.topDivName + " .downFastaDiv")
 		.append("button")
-			.text("Download Fasta")
 			.attr("class", "fastaSaveButton btn btn-success");
-
+	d34.select(this.topDivName + " .downFastaDiv button")
+		.append("i")
+			.attr("class", "fa fa-download fa-lg");
+	d34.select(this.topDivName + " .downFastaDiv button")
+		.append("span")
+			.text(" Download Fasta");
 	linkButton.append("a")
 			.attr("class", "fastaDownLink");
 	
@@ -263,9 +267,14 @@ njhSeqView.prototype.initActionButtons = function(){
 			.style("margin", "5px")
 			.style("float", "left");
 		var fastqLinkButton = d34.select(this.topDivName + " .downFastqDiv")
-		.append("button")
-			.text("Download Fastq")
-			.attr("class", "fastqSaveButton btn btn-primary");
+			.append("button")
+				.attr("class", "fastqSaveButton btn btn-primary");
+		d34.select(this.topDivName + " .downFastqDiv button")
+			.append("i")
+				.attr("class", "fa fa-download fa-lg")
+		d34.select(this.topDivName + " .downFastqDiv button")
+			.append("span")
+				.text(" Download Fastq")
 		fastqLinkButton.append("a")
 			.attr("class", "fastqDownLink");
 		fastqLinkButton.on("click", function(){
@@ -299,10 +308,14 @@ njhSeqView.prototype.initActionButtons = function(){
 		.style("margin", "5px")
 		.style("float", "left");
 	
+
+	
 	var deselectButton = d34.select(this.topDivName + " .deselectDiv")
 		.append("button")
 			.text("Un-select All")
 			.attr("class", "deselectAllBut btn btn-info");
+
+;
 	deselectButton.on("click", function(){
 		self.selected.clear();
 		self.updateHighlightedSeqs();

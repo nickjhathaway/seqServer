@@ -98,7 +98,7 @@ SeqApp::SeqApp(const Json::Value & config) :
 	auto fontsDir = bib::files::make_path(config_["seqServerCore"].asString(), "fonts");
 	auto fontsDirFiles = bib::files::filesInFolder(fontsDir);
 	for(const auto & f : fontsDirFiles){
-		bootstrapFonts_.emplace(f.filename().string(), f);
+		fonts_.emplace(f.filename().string(), f);
 	}
 
 	//set root name
@@ -121,7 +121,7 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 	ret.emplace_back(getColors());
 
 	//add fonts
-	for(const auto & fontFile : bootstrapFonts_){
+	for(const auto & fontFile : fonts_){
 		auto resource = std::make_shared<restbed::Resource>();
 		resource->set_path(UrlPathFactory::createUrl( { { rootName_ },
 				{ "fonts" }, { fontFile.first} }));
@@ -129,7 +129,7 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 				std::function<void(const std::shared_ptr<restbed::Session>)>(
 						[this,&fontFile](const std::shared_ptr<restbed::Session> & ses) {
 							const auto request = ses->get_request();
-							ses->close(restbed::OK, bootstrapFonts_.at(fontFile.first).get());
+							ses->close(restbed::OK, fonts_.at(fontFile.first).get());
 						}));
 		ret.emplace_back(resource);
 	}
@@ -743,6 +743,11 @@ std::string SeqApp::genHtmlDoc(std::string rName,
 			"       src: url('/" + rName + "/fonts/glyphicons-halflings-regular.eot');\n"
 			"       src: url('/" + rName + "/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/" + rName + "/fonts/glyphicons-halflings-regular.woff') format('woff'), url('/" + rName + "/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/" + rName + "/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');\n"
 			"     }\n"
+			"			@font-face{\n"
+			"				font-family:'FontAwesome';\n"
+			"				src:url('/" + rName + "/fonts/fontawesome-webfont.eot?v=4.7.0');\n"
+			"				src:url('/" + rName + "/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),url('/" + rName + "/fonts/fontawesome-webfont.woff2?v=4.7.0') format('woff2'),url('/" + rName + "/fonts/fontawesome-webfont.woff?v=4.7.0') format('woff'),url('/" + rName + "/fonts/fontawesome-webfont.ttf?v=4.7.0') format('truetype'),url('/" + rName + "/fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');\n"
+			"			}\n"
 			"  </style>\n"
 			"  </head>\n"
 			"  <body>\n"
