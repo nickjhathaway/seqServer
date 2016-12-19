@@ -72,13 +72,19 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.menuOrganizedDiv.append("br");
 	this.menuOrganizedDiv.append("button")
 		.style("margin-top", "5px")
-		.text("Download Table")
+		.style("margin-bottom", "5px")
 		.attr("class", "njhTabSaveButton btn btn-success");
+	d34.select(this.masterDivId + " .njhTabSaveButton")
+		.append("i")
+			.attr("class", "fa fa-download fa-lg");
+	d34.select(this.masterDivId + " .njhTabSaveButton")
+		.append("span")
+			.text(" Download Table");
 	this.menuOrganizedDiv.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
 	this.menuOrganizedDiv.select(".njhTabSaveButton").on("click", function() {
 		var dataSrc = self.tableToDownloadData();
 		var downLink = self.menuOrganizedDiv.select(".njhTabDownLink");
-		downLink.attr("download", self.tableDownloadStubName + ".tab.csv");
+		downLink.attr("download", self.tableDownloadStubName + ".tab.txt");
 		downLink.attr("href", dataSrc);
 		downLink.node().click();
 	});
