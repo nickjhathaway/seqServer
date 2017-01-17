@@ -230,6 +230,21 @@ Json::Value SeqCache::sort(const std::string & uid, const std::string & sortOpti
 	return getJson(uid);
 }
 
+void SeqCache::getMaxLen(const std::string & uid, uint64_t& maxLen) {
+	for(const auto & seq : *cache_.at(uid).get()){
+		readVec::getMaxLength(seq, maxLen);
+	}
+}
+void SeqCache::getMaxLen(const std::string & uid,
+		const std::vector<uint32_t> & positions, uint64_t& maxLen) {
+	auto & seqs = *cache_.at(uid).get();
+	for(const auto & seqPos : positions){
+		const auto & seq = seqs[seqPos];
+		readVec::getMaxLength(seq, maxLen);
+	}
+}
+
+
 Json::Value SeqCache::muscle(const std::string & uid){
 	cache_.at(uid).muscle();
 	return getJson(uid);
@@ -246,13 +261,34 @@ Json::Value SeqCache::rComplement(const std::string & uid) {
 }
 
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
+		uint32_t numDiff,
+		aligner & alignerObj,
+		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
+		std::mutex & alignerLock,
+		uint32_t numThreads) {
+	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
+			uid,alignerObj, aligners, alignerLock, numThreads, numDiff);
+}
+Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		uint32_t numDiff) {
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
 			uid, numDiff);
 }
 
+
+
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
-		const std::vector<uint32_t> & positions, uint32_t numDiff) {
+		const std::vector<uint32_t> & positions, uint32_t numDiff,
+		aligner & alignerObj,
+		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
+		std::mutex & alignerLock, uint32_t numThreads) {
+	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
+			positions, uid, alignerObj, aligners, alignerLock, numThreads, numDiff);
+}
+
+Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
+		const std::vector<uint32_t> & positions,
+		uint32_t numDiff) {
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
 			positions, uid, numDiff);
 }

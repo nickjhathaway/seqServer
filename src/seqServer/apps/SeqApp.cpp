@@ -435,17 +435,76 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	uint32_t numDiffs = bib::lexical_cast<uint32_t>(
-			postData["numDiff"].asString());
+	const uint32_t gapOpenPen = postData["gapOpenPen"].asUInt();
+	const uint32_t gapExtPen = postData["gapExtPen"].asUInt();
+	const int32_t match = postData["match"].asInt();
+	const int32_t mismatch = postData["mismatch"].asInt();
+	const uint32_t numThreads = postData["numThreads"].asUInt();
+	//uint32_t numThreads = 2;
+	uint32_t numDiffs = bib::lexical_cast<uint32_t>(postData["numDiff"].asString());
+
 	Json::Value seqData;
 	if (bib::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
-						numDiffs);
+				/**@todo add alignment caching */
+				uint64_t maxSize = 0;
+				seqsBySession_[sessionUID]->getMaxLen(uid, maxSize);
+				aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
+						substituteMatrix(match, mismatch));
+				std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
+				std::mutex alignerLock;
+				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, numDiffs,
+						alignerObj, aligners, alignerLock, numThreads);
+				table infoTab(VecStr {"Comparison", "var1-name", "var2-name", "type", "var1-pos",
+						"var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual",
+						"totalDiffs" });
+				for (const auto & node : seqData["nodes"]) {
+					if ("indel" == node["type"].asString()) {
+						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+								node["ref"], node["seq"], node["type"],
+								node["refPos"], node["refDisplay"], "NA", node["seqPos"],
+								node["seqDisplay"], "NA",
+								seqData["totalDiffs"][node["ref"].asString()
+										+ node["seq"].asString()]);
+					}
+					if ("snp" == node["type"].asString()) {
+						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+								node["ref"], node["seq"], node["type"],
+								node["refPos"], node["refBase"], node["refBaseQual"],
+								node["seqPos"], node["seqBase"], node["seqBaseQual"],
+								seqData["totalDiffs"][node["ref"].asString()
+										+ node["seq"].asString()]);
+					}
+				}
+				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
 			} else {
-				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, positions,
-						numDiffs);
+				uint64_t maxSize = 0;
+				seqsBySession_[sessionUID]->getMaxLen(uid, positions, maxSize);
+				aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
+						substituteMatrix(match, mismatch));
+				std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
+				std::mutex alignerLock;
+				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
+						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads);
+				table infoTab(VecStr{"Comparison", "var1-name", "var2-name","type", "var1-pos","var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual", "totalDiffs"});
+				for(const auto & node : seqData["nodes"]){
+					if("indel" == node["type"].asString()){
+						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+								node["ref"], node["seq"], node["type"],
+								node["refPos"], node["refDisplay"],"NA",
+								node["seqPos"], node["seqDisplay"],"NA",
+						seqData["totalDiffs"][node["ref"].asString() + node["seq"].asString()]);
+					}
+					if("snp" == node["type"].asString()){
+						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+								node["ref"], node["seq"], node["type"],
+								node["refPos"], node["refBase"],node["refBaseQual"],
+								node["seqPos"], node["seqBase"],node["seqBaseQual"],
+								seqData["totalDiffs"][node["ref"].asString() + node["seq"].asString()]);
+					}
+				}
+				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
 				seqData["selected"] = bib::json::toJson(selected);
 			}
 			seqData["uid"] = uid;

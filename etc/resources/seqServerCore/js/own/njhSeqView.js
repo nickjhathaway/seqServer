@@ -518,16 +518,18 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		}));
 		menuItems["Translate"] = translateOptions;
 	}
-	var windowOptions = [];
+	
 	if(!this.protein){
+		var qualityOptions = [];
 		var qualMenuTitle = "Hide Qual Graph";
 		if(!self.showingQualChart){
 			qualMenuTitle = "Show Qual Graph";
 		}
-		windowOptions.push(new njhMenuItem("ShowQual", qualMenuTitle,function(){
+		qualityOptions.push(new njhMenuItem("ShowQual", qualMenuTitle,function(){
 			self.toggleQualChart();
 		}));
-		
+		menuItems["Quality"] = qualityOptions;
+		var windowOptions = [];
 		windowOptions.push(new njhMenuItem("GenTree", "Gen Difference Graph",function(){
 			if(!($(self.topDivName + " #minTreeChartTop #saveButton").length)){
 				d34.select(self.topDivName + " #minTreeChartTop").append("button")
@@ -555,12 +557,24 @@ njhSeqView.prototype.initDefaultMenu = function(){
 					postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
 				}
 			}
+		//
 			postData["numDiff"] = $("#numDiffInput", self.topDivName).val();
+			var numThreads = 2,gapOpenPen = 5,gapExtPen = 1,match = 2,mismatch = -2;
+			postData["numThreads"] = numThreads;
+			postData["gapOpenPen"] = parseInt($("#gapOpenInput", self.topDivName).val());
+			postData["gapExtPen"] = parseInt($("#gapExtInput", self.topDivName).val());
+			postData["match"] = parseInt($("#matchInput", self.topDivName).val());
+			postData["mismatch"] = parseInt($("#mismatchInput", self.topDivName).val());
 			var gifLoading = prsentDivGifLoading();
 			postJSON('/' + rName + '/minTreeDataDetailed', postData).then(function (seqData){
 				njhDiffTree(seqData, self.topDivName + " #minTreeChart", "minTreeChart",
 						$("#treeWidthInput", self.topDivName).val(),
 						$("#treeHeightInput", self.topDivName).val());
+				if(($(self.topDivName + " #minTreeChartTop #diffInfoTable").length)){
+					d34.select(self.topDivName + " #minTreeChartTop #diffInfoTable").remove();
+				}
+				addDiv(self.topDivName + " #minTreeChartTop", "diffInfoTable");
+				var diffInfoTable = new njhTable("#diffInfoTable", seqData["infoTab"], self.uid + "_diffInfo", false);
 				$('#minTreeChart').scrollView();
 		  		gifLoading.remove();
 		  	}).catch(logRequestError);
@@ -568,8 +582,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		windowOptions.push(new njhMenuItem("HideTree", "Hide Difference Graph",function(){
 			d34.select(self.topDivName + " #minTreeChartTop").selectAll("*").remove();
 		}));
-
-		menuItems["Graphs"] = windowOptions;
+		menuItems["Diff-Graph"] = windowOptions;
 	}
 
 	
@@ -604,7 +617,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#startSiteForm').submit(function(e){
 	        e.preventDefault();
 	    });
-		var treeWidthInput = d34.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
+		var treeWidthInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 			.append("li")
 				.append("div")
 					.attr("style", "padding: 3px 20px;")
@@ -631,7 +644,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#treeWidthForm').submit(function(e){
 	        e.preventDefault();
 	    });
-		var treeHeightInput = d34.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
+		var treeHeightInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 			.append("li")
 				.append("div")
 					.attr("style", "padding: 3px 20px;")
@@ -644,7 +657,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				.attr("for","treeHeightInput")
 				.attr("class", "control-label")
 				.text("Graph Window Height")
-				.style("margin-right", "5px");;
+				.style("margin-right", "5px");
 		var divTreeHeightInputGroup = treeHeightInput
 			.append("div")
 				.attr("class", "input-group");
@@ -659,7 +672,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	        e.preventDefault();
 	    });
 		
-		var numDiffInput = d34.select(self.topDivName +  " .njhSeqViewMenu #GraphsDrops")
+		var numDiffInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 			.append("li")
 				.append("div")
 					.attr("style", "padding: 3px 20px;")
@@ -686,7 +699,123 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#numDiffForm').submit(function(e){
 	        e.preventDefault();
 	    });
+		
+	// gap open
+	var gapOpenInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
+	.append("li")
+		.append("div")
+			.attr("style", "padding: 3px 20px;")
+		.append("form")
+			.attr("class", "form-inline")
+			.attr("id", "gapOpenForm");
+	gapOpenInput
+		.append("label")
+			.attr("id", "gapOpenLabel")
+			.attr("for","gapOpenInput")
+			.attr("class", "control-label")
+			.text("Gap Open Penaltiy")
+			.style("margin-right", "5px");;
+	var divgapOpenInputGroup = gapOpenInput
+		.append("div")
+			.attr("class", "input-group");
+	divgapOpenInputGroup.append("input")
+		.attr("type", "number")
+		.attr("class", "form-control")
+		.attr("id", "gapOpenInput")
+		.attr("step", "1")
+		.attr("min", "1")
+		.attr("value", "5");
+	$('#gapOpenForm').submit(function(e){
+        e.preventDefault();
+  });
+	// gap Ext
+	var gapExtInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
+	.append("li")
+		.append("div")
+			.attr("style", "padding: 3px 20px;")
+		.append("form")
+			.attr("class", "form-inline")
+			.attr("id", "gapExtForm");
+	gapExtInput
+		.append("label")
+			.attr("id", "gapExtLabel")
+			.attr("for","gapExtInput")
+			.attr("class", "control-label")
+			.text("Gap Extension Penaltiy")
+			.style("margin-right", "5px");;
+	var divgapExtInputGroup = gapExtInput
+		.append("div")
+			.attr("class", "input-group");
+	divgapExtInputGroup.append("input")
+		.attr("type", "number")
+		.attr("class", "form-control")
+		.attr("id", "gapExtInput")
+		.attr("step", "1")
+		.attr("min", "1")
+		.attr("value", "1");
+	$('#gapExtForm').submit(function(e){
+        e.preventDefault();
+  });
+	
+	// match
+	var matchInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
+	.append("li")
+		.append("div")
+			.attr("style", "padding: 3px 20px;")
+		.append("form")
+			.attr("class", "form-inline")
+			.attr("id", "matchForm");
+	matchInput
+		.append("label")
+			.attr("id", "matchLabel")
+			.attr("for","matchInput")
+			.attr("class", "control-label")
+			.text("Match Score")
+			.style("margin-right", "5px");;
+	var divmatchInputGroup = matchInput
+		.append("div")
+			.attr("class", "input-group");
+	divmatchInputGroup.append("input")
+		.attr("type", "number")
+		.attr("class", "form-control")
+		.attr("id", "matchInput")
+		.attr("step", "1")
+		.attr("min", "1")
+		.attr("value", "2");
+	$('#matchForm').submit(function(e){
+        e.preventDefault();
+  });
+	// mistmatch
+	var mismatchInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
+	.append("li")
+		.append("div")
+			.attr("style", "padding: 3px 20px;")
+		.append("form")
+			.attr("class", "form-inline")
+			.attr("id", "mismatchForm");
+	mismatchInput
+		.append("label")
+			.attr("id", "mismatchLabel")
+			.attr("for","mismatchInput")
+			.attr("class", "control-label")
+			.text("mismatch Score")
+			.style("margin-right", "5px");;
+	var divmismatchInputGroup = mismatchInput
+		.append("div")
+			.attr("class", "input-group");
+	divmismatchInputGroup.append("input")
+		.attr("type", "number")
+		.attr("class", "form-control")
+		.attr("id", "mismatchInput")
+		.attr("step", "1")
+		.attr("max", "0")
+		.attr("value", "-2");
+	$('#mismatchForm').submit(function(e){
+        e.preventDefault();
+  });
+	
 	}	
+	
 };
 
 njhSeqView.prototype.updateData = function(inputSeqData){

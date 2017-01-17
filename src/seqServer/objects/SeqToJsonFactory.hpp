@@ -182,14 +182,14 @@ public:
 
 	template<typename T>
 	static Json::Value minTreeDataDetailed(
-			const std::vector<T> & reads, const std::string & uid,
+			const std::vector<T> & reads,
+			const std::string & uid,
 			uint32_t numDiff) {
 		std::vector<T> selReads;
 		for (const auto & seq : reads) {
 			if(getSeqBase(seq).on_){
 				selReads.emplace_back(seq);
 			}
-
 		}
 		if (numDiff > 0) {
 			comparison cutOff;
@@ -215,6 +215,53 @@ public:
 		} else {
 			return genDetailMinTreeData(selReads, 2);
 		}
+	}
+
+	template<typename T>
+	static Json::Value minTreeDataDetailed(
+			const std::vector<T> & reads,
+			const std::string & uid,
+			aligner & alignerObj,
+			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
+			std::mutex & alignerLock,
+			uint32_t numThreads,
+			uint32_t numDiff) {
+		std::vector<T> selReads;
+		for (const auto & seq : reads) {
+			if(getSeqBase(seq).on_){
+				selReads.emplace_back(seq);
+			}
+		}
+		comparison cutOff;
+		bool settingLimits = false;
+		if (numDiff > 0) {
+			settingLimits = true;
+			cutOff.distances_.overLappingEvents_ = numDiff + 1;
+		}
+		return genDetailMinTreeData(selReads, alignerObj, aligners, alignerLock,
+				numThreads, cutOff, settingLimits);
+	}
+
+	template<typename T>
+	static Json::Value minTreeDataDetailed(const std::vector<T> & reads,
+			const std::vector<uint32_t> & positions, const std::string & uid,
+			aligner & alignerObj,
+			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
+			std::mutex & alignerLock,
+			uint32_t numThreads,
+			uint32_t numDiff) {
+		std::vector<T> selReads;
+		for (const auto & pos : positions) {
+			selReads.emplace_back(reads[pos]);
+		}
+		comparison cutOff;
+		bool settingLimits = false;
+		if (numDiff > 0) {
+			settingLimits = true;
+			cutOff.distances_.overLappingEvents_ = numDiff + 1;
+		}
+		return genDetailMinTreeData(selReads, alignerObj, aligners, alignerLock,
+				numThreads, cutOff, settingLimits);
 	}
 
 };

@@ -2,13 +2,13 @@
  * 
  */
 
-
-
 function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
+	//destory any previous tooltips 
 	tooltipId = "#" + hovIdStub + "_popHover";
 	if($(tooltipId).length){
 		d34.select(tooltipId).remove();
 	}
+	//create tool tip
 	var tooltip = d34.select("body")
 				.append("div")
 				.style("position", "absolute")
@@ -22,59 +22,44 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	hoverTab = createTable(tooltipId);
 	hoverTab.style("border", "1px solid black");
 	hoverTab.style("box-shadow", "3px 3px 1.5px rgba(0, 0, 0, 0.5)");
+	//set wdith and height if none provided
 	if(!width){
 		width = 1000;
 	}
 	if(!height){
 		height = 1000;
 	}
-	
+	//create force simulation workhorse
 	var simulation = d34.forceSimulation()
 	    .force("link", d34.forceLink().id(function(d) { return d.index; }))
-	    .force("charge", d34.forceManyBody().strength(-15))
-	    .force("collide",d34.forceCollide( function(d){return d.r + 8 }).iterations(16) )
-	    .force("center", d34.forceCenter(width / 2, height / 2));
-	
-	/*
-	var simulation = d34.forceSimulation()
-	    .force("link", d34.forceLink().id(function(d) { return d.index }))
-	    .force("collide",d34.forceCollide( function(d){return d.r + 8 }).iterations(16) )
-	    .force("charge", d34.forceManyBody().strength(-60))
+	    .force("charge", d34.forceManyBody().strength(-120))
 	    .force("center", d34.forceCenter(width / 2, height / 2))
-	    .force("y", d34.forceY(0))
-	    .force("x", d34.forceX(0));
-	*/
-	
-	/*
-	var simulation = d34.forceSimulation()
-	    .force("link", d34.forceLink().id(function(d) { return d.index; }))
-	    .force("charge", d34.forceManyBody().strength(-6))
-	    .force("center", d34.forceCenter(width / 2, height / 2));
-	*/
-	
+	    .force("y", d34.forceY(height / 2))
+	    .force("x", d34.forceX(width / 2)) ;
+	//set height and width of what is being added to
 	d34.select(addTo)
 		.attr("width", width)
 		.attr("height", height);
-	
+	//set the height and width of the main svg body
 	var svg = d34.select(addTo)
 		.append("svg")
 		.attr("width", width)
 		.attr("height", height)
 		.attr("id", "chart");
-	
+	//create a background rect
 	svg.append('rect')
 		.attr('width', width)
 		.attr('height', height)
 		.attr('fill', jsonData.backgroundColor);
-	
+	//add nodes to force simulator
 	simulation
 	      .nodes(jsonData.nodes)
 	      .on("tick", ticked);
-	
+	//add links to force simulator
 	simulation.force("link")
 	      .links(jsonData.links);
 
-
+	//add links
 	var link = svg.selectAll(".link")
 		.data(jsonData.links)
 		.enter()
@@ -98,17 +83,19 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	      .style("fill", function(d) { return d.color; })
 	      .style("stroke", "#fff")
 	      .style("stroke-width", "1.5px");
-
+  //grab the indels
   var indels = svg.selectAll(".indel");
+  //grab the snps
   var snps = svg.selectAll(".snp");
+  //set up indel nodes
   indels.selectAll("circle").style("stroke", "#F00").style("stroke-width", 1);
-  
   indels.selectAll("circle").on("mouseover", function(d){
   			d34.select("#" + hovIdStub + "_popHover_title").html("Indel")
   			updateTable(hoverTab, [{"SeqName":d.ref, "Pos":d.refPos, "GapSeq":d.refDisplay},{"SeqName":d.seq, "Pos":d.seqPos, "GapSeq":d.seqDisplay}], ["SeqName", "Pos", "GapSeq"]);
 	      	 return tooltip.style("visibility", "visible");})
 		  .on("mousemove", function(){return tooltip.style("top", (d34.event.layerY-10)+"px").style("left",(d34.event.layerX+10)+"px");})
 		  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
+  //set up snps nodes
   snps.selectAll("circle").style("stroke", "#00F").style("stroke-width", 1);
   snps.selectAll("circle").on("mouseover", function(d){
   			d34.select("#" + hovIdStub + "_popHover_title").html("Snp")
@@ -116,8 +103,9 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	      	 return tooltip.style("visibility", "visible");})
 		  .on("mousemove", function(){return tooltip.style("top", (d34.event.layerY-10)+"px").style("left",(d34.event.layerX+10)+"px");})
 		  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
-		  
+  //grab variants nodes
   var variants = svg.selectAll(".variant");
+  //set up variant nodes
   variants.selectAll("circle").style("stroke", "#999");
   variants.selectAll("circle").on("mouseover", function(d){
   			 d34.select("#" + hovIdStub + "_popHover_title").html("Variant")
@@ -138,32 +126,27 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 	  .style("stroke", "#FFF")
 	  .style("stroke-width", "1px")
 	  .text(function(d) {return d.name;});;
-
+	//Functions for force simulator
+	//for move objects
 	function ticked() {
 	    link.attr("x1", function(d) { return d.source.x; })
 	        .attr("y1", function(d) { return d.source.y; })
 	        .attr("x2", function(d) { return d.target.x; })
 	        .attr("y2", function(d) { return d.target.y; });
-	    
-	  
 	    node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-	    
-	    /*node.selectAll("circle")
-		    .attr("cx", function(d) { return d.x; })
-		    .attr("cy", function(d) { return d.y; });*/
 	};
-
+	//for drag objects start
 	function dragstarted(d) {
 	  if (!d34.event.active) simulation.alphaTarget(0.3).restart();
 	  d.fx = d.x;
 	  d.fy = d.y;
 	};
-
+	//for when dragging has been detected
 	function dragged(d) {
 	  d.fx = d34.event.x;
 	  d.fy = d34.event.y;
 	};
-
+	//for when dragging has ended
 	function dragended(d) {
 	  if (!d34.event.active) simulation.alphaTarget(0);
 	  d.fx = null;

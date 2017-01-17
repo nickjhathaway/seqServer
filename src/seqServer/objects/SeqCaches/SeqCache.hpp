@@ -136,6 +136,10 @@ public:
 	CacheRecord & getRecord(const std::string & uid);
 
 	/*These currently assume cache is valid and is current in cache_ */
+
+	void getMaxLen(const std::string & uid, uint64_t& maxLen);
+	void getMaxLen(const std::string & uid,const std::vector<uint32_t> & positions, uint64_t& maxLen);
+
 	Json::Value sort(const std::string & uid, const std::string & sortOption);
 	Json::Value muscle(const std::string & uid);
 	Json::Value removeGaps(const std::string & uid);
@@ -144,6 +148,11 @@ public:
 	Json::Value translate(const std::string & uid, bool complement, bool reverse,
 			uint64_t start);
 	Json::Value minTreeDataDetailed(const std::string & uid, uint32_t numDiff);
+	Json::Value minTreeDataDetailed(const std::string & uid, uint32_t numDiff,
+			aligner & alignerObj,
+			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
+			std::mutex & alignerLock,
+			uint32_t numThreads);
 
 	Json::Value getJson(const std::string & uid);
 
@@ -164,7 +173,15 @@ public:
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);
 	Json::Value minTreeDataDetailed(const std::string & uid,
-			const std::vector<uint32_t> & positions, uint32_t numDiff);
+			const std::vector<uint32_t> & positions,
+			uint32_t numDiff,
+			aligner & alignerObj,
+			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
+			std::mutex & alignerLock,
+			uint32_t numThreads);
+	Json::Value minTreeDataDetailed(const std::string & uid,
+				const std::vector<uint32_t> & positions,
+				uint32_t numDiff);
 	Json::Value getJson(const std::string & uid,
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);
