@@ -312,7 +312,7 @@ njhSeqView.prototype.initActionButtons = function(){
 	
 	var deselectButton = d34.select(this.topDivName + " .deselectDiv")
 		.append("button")
-			.text("Un-select All")
+			.text("Clear Selection")
 			.attr("class", "deselectAllBut btn btn-info");
 
 ;
