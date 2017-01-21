@@ -20,7 +20,7 @@
 //
 //
 
-
+//instanceof d3.selection
 
 function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart){
 	var self = this;
@@ -64,7 +64,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 		self.colorTable();
 	});
 	
-	
+	//
 	//add menu
 	this.menuOrganizedDiv = d3.select(this.masterDivId + " .njhTableMenuOrganized");
 	this.menuOrganized = new njhCheckboxMenuOrganized(this.masterDivId + " .njhTableMenuOrganized", this.tableMasterData["columnNames"], this.toggleColumns.bind(this) );

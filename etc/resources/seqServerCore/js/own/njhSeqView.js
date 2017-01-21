@@ -136,10 +136,15 @@ njhSeqView.prototype.getSelectedQualData = function(){
 	return qualData;
 }
 
+
 njhSeqView.prototype.addQualChart = function(){
 	var self = this;
 	var qualData = this.getSelectedQualData();
+
 	this.qualChart = d34.njh.LineChart();
+	this.qualChart.
+		width(parseFloat(self.seqSvgMaster.style("width")));
+
 	d34.select(this.topDivName + " .qualChart")
 		.datum(qualData)
 		.call(self.qualChart);
@@ -315,7 +320,6 @@ njhSeqView.prototype.initActionButtons = function(){
 			.text("Clear Selection")
 			.attr("class", "deselectAllBut btn btn-info");
 
-;
 	deselectButton.on("click", function(){
 		self.selected.clear();
 		self.updateHighlightedSeqs();
@@ -819,6 +823,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 };
 
 njhSeqView.prototype.updateData = function(inputSeqData){
+	var self = this;
 	if(inputSeqData["selected"].length > 0){
 		if(this.seqData["maxLen"] < inputSeqData["maxLen"]){
 			this.seqData["maxLen"] = inputSeqData["maxLen"];
@@ -836,6 +841,12 @@ njhSeqView.prototype.updateData = function(inputSeqData){
 	this.needToPaint = true;
 	this.setUp();
 	this.paint();
+  if(this.qualChart){
+  	var qualData = this.getSelectedQualData();
+  	d34.select(this.topDivName + " .qualChart")
+  		.datum(qualData)
+  		.call(self.qualChart);
+  }
 };
 
 njhSeqView.prototype.resetSelection = function(){
@@ -1004,33 +1015,42 @@ njhSeqView.prototype.setUpSliders = function(){
 };
    
 njhSeqView.prototype.updateOnResize = function(){
-    this.updateDrawArea();
-    this.setUpSliders();
-    this.paint();
-    this.paintSelectedSeq();
+	var self = this;
+  this.updateDrawArea();
+  this.setUpSliders();
+  this.paint();
+  this.paintSelectedSeq();
+  if(this.qualChart){
+    this.qualChart.
+			width(parseFloat(self.seqSvgMaster.style("width")));
+    d34.select(this.topDivName + " .qualChart")
+      .call(self.qualChart);
+  }
+
 };
 
 njhSeqView.prototype.clicked = function(e){
 	var self = this;
-    var pt = getRelCursorPosition(e, this.seqSvgMaster.node());
-    if(pt[1] <= this.nSeqs * this.ch && 
-    		pt[0] <= this.nBases * this.cw + this.nameOffSet){
-    	this.currentSeq = Math.ceil(pt[1]/this.ch) + this.seqStart - 1;
-    	if(pt[0] <= this.nameOffSet){
-
-    	}
-        this.currentBase = Math.ceil(pt[0]/this.cw) - this.nameOffSet/this.cw + this.baseStart -1;
-        this.paintSelectedSeq();
-        this.setSelector();
-        var currentQual = this.seqData["seqs"][this.currentSeq]["qual"];
+  var pt = getRelCursorPosition(e, this.seqSvgMaster.node());
+  if(pt[1] <= this.nSeqs * this.ch && 
+  		pt[0] <= this.nBases * this.cw + this.nameOffSet){
+  	this.currentSeq = Math.ceil(pt[1]/this.ch) + this.seqStart - 1;
+  	if(pt[0] <= this.nameOffSet){
+      if(this.qualChart){
+      	var qualData = this.getSelectedQualData();
+      	d34.select(this.topDivName + " .qualChart")
+      		.datum(qualData)
+      		.call(self.qualChart);
+      }
+  	}
+    this.currentBase = Math.ceil(pt[0]/this.cw) - this.nameOffSet/this.cw + this.baseStart -1;
+    this.paintSelectedSeq();
+    this.setSelector();
     if(this.qualChart){
-    	var qualData = this.getSelectedQualData();
-    	//this.qualChart = d34.njh.LineChart();
-    	d34.select(this.topDivName + " .qualChart")
-    		.datum(qualData)
-    		.call(self.qualChart);
-        }
+    	//draw line on current base position 
     }
+
+  }
 };
     
 njhSeqView.prototype.setUpListeners = function(){

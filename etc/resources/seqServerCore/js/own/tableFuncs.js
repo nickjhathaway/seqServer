@@ -60,7 +60,11 @@
 	
 	function createTable(divId, id) {
 		/**create the table and return it to be manipulate*/
-		var table = d34.select(divId).append("table");
+		var divSel = divId;
+		if(! (divId instanceof d3.selection) && !(divId instanceof d34.selection)){
+			divSel =  d34.select(divId);
+		}
+		var table = divSel.append("table");
 		if(id !== null){
 			table.attr("id", id);
 		}

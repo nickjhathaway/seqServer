@@ -332,7 +332,7 @@ function setHeadTitle(title){
 
 function addGifLoading(divId){
 	var divSel = divId;
-	if(! divId instanceof d3.selection){
+	if( (! divId instanceof d3.selection)){
 		divSel =  d3.select(divId);
 	}
 	return divSel.append("img")
