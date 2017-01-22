@@ -412,6 +412,7 @@ function setUpCloseSession(sessionID){
 	var rName = getRootName();
 	/**@todo need to figure out the subtles between the browsers and event calls, currently just this is just hack 
 	 * to make the close session called for at least most of the time  */
+	
 	$(window).on('beforeunload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',
@@ -424,7 +425,10 @@ function setUpCloseSession(sessionID){
 	  		logRequestError(err);
 	  	});
 	});
-	$(window).on('unload', function(){
+	if ($.browser.mozilla){
+		//for some odd reason on firefox the beforeunload function call doesn't always complete but if you also do unload that will
+		//though sometimes both do end up happening and then chaos ensues 
+		$(window).on('unload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',
 	  		method: "POST",
@@ -436,6 +440,8 @@ function setUpCloseSession(sessionID){
 	  		logRequestError(err);
 	  	});
 	});
+	}
+
 }
 
 function escapeSpecialChars(inputStr){

@@ -88,7 +88,8 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
   //grab the snps
   var snps = svg.selectAll(".snp");
   //set up indel nodes
-  indels.selectAll("circle").style("stroke", "#F00").style("stroke-width", 1);
+  //indels.selectAll("circle").style("stroke", "#F00").style("stroke-width", 1);
+  indels.selectAll("circle").style("stroke", "#000").style("fill", "#F0F032").style("stroke-width", 1);
   indels.selectAll("circle").on("mouseover", function(d){
   			d34.select("#" + hovIdStub + "_popHover_title").html("Indel")
   			updateTable(hoverTab, [{"SeqName":d.ref, "Pos":d.refPos, "GapSeq":d.refDisplay},{"SeqName":d.seq, "Pos":d.seqPos, "GapSeq":d.seqDisplay}], ["SeqName", "Pos", "GapSeq"]);
@@ -96,7 +97,8 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
 		  .on("mousemove", function(){return tooltip.style("top", (d34.event.layerY-10)+"px").style("left",(d34.event.layerX+10)+"px");})
 		  .on("mouseout", function(){return tooltip.style("visibility", "hidden");});
   //set up snps nodes
-  snps.selectAll("circle").style("stroke", "#00F").style("stroke-width", 1);
+  //snps.selectAll("circle").style("stroke", "#00F").style("stroke-width", 1);
+  snps.selectAll("circle").style("stroke", "#000").style("fill", "#AA0A3C").style("stroke-width", 1);
   snps.selectAll("circle").on("mouseover", function(d){
   			d34.select("#" + hovIdStub + "_popHover_title").html("Snp")
 			 updateTable(hoverTab,[{"SeqName":d.ref, "Pos":d.refPos, "Base":d.refBase, "Qual":d.refBaseQual},{"SeqName":d.seq, "Pos":d.seqPos, "Base":d.seqBase, "Qual":d.seqBaseQual}], ["SeqName", "Pos", "Base", "Qual"]);
@@ -106,7 +108,8 @@ function njhDiffTree(jsonData, addTo, hovIdStub, width, height){
   //grab variants nodes
   var variants = svg.selectAll(".variant");
   //set up variant nodes
-  variants.selectAll("circle").style("stroke", "#999");
+  //variants.selectAll("circle").style("stroke", "#999");
+  variants.selectAll("circle").style("stroke", "#000");
   variants.selectAll("circle").on("mouseover", function(d){
   			 d34.select("#" + hovIdStub + "_popHover_title").html("Variant")
              updateTable(hoverTab, [{"SeqName":d.name, "ReadCnt":d.cnt, "Relative Abundance":d.frac}], ["SeqName", "ReadCnt", "Relative Abundance"]);

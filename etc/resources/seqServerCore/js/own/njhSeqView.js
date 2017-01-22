@@ -1035,21 +1035,32 @@ njhSeqView.prototype.clicked = function(e){
   if(pt[1] <= this.nSeqs * this.ch && 
   		pt[0] <= this.nBases * this.cw + this.nameOffSet){
   	this.currentSeq = Math.ceil(pt[1]/this.ch) + this.seqStart - 1;
-  	if(pt[0] <= this.nameOffSet){
-      if(this.qualChart){
-      	var qualData = this.getSelectedQualData();
-      	d34.select(this.topDivName + " .qualChart")
-      		.datum(qualData)
-      		.call(self.qualChart);
-      }
-  	}
     this.currentBase = Math.ceil(pt[0]/this.cw) - this.nameOffSet/this.cw + this.baseStart -1;
     this.paintSelectedSeq();
     this.setSelector();
-    if(this.qualChart){
-    	//draw line on current base position 
-    }
-
+  	if(pt[0] <= this.nameOffSet){
+      if(this.qualChart){
+      	var qualData = this.getSelectedQualData();
+      	self.qualChart.selectedPos(null);
+      	d34.select(this.topDivName + " .qualChart")
+      		.datum(qualData)
+      		.call(self.qualChart);
+      	self.qualChart.selectline()
+  				.style("opacity", 0)
+      }
+  	}else{
+  		if(this.qualChart){
+      	//draw line on current base position 
+      	//this.qualChart. chart.setSelectLine(this.currentBase);
+      	self.qualChart.selectedPos(self.currentBase);//
+      	self.qualChart.selectline()
+    			.attr("x1", self.qualChart.xScale()(self.currentBase))
+    			.attr("x2", self.qualChart.xScale()(self.currentBase))
+    			.style("opacity", 1)
+    			.style("stroke-width", "2px")
+    			.style("stroke", function(d){ return "#000000";})
+  		}
+  	}
   }
 };
     

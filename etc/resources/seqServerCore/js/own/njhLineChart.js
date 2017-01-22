@@ -18,18 +18,23 @@ d34.njh.LineChart = function() {
 	    height: 500,
 		  yValue :"quals",
 		  nameValue : "name",
+		  xScale:null,
+		  yScale:null,
+		  color:null,
 		  tooltip:null,
-		  tooltipTab:null
+		  tooltipTab:null,
+		  selectedPos:null,
+		  selectline:null
 	};
 
 
 	   var data, chartWidth, chartHeight,
-	    xScale, yScale, color,
+	    
 	    xAxis, yAxis,
 	    svg,
 	    line = d34.line()
-		    .x(function(d,i) { return xScale(i); })
-		    .y(function(d) { return yScale(d); }),
+		    .x(function(d,i) { return publicAttributes.xScale(i); })
+		    .y(function(d) { return publicAttributes.yScale(d); }),
 
 			getMaxX = function(inputData){ return d34.max(inputData, function(d) { return d[publicAttributes.yValue].length;   }); },
 		 	getMinY = function(inputData){ return d34.min(inputData, function(q) { return d34.min(q[publicAttributes.yValue]); }); },
@@ -80,7 +85,7 @@ d34.njh.LineChart = function() {
      * @private
      */
     function buildAxis(){
-        xAxis = d34.axisBottom(xScale).tickFormat(function(e){
+        xAxis = d34.axisBottom(publicAttributes.xScale).tickFormat(function(e){
 	         if(Math.floor(e) != e)
 	         {
 	             return;
@@ -88,7 +93,7 @@ d34.njh.LineChart = function() {
 
 	         return e;
 	     });
-        yAxis = d34.axisLeft(yScale);
+        yAxis = d34.axisLeft(publicAttributes.yScale);
     }
     
     /**
@@ -135,7 +140,14 @@ d34.njh.LineChart = function() {
 				.attr("fill", "#FFF");
         svg.select(".chart-group")
         	.append("line")
-        	.attr("class", "njh-hoverline");
+        	.attr("class", "njh-hoverline")
+	      	.attr("y1", publicAttributes.yScale(d34.max([42, getMaxY(data)])))
+	      	.attr("y2", publicAttributes.yScale(d34.min([0, getMinY(data)])));
+        publicAttributes.selectline = svg.select(".chart-group")
+	      	.append("line")
+	      	.attr("class", "njh-posline")
+	      	.attr("y1", publicAttributes.yScale(d34.max([42, getMaxY(data)])))
+	      	.attr("y2", publicAttributes.yScale(d34.min([0, getMinY(data)])));
         
         container.append('g').classed('x-axis-group axis', true);
         container.append('g').classed('y-axis-group axis', true);
@@ -149,7 +161,7 @@ d34.njh.LineChart = function() {
         if (!svg) {
             svg = d34.select(container)
                 .append('svg')
-                .classed('bar-chart', true);
+                .classed('line-chart', true);
             buildContainerGroups();
         }
         svg.transition()
@@ -168,30 +180,30 @@ d34.njh.LineChart = function() {
 
 		//color = d34.scaleOrdinal(d34.schemeDark2)
 		//		.domain(data.map(function(c) { return c[publicAttributes.nameValue]; }));
-	 color = d34.scaleSequential(d34.interpolateRainbow)
+	 publicAttributes.color = d34.scaleSequential(d34.interpolateRainbow)
 	 			.domain([0,data.length]);
 	 			//.domain(data.map(function(c) { return c[publicAttributes.nameValue]; }));
-    xScale = d34.scaleLinear()
+    publicAttributes.xScale = d34.scaleLinear()
         .domain([0,  maxX])
         .range([0, chartWidth]);
     
-    yScale = d34.scaleLinear()
+    publicAttributes.yScale = d34.scaleLinear()
         .domain([d34.min([0,  minY]),d34.max([42, maxY])])
         .range([chartHeight, 0]);
   }
     
-    /**
-     * Draws the bar elements within the chart group
-     * @private
-     */
-    function drawLines(){
-    	var g = svg.select(".chart-group");
-    	//re-adjust dims of the background rec
-    	if(data.length > 0){
-    		g.select(".rect-wrap")
-			.attr("height", yScale(getMinY(data)))
-			.attr("width", xScale(getMaxX(data)))
-    	}
+  /**
+   * Draws the lines elements within the chart group
+   * @private
+   */
+  function drawLines(){
+  	var g = svg.select(".chart-group");
+  	//re-adjust dims of the background rec
+  	if(data.length > 0){
+  		g.select(".rect-wrap")
+				.attr("height", publicAttributes.yScale(getMinY(data)))
+				.attr("width", publicAttributes.xScale(getMaxX(data)))
+  	}
 		var lineGroups = g.selectAll(".qual-line")
 				.data(data);
 		// Exit
@@ -204,34 +216,46 @@ d34.njh.LineChart = function() {
 				.append("g")
 					.attr("class", function(d){ return "qual-line " + "qual-" + d.uid; })
 	    		.merge(lineGroups)
-	    			.style("fill", function(d){ return color(d.uid);})
-		    		.style("stroke", function(d){ return color(d.uid);});
+	    			.style("fill", function(d){ return publicAttributes.color(d.uid);})
+		    		.style("stroke", function(d){ return publicAttributes.color(d.uid);});
 /*
- * 		    		.style("fill", function(d){ return color(d[publicAttributes.nameValue]);})
-		    		.style("stroke", function(d){ return color(d[publicAttributes.nameValue]);});
+ * 		    		.style("fill", function(d){ return publicAttributes.color(d[publicAttributes.nameValue]);})
+		    		.style("stroke", function(d){ return publicAttributes.color(d[publicAttributes.nameValue]);});
  */
 	    //add paths and labels for entering groupings;
 		g.on("mousemove", function(){		
-			var xPos = Math.floor(xScale.invert(d34.mouse(this)[0]));
+			var xPos = Math.floor(publicAttributes.xScale.invert(d34.mouse(this)[0]));
 			publicAttributes.tooltip.style("top", (d34.event.layerY-10)+"px").style("left",(d34.event.layerX+10)+"px");
 			var display = data.map(function(d){ 
 				 if(xPos < d[publicAttributes.yValue].length){
 					return {"name":d[publicAttributes.nameValue] ,
 									"qual":d[publicAttributes.yValue][xPos],
 									"pos": xPos, 
-									"color": color(d.uid)};
+									"color": publicAttributes.color(d.uid)};
 				 }
 			});
 			updateTableWithColors(publicAttributes.tooltipTab, display, ["name", "qual", "pos"]);
 			svg.select(".chart-group")
 				.select(".njh-hoverline")
-				.attr("x1", xScale(xPos))
-				.attr("x2", xScale(xPos))
-				.attr("y1", yScale(d34.max([42, getMaxY(data)])))
-				.attr("y2", yScale(d34.min([0, getMinY(data)])))
+				.attr("x1", publicAttributes.xScale(xPos))
+				.attr("x2", publicAttributes.xScale(xPos))
 				.style("stroke-width", "2px")
     		.style("stroke", function(d){ return "#000000";});
 		});
+		
+		if(null != publicAttributes.selectedPos && data.length > 0){
+			publicAttributes.selectline = svg.select(".chart-group")
+			.select(".njh-posline")
+			.attr("x1", publicAttributes.xScale(publicAttributes.selectedPos))
+			.attr("x2", publicAttributes.xScale(publicAttributes.selectedPos))
+			.style("stroke-width", "2px")
+			.style("opacity", 1)
+  		.style("stroke", function(d){ return "#000000";});
+		}else if(data.length  == 0){
+			svg.select(".chart-group")
+				.select(".njh-posline")
+				.style("opacity", 0);
+		}
 		
 		g.on("mouseout", function(){
 			svg.select(".chart-group")
@@ -276,12 +300,23 @@ d34.njh.LineChart = function() {
 				.attr("r", 2)
 			.merge(dots)
 				.style("opacity", 0)
-			    .attr("cx", function(d, i) { return xScale(i); })
-			    .attr("cy", function(d, i) { return yScale(d); })
+			    .attr("cx", function(d, i) { return publicAttributes.xScale(i); })
+			    .attr("cy", function(d, i) { return publicAttributes.yScale(d); })
 			    .transition(500)
 				.style("opacity", 0.60);
     }
 	
+  function setSelectLine(pos){
+  	publicAttributes.selectedPos = pos;
+		publicAttributes.selectline = svg.select(".chart-group")
+		.select(".njh-posline")
+			.attr("x1", publicAttributes.xScale(publicAttributes.selectedPos))
+			.attr("x2", publicAttributes.xScale(publicAttributes.selectedPos))
+
+			.style("stroke-width", "2px")
+			.style("stroke", function(d){ return "#000000";});
+  }
+  
 	/**
 	 * Create an accessor function for the given attribute
 	 * @param  {string} attr Public attribute name
