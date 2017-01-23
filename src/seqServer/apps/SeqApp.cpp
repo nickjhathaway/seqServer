@@ -461,7 +461,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 						"totalDiffs" });
 				for (const auto & node : seqData["nodes"]) {
 					if ("indel" == node["type"].asString()) {
-						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+						infoTab.addRow(node["ref"].asString() + "-vs-" + node["seq"].asString(),
 								node["ref"], node["seq"], node["type"],
 								node["refPos"], node["refDisplay"], "NA", node["seqPos"],
 								node["seqDisplay"], "NA",
@@ -469,7 +469,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 										+ node["seq"].asString()]);
 					}
 					if ("snp" == node["type"].asString()) {
-						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+						infoTab.addRow(node["ref"].asString() + "-vs-" + node["seq"].asString(),
 								node["ref"], node["seq"], node["type"],
 								node["refPos"], node["refBase"], node["refBaseQual"],
 								node["seqPos"], node["seqBase"], node["seqBaseQual"],
@@ -490,14 +490,14 @@ void SeqApp::minTreeDataDetailedPostHandler(
 				table infoTab(VecStr{"Comparison", "var1-name", "var2-name","type", "var1-pos","var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual", "totalDiffs"});
 				for(const auto & node : seqData["nodes"]){
 					if("indel" == node["type"].asString()){
-						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+						infoTab.addRow(node["ref"].asString() + "-vs-" + node["seq"].asString(),
 								node["ref"], node["seq"], node["type"],
 								node["refPos"], node["refDisplay"],"NA",
 								node["seqPos"], node["seqDisplay"],"NA",
 						seqData["totalDiffs"][node["ref"].asString() + node["seq"].asString()]);
 					}
 					if("snp" == node["type"].asString()){
-						infoTab.addRow(node["ref"].asString() + " vs " + node["seq"].asString(),
+						infoTab.addRow(node["ref"].asString() + "-vs-" + node["seq"].asString(),
 								node["ref"], node["seq"], node["type"],
 								node["refPos"], node["refBase"],node["refBaseQual"],
 								node["seqPos"], node["seqBase"],node["seqBaseQual"],
