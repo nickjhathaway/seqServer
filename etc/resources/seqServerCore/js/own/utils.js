@@ -425,7 +425,7 @@ function setUpCloseSession(sessionID){
 	  		logRequestError(err);
 	  	});
 	});
-	if ($.browser.mozilla){
+	if (navigator.userAgent.search("Firefox") >= 0){
 		//for some odd reason on firefox the beforeunload function call doesn't always complete but if you also do unload that will
 		//though sometimes both do end up happening and then chaos ensues 
 		$(window).on('unload', function(){
