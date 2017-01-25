@@ -1,0 +1,61 @@
+.SeqViewDrawAreaDiv {
+	position: relative;
+	clear: both;
+	left: 10px;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	margin-bottom: 10px;
+}
+
+.SeqViewDrawAreaDiv .rightSliderDiv {
+	position: relative;
+	float: right;
+	top: 0;
+}
+
+.SeqViewDrawAreaDiv .bottomSliderDiv {
+	position:absolute;
+	bottom: 0;
+}
+
+.SeqViewDrawAreaDiv .slider-horizontal {
+    width: 100% !important;
+}
+
+.SeqViewDrawAreaDiv .slider-vertical {
+    height: 100% !important;
+}
+
+.SeqViewDrawAreaDiv #bottomSliderCon .slider-selection {
+	background: #8283FF;
+}
+
+.SeqViewDrawAreaDiv #rightSliderCon .slider-selection {
+	background: #8283FF;
+}
+
+.SeqViewDrawAreaDiv .pop-up {
+	display: none;
+	position: absolute;
+	background-color: #88aaaa;
+	opacity: .90;
+}
+
+.SeqViewDrawAreaDiv .select {
+	position: absolute;
+	background: #e6e6e6;
+	color: #000000;
+	border: 2px solid #000000;
+	opacity: .50;
+	pointer-events: none;
+}
+
+.SeqViewDrawAreaDiv .seqHighlight {
+	position: absolute;
+	background: #85DDFA;
+	color: #000000;
+	border: 2px solid #000000;
+	opacity: .50;
+	pointer-events: none;
+}
+

@@ -26,8 +26,8 @@
  *      Author: nickhathaway
  */
 
-#include "seqServer/apps/seqApp.hpp"
-#include "seqServer/apps/viewTable.hpp"
-#include "seqServer/apps/seqViewer.hpp"
-#include "seqServer/apps/viewBamBases.hpp"
+#include "seqServer/apps/pars.h"
+#include "seqServer/apps/SeqApp.hpp"
+
+
 

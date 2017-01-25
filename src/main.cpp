@@ -18,28 +18,18 @@
 // You should have received a copy of the GNU General Public License
 // along with seqServer.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "seqServer.h"
 
 
 
-class serverRunner : public bib::progutils::programRunner {
- public:
-	serverRunner();
-
-};
+#include "seqServerPrograms.h"
 
 
-serverRunner::serverRunner()
-    : bib::progutils::programRunner(
-    		std::map<std::string, funcInfo>{addFunc("seqViewer", bibseq::seqViewer, false),
-					 addFunc("tableViewer", bibseq::tableViewerMain, false),
-					 addFunc("bamBaseViewer", bibseq::bamBaseViewerMain, false)
-           },
-          "serverRunner", "1", "4", "0") {}
+
+
 
 int main(int argc, char** argv){
 	try{
-	  serverRunner serRunner;
+	  bibseq::SeqServerRunner serRunner;
 	  return serRunner.run(argc, argv);
 	}catch (std::exception & e) {
 		std::cerr << e.what() << std::endl;
