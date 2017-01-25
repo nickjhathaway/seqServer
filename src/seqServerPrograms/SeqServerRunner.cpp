@@ -25,7 +25,7 @@ SeqServerRunner::SeqServerRunner()
 				{
 
 				},//
-				"SeqServerRunner", "1", "5", "0-dev") {}
+				"SeqServerRunner", "1", "5", "0") {}
 
 }  // namespace bibseq
 
