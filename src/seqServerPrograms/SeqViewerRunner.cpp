@@ -90,7 +90,7 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqViewer::getAllResources(){
 
 
 VecStr SeqViewer::requiredOptions() const{
-	return catenateVectors(super::requiredOptions(), VecStr{"resources", "ioOptions"});
+	return concatVecs(super::requiredOptions(), VecStr{"resources", "ioOptions"});
 }
 
 void error_handler(const int statusCode, const std::exception& exception,
