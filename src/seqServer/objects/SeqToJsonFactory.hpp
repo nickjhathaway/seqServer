@@ -103,7 +103,8 @@ public:
 	static Json::Value muscle(
 			std::vector<T> & reads, const std::string & uid) {
 		bib::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
-		sys::muscleSeqs(reads);
+		Muscler musclerOperator;
+		musclerOperator.muscleSeqs(reads);
 		return seqsToJson(reads, uid);
 	}
 
@@ -115,7 +116,8 @@ public:
 			const std::string & uid) {
 		bib::for_each_pos(reads, positions,
 				[](T & read) {getSeqBase(read).removeGaps();});
-		sys::muscleSeqs(reads, positions);
+		Muscler musclerOperator;
+		musclerOperator.muscleSeqs(reads, positions);
 		return seqsToJson(reads, positions, selected, uid);
 	}
 

@@ -118,7 +118,8 @@ void SeqCache::CacheRecord::muscle(){
 		}
 	}
 	bib::for_each_pos(*reads_,positions, [](readObject & read) {getSeqBase(read).removeGaps();});
-	sys::muscleSeqs(*reads_, positions);
+	Muscler musclerOperator;
+	musclerOperator.muscleSeqs(*reads_, positions);
 }
 
 void SeqCache::CacheRecord::removeGaps(){
@@ -143,7 +144,8 @@ void SeqCache::CacheRecord::muscle(const std::vector<uint32_t> & positions) {
 	reload();
 	bib::for_each_pos(*reads_, positions,
 			[](readObject & read) {getSeqBase(read).removeGaps();});
-	sys::muscleSeqs(*reads_, positions);
+	Muscler musclerOperator;
+	musclerOperator.muscleSeqs(*reads_, positions);
 }
 
 void SeqCache::CacheRecord::removeGaps(
