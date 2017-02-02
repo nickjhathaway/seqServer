@@ -214,6 +214,7 @@
 				    dataset.push(tmpDataset);
 				}
 				var tab = d34.select(addToSelector)
+						.style("overflow", "scroll")
 				    .append("table")
 				    .style("border-collapse", "collapse")
 				    .style("border", "2px black solid")
