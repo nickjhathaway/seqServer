@@ -150,7 +150,7 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	settings->set_port(corePars.port_);
 	//settings->set_root(name);
 	settings->set_default_header("Connection", "close");
-
+	settings->set_worker_limit( 4 );
 	restbed::Service service;
 	service.set_error_handler(error_handler);
 	for(const auto & resource : resources){
