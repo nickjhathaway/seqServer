@@ -119,8 +119,8 @@ njhSampleChart.prototype.draw = function(){
 	this.x.rangeRoundBands([0, this.width - 150], .1);
 	
 	this.y.range([this.height, 0]);
-
-	this.color.domain(this.masterData["tab"].map(function(d) { return d[self.colorBy]; }))
+	
+	this.color.domain(sort_unique(this.masterData["tab"].map(function(d) { return d[self.colorBy]; })))
 	    .range(this.masterData["popColors"]);
 	//initiate the counts to zero and no samples have been added
 	var sampleSum = {};
