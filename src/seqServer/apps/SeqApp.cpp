@@ -442,20 +442,24 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	const uint32_t numThreads = postData["numThreads"].asUInt();
 	//uint32_t numThreads = 2;
 	uint32_t numDiffs = bib::lexical_cast<uint32_t>(postData["numDiff"].asString());
-
 	Json::Value seqData;
+	std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
+	std::mutex alignerLock;
+	uint64_t maxSize = 0;
 	if (bib::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
-				/**@todo add alignment caching */
-				uint64_t maxSize = 0;
 				seqsBySession_[sessionUID]->getMaxLen(uid, maxSize);
-				aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
-						substituteMatrix(match, mismatch));
-				std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
-				std::mutex alignerLock;
+			}else{
+				seqsBySession_[sessionUID]->getMaxLen(uid, positions, maxSize);
+			}
+			aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
+									substituteMatrix(match, mismatch));
+			if (selected.empty()) {
+				/**@todo add alignment caching */
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, numDiffs,
 						alignerObj, aligners, alignerLock, numThreads);
+
 				table infoTab(VecStr {"Comparison", "var1-name", "var2-name", "type", "var1-pos",
 						"var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual",
 						"totalDiffs" });
@@ -479,12 +483,6 @@ void SeqApp::minTreeDataDetailedPostHandler(
 				}
 				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
 			} else {
-				uint64_t maxSize = 0;
-				seqsBySession_[sessionUID]->getMaxLen(uid, positions, maxSize);
-				aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
-						substituteMatrix(match, mismatch));
-				std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
-				std::mutex alignerLock;
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
 						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads);
 				table infoTab(VecStr{"Comparison", "var1-name", "var2-name","type", "var1-pos","var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual", "totalDiffs"});
