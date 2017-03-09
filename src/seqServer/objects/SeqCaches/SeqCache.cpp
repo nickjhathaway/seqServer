@@ -262,6 +262,17 @@ Json::Value SeqCache::rComplement(const std::string & uid) {
 	return getJson(uid);
 }
 
+Json::Value SeqCache::countBases(const std::string & uid){
+	cache_.at(uid).reload();
+	charCounter counter;
+	for(const auto & seq : *(cache_.at(uid).reads_)){
+		counter.increaseCountByString(seq.seqBase_.seq_);
+	}
+	counter.resetAlphabet(false);
+	counter.setFractions();
+	return counter.toJson();
+}
+
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		uint32_t numDiff,
 		aligner & alignerObj,
@@ -300,6 +311,24 @@ Json::Value SeqCache::sort(const std::string & uid,
 		const std::vector<uint32_t> & selected, const std::string & sortOption) {
 	cache_.at(uid).sort(sortOption, positions);
 	return getJson(uid, positions, selected);
+}
+
+Json::Value SeqCache::countBases(const std::string & uid,
+		const std::vector<uint32_t> & positions) {
+	cache_.at(uid).reload();
+	charCounter counter;
+	auto seqs = cache_.at(uid).reads_;
+	for (auto pos : positions) {
+		if (pos >= seqs->size()) {
+			throw std::out_of_range { std::string(__PRETTY_FUNCTION__)
+					+ ": Error , out of range, pos: " + estd::to_string(pos) + ", size: "
+					+ estd::to_string(seqs->size()) };
+		}
+		counter.increaseCountByString((*seqs)[pos].seqBase_.seq_);
+	}
+	counter.resetAlphabet(false);
+	counter.setFractions();
+	return counter.toJson();
 }
 
 Json::Value SeqCache::muscle(const std::string & uid,

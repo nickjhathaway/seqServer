@@ -471,6 +471,25 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	}));
 	menuItems["Aln"] = alnOptions;
 	
+	var countOptions = [];
+	countOptions.push(new njhMenuItem("countBases", "Count Bases",function(){
+		var mainData;
+		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
+		if (self.selected.size > 0){
+			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
+		}
+		var gifLoading = prsentDivGifLoading();
+		postJSON('/' + rName + '/countBases', postData).then(function (baseCounts) {
+	  		console.log(baseCounts);
+	  		gifLoading.remove();
+	  	}).catch(logRequestError);
+	}));
+	menuItems["Counts"] = countOptions;
+	
 
 	if(!this.protein){
 		var editOptions = [];
@@ -1144,11 +1163,17 @@ njhSeqView.prototype.setUpListeners = function(){
 	$(this.seqSvgMaster.node()).mouseleave(function(e) {
 		$(self.popUp).hide();
 	});
-	
 	$(this.seqSvgMaster.node()).mousemove(function(e) {
 		var currentPoint = getRelCursorPosition(e, self.seqSvgMaster.node());
 	    if(currentPoint[1] <= self.nSeqs * self.ch &&
 	    		currentPoint[0] <= self.nBases * self.cw + self.nameOffSet){
+	    	var viewWidth = self.nBases * self.cw + self.nameOffSet;
+	    	
+	    	if(currentPoint[0] > viewWidth/2){
+	    		moveLeft = - parseFloat(d34.select(self.popUp).style("width")) - 20
+	    	}else{
+	    		moveLeft = 20
+	    	}
 	    	$(self.popUp).css('top', currentPoint[1] + moveDown).css('left', currentPoint[0] + moveLeft);
           	var currentBaseHover = Math.ceil(currentPoint[0]/self.cw) - self.nameOffSet/self.cw + self.baseStart -1;
             var currentSeqHover = Math.ceil(currentPoint[1]/self.ch) + self.seqStart - 1;

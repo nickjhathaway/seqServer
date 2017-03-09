@@ -144,6 +144,7 @@ public:
 	Json::Value muscle(const std::string & uid);
 	Json::Value removeGaps(const std::string & uid);
 	Json::Value rComplement(const std::string & uid);
+	Json::Value countBases(const std::string & uid);
 
 	Json::Value translate(const std::string & uid, bool complement, bool reverse,
 			uint64_t start);
@@ -160,6 +161,8 @@ public:
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected,
 			const std::string & sortOption);
+	Json::Value countBases(const std::string & uid,
+			const std::vector<uint32_t> & positions);
 	Json::Value muscle(const std::string & uid,
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);
