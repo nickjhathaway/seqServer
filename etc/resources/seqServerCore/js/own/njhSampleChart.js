@@ -34,6 +34,10 @@ function njhSampleChart(masterDivId, masterData, downLoadStubName, xCol, yCol,co
 	this.margin = {top: 20, right: 30, bottom: 110, left: 40},
 	this.width = $(window).width() -100 - this.margin.left - this.margin.right,
 	this.height = 600 - this.margin.top - this.margin.bottom;
+	/*
+	d34.select(masterDivId)
+		.style("overflow", "auto")
+		*/
 	var self = this;
 	//create tootip for sample chart
 	this.tooltip = d3.select("body")
@@ -233,7 +237,13 @@ njhSampleChart.prototype.draw = function(){
 	   		    });
 	   			updateTableWithColors(self.hoverTab,samplePopNames[d[self.xCol]], self.hoverCols);
 	   			return self.tooltip.style("visibility", "visible");})
-	   		.on("mousemove", function(){return self.tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");})
+	   		.on("mousemove", function(){ 
+	   			if(d3.event.layerX < window.innerWidth/2){
+	   				self.tooltip.style("top", (d3.event.layerY-10)+"px").style("left",(d3.event.layerX+10)+"px");
+	   			}else{
+	   				self.tooltip.style("top", (d3.event.layerY-10)+"px").style("left",d3.event.layerX -10 - parseFloat(self.tooltip.style("width"))+"px");
+	   			}
+					})
 	   		.on("mouseout", function(d){
 	   			var currentId = d3.select(this).attr("id")
 	   			self.chart.selectAll("rect").transition().style('opacity',function () {
