@@ -82,7 +82,7 @@ function postJSON(url, postData) {
   		method: "POST",
   		params: postData,
   		headers: {"Content-Type" : "application/json"}}).then(JSON.parse).catch(function(err) {
-    console.log("getJSON failed for", url, err);
+    console.log("postJSON failed for", url, err);
     throw err;
   });
 }
@@ -282,7 +282,10 @@ function addDiv(parentId, childName) {
 };
 
 function addH1(selector, text){
-	d3.select(selector).append("h1").text(text);
+	return d3.select(selector).append("h1").text(text);
+}
+function addH3(selector, text){
+	return d3.select(selector).append("h3").text(text);
 }
 
 var sort_by = function(field, reverse, primer){

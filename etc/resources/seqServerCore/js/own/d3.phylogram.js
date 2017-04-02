@@ -305,7 +305,7 @@ if (!d3) { throw "d3 wasn't included!"};
         .attr('font-size', '10px')
         .attr('fill', 'black')
         .text(function(d) {
-         console.log(d);
+         //console.log(d);
          return d.name + ' ('+d.length+')'; });
     }
     

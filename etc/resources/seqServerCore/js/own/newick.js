@@ -57,12 +57,11 @@
  *   ]
  * }
  */
-(function(exports) {
-  exports.parse = function(s) {
+	NewickParse = function(s) {
     var ancestors = [];
     var tree = {};
     var tokens = s.split(/\s*(;|\(|\)|,|:)\s*/);
-    console.log(tokens);
+    //console.log(tokens);
     for (var i=0; i<tokens.length; i++) {
       var token = tokens[i];
       switch (token) {
@@ -93,11 +92,19 @@
     }
     return tree;
   };
-})(
-    // exports will be set in any commonjs platform; use it if it's available
-    typeof exports !== "undefined" ?
-    exports :
-    // otherwise construct a name space.  outside the anonymous function,
-    // "this" will always be "window" in a browser, even in strict mode.
-    this.Newick = {}
-);
+  
+//  function buildNewickNodes(node, callback) {
+//  	var newickNodes = []
+//    newickNodes.push(node)
+//    if (node.branchset) {
+//      for (var i=0; i < node.branchset.length; i++) {
+//        buildNewickNodes(node.branchset[i])
+//      }
+//    }
+//  	return newickNodes
+//  };
+  
+  
+  
+  
+  
