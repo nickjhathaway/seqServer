@@ -57,7 +57,9 @@
  *   ]
  * }
  */
-	NewickParse = function(s) {
+	NewickParse = function(s, additionalInfo = {}) {
+	//additionalInfo !== undefined ? additionalInfo : {};
+	//console.log(additionalInfo);
     var ancestors = [];
     var tree = {};
     var tokens = s.split(/\s*(;|\(|\)|,|:)\s*/);
@@ -85,6 +87,17 @@
           var x = tokens[i-1];
           if (x == ')' || x == '(' || x == ',') {
             tree.name = token;
+            if(additionalInfo.hasOwnProperty(tree.name)){
+            	//console.log(additionalInfo[tree.name]);
+            	tree.addData = additionalInfo[tree.name];
+//            	if(additionalInfo[tree.name].foundInPop){
+//            		tree.addData = {pieces:[{proportion:1, color:"black", country: tree.name},{proportion:1, color:"red", country: tree.name} ], size : 10}
+//            	}else{
+//            		tree.addData = {pieces:[{proportion:1, color:"black", country: tree.name} ], size : 10}
+//            	}
+            }else{
+            	tree.addData = {pieces:[{proportion:1, color:"black", country: tree.name} ], size : 5}
+            }
           } else if (x == ':') {
             tree.length = parseFloat(token);
           }

@@ -156,13 +156,49 @@ if (!d3) { throw "d3 wasn't included!"};
     return coordAngle
   }
   
+  
+  
   d3.phylogram.styleTreeNodes = function(vis) {
+	var pie = d3.layout.pie()
+		.value(function(d) { return d.proportion; }); // pie function transform data into specific format
+
     vis.selectAll('g.leaf.node')
-      .append("svg:circle")
-        .attr("r", 4.5)
-        .attr('stroke',  'yellowGreen')
-        .attr('fill', 'greenYellow')
-        .attr('stroke-width', '2px');
+    	.selectAll(".phyArc")
+    	.data(function(d){ 
+    		//console.log(d);
+    		return pie(d.addData.pieces);})
+  		.enter()
+  			.append("g")
+  			.attr("class", "phyArc")
+  			.attr("opacity", ".75")
+  			.attr("stroke", "#000000")
+  			.append("path")
+  				.attr("id", function(d){ return d.data.country;})
+  				.attr("d", function(d){
+  					var arcSite = d3.svg.arc()
+					.innerRadius(0)
+					.outerRadius(d3.select(d3.select(this.parentNode).node().parentNode).datum().addData.size);
+					//.outerRadius(Math.sqrt(d3.select(d3.select(this.parentNode).node().parentNode).datum().size)/Math.PI)
+  					return arcSite(d);})
+  				.attr("fill", function(d){
+  					return d.data.color;});
+//      .append("svg:circle")
+//        .attr("r", function(d){
+//        	console.log(d);
+//        	return d.addData.size;
+//        	//return 4.5;
+//        } )
+//        .attr('stroke', function(d){
+//        	console.log(d);
+//        	return d.addData.color;
+//        	//return yellowGreen;
+//        } )
+//        .attr('fill', function(d){
+//        	console.log(d);
+//        	return d.addData.color;
+//        	//return yellowGreen;
+//        } )
+//        .attr('stroke-width', '2px');
     
     vis.selectAll('g.root.node')
       .append('svg:circle')
@@ -197,6 +233,7 @@ if (!d3) { throw "d3 wasn't included!"};
   
   
   d3.phylogram.build = function(selector, nodes, options) {
+	  
     options = options || {}
     var w = options.width || d3.select(selector).style('width') || d3.select(selector).attr('width'),
         h = options.height || d3.select(selector).style('height') || d3.select(selector).attr('height'),
@@ -282,10 +319,47 @@ if (!d3) { throw "d3 wasn't included!"};
           	//console.log(n);
             return n.name;
           }
-        })
-        .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+        }).attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
       
     d3.phylogram.styleTreeNodes(vis)
+    
+    if (options.useInputNames) {
+    	//console.log("hello first?")
+        vis.selectAll('g.leaf.node').append("svg:text")
+	        .attr("dx", 15)
+	        .attr("dy", 3)
+	        .attr("text-anchor", "start")
+	        .attr('font-family', 'Helvetica Neue, Helvetica, sans-serif')
+	        .attr('font-size', '10px')
+	        .attr('font-weight', function(d){
+	        	if(d.addData.refSeq){
+	        		return 'bold'
+	        	}else{
+	        		return 'normal'
+	        	}
+	        })
+	        .attr('fill', function(d){
+	        	return d.addData.refColor;
+	        })
+	        .attr('stroke', function(d){
+	        	return d.addData.refColor;
+	        })
+	        .text(function(d) {
+	        	//console.log("hello?");
+	            //console.log(d);
+	         if(d.addData.fromInput){
+	        	 if(d.addData.refSeq){
+	        		 return d.name + "(" + d.addData.refName + ")" ; 
+	        	 }else{
+	        		 return d.name ; 
+	        	 }
+	         }else if(d.addData.refSeq){
+	        	 return d.addData.refName;
+	         }else{
+	        	 return "";
+	         }
+	        });
+    }
     
     if (!options.skipLabels) {
       vis.selectAll('g.inner.node')
