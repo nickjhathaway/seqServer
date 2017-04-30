@@ -27,6 +27,8 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
 	this.tableDownloadStubName = tableDownloadStubName;
+	
+	this.poorManHeatmapColoring = false;
 	d3.select(masterDivId)
 		.style("margin-top", "10px")
 		.style("margin-bottom", "10px")
@@ -106,6 +108,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 }
 
 njhTable.prototype.colorTable = function(){
+
 	var rowCount = 0;
 	var currentColor = "#e9e9e9";
 	var currentValue = "";
@@ -122,7 +125,11 @@ njhTable.prototype.colorTable = function(){
 		d3.select(this.parentNode).style("background-color", currentColor);
 		currentValue = d3.select(this).html();
 		++rowCount;
-	});
+	});	
+	
+	if(this.poorManHeatmapColoring){
+		this.enactPoorMansHeatMap();
+	}
 }
 
 
@@ -247,6 +254,28 @@ njhTable.prototype.updateWithData = function(updatedDataTab){
 	if(this.addedChart){
 		this.addChart();
 	}
+};
+
+
+njhTable.prototype.enactPoorMansHeatMap = function(){
+	var rowCount = 0;
+	this.poorManHeatmapColoring = true;
+	var range = []
+	this.datTabsD3Dom.selectAll("tbody td").each(function(d){
+		if(!isNaN(d34.select(this).html())){
+			range.push(parseFloat(d34.select(this).html()))
+		}
+	});
+	var color = d34.scaleLinear()
+	   .domain([Math.min.apply(null, range), Math.max.apply(null, range)])
+	   .range(["#ffeda0",  "#f03b20"])
+	   .interpolate(d34.interpolateHcl);
+	this.datTabsD3Dom.selectAll("tbody td").each(function(d){
+		if(!isNaN(d34.select(this).html())){
+			d34.select(this).style("background-color", color(parseFloat(d34.select(this).html())))
+		}
+	});
+
 };
 
 
