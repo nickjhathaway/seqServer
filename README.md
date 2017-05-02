@@ -4,7 +4,7 @@ Version 1.5.1-dev
 
 several content managers for serving up the results procuded by sequenceTools 
 
-#Installing
+# Installing
 
 
 requires clang-3.8 or gcc-5 and cmake (required by dependencies)
