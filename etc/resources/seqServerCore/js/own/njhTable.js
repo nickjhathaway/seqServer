@@ -27,7 +27,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
 	this.tableDownloadStubName = tableDownloadStubName;
-	
+
 	this.poorManHeatmapColoring = false;
 	d3.select(masterDivId)
 		.style("margin-top", "10px")
@@ -43,7 +43,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.datTabsD3Dom = this.actualTabDiv.append("table")
 		.attr("id", this.masterDivId + "_datTabs" )
 		.attr("class", "table table-condensed table-hover nowrap table-nowrap");
-	//add data table 
+	//add data table
 	this.datTable = $(this.datTabsD3Dom.node()).DataTable( {
 	    "data": self.tableMasterData["tab"],
 	    "columns": self.tableMasterData["columnNames"].map(function(col){return {data:col, title:col, name:col}}),
@@ -56,21 +56,21 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 //        "scroller:":      true,
         "buttons": ["csvHtml5"]
 	});
-	
+
 	this.colorTable();
-	
+
 	this.datTable.on("order", function(){
 		self.colorTable();
 	});
 	this.datTable.on("draw", function(){
 		self.colorTable();
 	});
-	
+
 	//
 	//add menu
 	this.menuOrganizedDiv = d3.select(this.masterDivId + " .njhTableMenuOrganized");
 	this.menuOrganized = new njhCheckboxMenuOrganized(this.masterDivId + " .njhTableMenuOrganized", this.tableMasterData["columnNames"], this.toggleColumns.bind(this) );
-	//add download button for table 
+	//add download button for table
 	this.menuOrganizedDiv.append("br");
 	this.menuOrganizedDiv.append("button")
 		.style("margin-top", "5px")
@@ -97,6 +97,8 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	if (addChart) {
 		this.addChart();
 	}
+
+	
 	//uncheck the hidden columns
 	if(this.tableMasterData["hideOnStartColNames"].length > 0){
 		this.tableMasterData["hideOnStartColNames"].forEach(function(d){
@@ -125,8 +127,8 @@ njhTable.prototype.colorTable = function(){
 		d3.select(this.parentNode).style("background-color", currentColor);
 		currentValue = d3.select(this).html();
 		++rowCount;
-	});	
-	
+	});
+
 	if(this.poorManHeatmapColoring){
 		this.enactPoorMansHeatMap();
 	}
@@ -157,7 +159,7 @@ njhTable.prototype.tableToDownloadData = function(){
 
 
 njhTable.prototype.toggleColumns = function(columns) {
-	//columns should be an array of objects with at least two fields, a name field for the column name and a visible boolean field 
+	//columns should be an array of objects with at least two fields, a name field for the column name and a visible boolean field
 	var self = this;
 	var showCols = [];
 	var hideCols = [];
@@ -176,10 +178,10 @@ njhTable.prototype.toggleColumns = function(columns) {
 			}
 		}
 	});
-	
+
 	self.datTable.columns(showCols.map(function(col){return col + ":name";}) ).visible(true);
 	self.datTable.columns(hideCols.map(function(col){return col + ":name";}) ).visible(false);
-	
+
 	if(this.chart){
 		this.chart.show(chartShowCols);
 		this.chart.hide(chartHideCols);
@@ -189,17 +191,17 @@ njhTable.prototype.toggleColumns = function(columns) {
 njhTable.prototype.updateAllColumnsVisibility = function() {
 	var self = this;
 	var allVals = [];
-	
+
 	d3.selectAll(this.masterDivId + " .njhTableMenuOrganized input:checked").each(function() {
 		allVals.push($(this).val());
 	});
 
 	var currentOnCols = _.intersection(this.tableMasterData["columnNames"], allVals);
 	var currentOffCols = _.difference(this.tableMasterData["columnNames"], allVals);
-	
+
 	self.datTable.columns(currentOnCols.map(function(col){return col + ":name";}) ).visible(true);
 	self.datTable.columns(currentOffCols.map(function(col){return col + ":name";}) ).visible(false);
-	
+
 	if(this.chart){
 		var showCols = [];
 		var hidCols = [];
@@ -213,7 +215,7 @@ njhTable.prototype.updateAllColumnsVisibility = function() {
 		this.chart.show(showCols);
 		this.chart.hide(hidCols);
 	}
-}; 
+};
 
 njhTable.prototype.addChart = function(){
 	this.addedChart = true;
@@ -277,7 +279,3 @@ njhTable.prototype.enactPoorMansHeatMap = function(){
 	});
 
 };
-
-
-
-
