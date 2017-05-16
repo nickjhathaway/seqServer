@@ -142,6 +142,8 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 	ret.emplace_back(removeGaps());
 	ret.emplace_back(countBases());
 
+	ret.emplace_back(deleteSeqs());
+
 
 
 	ret.emplace_back(openSession());
@@ -471,6 +473,44 @@ void SeqApp::countBasesPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
+void SeqApp::deleteSeqsPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	Json::Value ret;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (positions.empty()) {
+				//positions to delete is empty, nothing to delete
+				ret["uid"] = uid;
+				ret["sessionUID"] = bib::json::toJson(sessionUID);
+				ret["positions"] = bib::json::toJson(positions);
+				ret["selected"] = bib::json::toJson(selected);
+			} else {
+				seqsBySession_[sessionUID]->deleteSeqs(uid, positions);
+				ret = seqsBySession_[sessionUID]->getJson(uid);
+			}
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+	auto retBody = bib::json::writeAsOneLine(ret);
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
+
+
+
 void SeqApp::minTreeDataDetailedPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
@@ -673,6 +713,23 @@ void SeqApp::countBasesHandler(
 					}));
 }
 
+void SeqApp::deleteSeqsHandler(
+		std::shared_ptr<restbed::Session> session) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto request = session->get_request();
+	auto heads = request->get_headers();
+	size_t content_length = 0;
+	request->get_header("Content-Length", content_length);
+	session->fetch(content_length,
+			std::function<
+					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+							deleteSeqsPostHandler(ses, body);
+					}));
+}
+
+
+
 
 /*
  * 	void (std::shared_ptr<restbed::Session> session,
@@ -709,6 +766,22 @@ std::shared_ptr<restbed::Resource> SeqApp::countBases() {
 	return resource;
 
 }
+
+std::shared_ptr<restbed::Resource> SeqApp::deleteSeqs() {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	auto resource = std::make_shared<restbed::Resource>();
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "deleteSeqs" } }));
+	resource->set_method_handler("POST",
+			std::function<void(std::shared_ptr<restbed::Session>)>(
+					[this](std::shared_ptr<restbed::Session> ses) {
+		deleteSeqsHandler(ses);
+					}));
+
+	return resource;
+
+}
+
+
 
 
 

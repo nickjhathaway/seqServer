@@ -345,6 +345,11 @@ Json::Value SeqCache::removeGaps(const std::string & uid,
 	return getJson(uid, positions, selected);
 }
 
+void SeqCache::deleteSeqs(const std::string & uid,
+				const std::vector<uint32_t> & positions){
+	cache_.at(uid).erase(positions);
+}
+
 Json::Value SeqCache::rComplement(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected) {

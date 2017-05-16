@@ -321,14 +321,19 @@ njhSeqView.prototype.initActionButtons = function(){
 			.attr("class", "deselectAllBut btn btn-info");
 
 	deselectButton.on("click", function(){
-		self.selected.clear();
-		self.updateHighlightedSeqs();
-		if(self.qualChart){
-			d34.select(self.topDivName + " .qualChart")
-				.datum([])
-				.call(self.qualChart);
-		}
+		self.clearSelected();
 	});
+}
+
+njhSeqView.prototype.clearSelected = function(){
+	var self = this
+	self.selected.clear();
+	self.updateHighlightedSeqs();
+	if(self.qualChart){
+		d34.select(self.topDivName + " .qualChart")
+			.datum([])
+			.call(self.qualChart);
+	}
 }
 
 njhSeqView.prototype.initDefaultMenu = function(){
@@ -490,9 +495,9 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	}));
 	menuItems["Counts"] = countOptions;
 	
-
+	var editOptions = [];
 	if(!this.protein){
-		var editOptions = [];
+		
 		editOptions.push(new njhMenuItem("complement", "Reverse Complement",function(){
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 			if (self.selected.size > 0){
@@ -509,8 +514,35 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		  		gifLoading.remove();
 		  	}).catch(logRequestError);
 		}));
-		menuItems["Edit"] = editOptions;
 	}
+	
+	editOptions.push(new njhMenuItem("deleteSeqs", "Delete Sequences",function(){
+		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
+		if (self.selected.size > 0){
+			postData["selected"] = setToArray(self.selected);
+			postData["positions"] = [];
+			for(selPos in postData["selected"]){
+				postData["positions"].push(self.seqData["seqs"][postData["selected"][selPos]]["position"])
+			}
+		}
+		var gifLoading = prsentDivGifLoading();
+		postJSON('/' + rName + '/deleteSeqs', postData).then(function (seqData) {
+			//console.log(seqData);
+			  self.currentSeq = 0;
+			  self.currentBase = 0;
+			  if(seqData["numReads"] < self.seqStart){
+			  	self.seqStart = Math.max(seqData["numReads"] - self.nSeqs, 0);
+			  }
+			  if(seqData["maxLen"] < self.baseStart){
+			  	self.baseStart = 0;
+			  }
+				self.clearSelected();
+	  		self.updateData(seqData);
+	  		gifLoading.remove();
+	  	}).catch(logRequestError);
+	}));
+	
+	menuItems["Edit"] = editOptions;
 
 	if(!this.protein){
 		var translateOptions = [];

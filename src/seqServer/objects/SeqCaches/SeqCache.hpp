@@ -189,6 +189,9 @@ public:
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);
 
+	void deleteSeqs(const std::string & uid,
+				const std::vector<uint32_t> & positions);
+
 };
 
 
