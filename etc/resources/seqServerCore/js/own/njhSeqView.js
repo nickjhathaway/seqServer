@@ -50,7 +50,9 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 			.attr("class", "dropdown-toggle")
 			.text(menuKeys[mk])
 				.append("b").attr("class", "caret");
-		var currentMenuItemOptions = currentMenuItem.append("ul").attr("class", "dropdown-menu").attr("id", menuKeys[mk] + "Drops");
+		var currentMenuItemOptions = currentMenuItem.append("ul")
+			.attr("class", "dropdown-menu")
+			.attr("id", menuKeys[mk] + "Drops");
 		for (it in menuContent[menuKeys[mk]]){
 			currentMenuItemOptions.append("li")
 				.append("a")
@@ -62,12 +64,12 @@ function createSeqMenu(idNameOfParentDiv, menuContent){
 	}
 }
 
-   
+
 
 
 function njhSeqView(viewName, seqData, params){
 	//need to add style and html, currently just there
-	//retrieve html elements 
+	//retrieve html elements
 	this.topDivName = viewName;
 	this.topDiv = document.getElementById(viewName);
 	$(this.topDiv).addClass("SeqView");
@@ -84,17 +86,17 @@ function njhSeqView(viewName, seqData, params){
 	this.showingQualChart = (params.hasOwnProperty("addQualChart")) ?  params["addQualChart"] : false;
     //setting name offset for displaying sequence names
 	this.nameOffSet = 10 * this.cw;
-	
+
 	var self = this;
-	
+
 	//set up input seqData;
 	this.seqData = seqData;
 	this.sessionUID = seqData["sessionUID"];
 	this.uid = seqData["uid"];
 	this.selected = new Set(seqData["selected"]);
-	this.protein = seqData["seqType"] === "protein"; 
+	this.protein = seqData["seqType"] === "protein";
 	this.bColors = seqData["baseColor"];
-	
+
 	//order for the next three is important
 	//initiate the menu
 	this.initDefaultMenu();
@@ -148,7 +150,7 @@ njhSeqView.prototype.addQualChart = function(){
 	d34.select(this.topDivName + " .qualChart")
 		.datum(qualData)
 		.call(self.qualChart);
-	
+
 	this.showingQualChart = true;
 	d34.select(this.topDivName +  " .njhSeqViewMenu #ShowQual").text("Hide Qual Graph");
 }
@@ -162,23 +164,23 @@ njhSeqView.prototype.toggleQualChart = function(){
 }
 
 njhSeqView.prototype.initDrawArea = function(){
-	var self = this;	
-	
+	var self = this;
+
 	this.masterDivd34 = d34.select(this.topDivName)
 		.append("div")
 		.attr("class", "SeqViewDrawAreaDiv");
-	
+
 	this.masterDivd34
 		.append("div")
 		.attr("class", "rightSliderDiv")
 		.append("input")
 			.attr("class", "rightSlider")
 			.attr("data-slider-id", "rightSliderCon");
-	
+
 	this.seqSvgMaster = this.masterDivd34
 		.append("svg")
 		.attr("class", "NjhSeqViewerMainSvg")
-		
+
 	this.seqSvgMasterG = this.seqSvgMaster
 		.append("g")
 		    .style("font-family", "Arial")
@@ -191,31 +193,31 @@ njhSeqView.prototype.initDrawArea = function(){
 		.append("input")
 			.attr("class", "bottomSlider")
 			.attr("data-slider-id", "bottomSliderCon");
-	
+
 	this.masterDivd34
 		.append("div")
 		.attr("class", "pop-up");
-	
+
 	this.popTab = createTable(this.topDivName + " .pop-up")
 		.style("border", "1px solid black")
 		.style("box-shadow", "3px 3px 1.5px rgba(0, 0, 0, 0.5)")
 		.attr("id", "pop-up-tab");
-	
+
 	this.masterDivd34
 		.append("div")
 		.attr("class", "select")
 		.style("width", this.cw + 2 + "px")
 		.style("height", this.ch + 2 + "px");
-	
+
 	this.chart = d34.select(this.topDivName).append("div")
 		.attr("class", "qualChart");
-	
+
 	d34.select(this.topDivName).append("div")
 		.attr("id", "minTreeChartTop");
 
-	
+
 	this.masterDiv = this.masterDivd34.node();
-	
+
 	this.rSlider = $(".rightSlider", this.masterDiv)[0];
 	this.bSlider = $(".bottomSlider", this.masterDiv)[0];
 	this.rSliderDiv = $(".rightSliderDiv", this.masterDiv)[0];
@@ -225,13 +227,13 @@ njhSeqView.prototype.initDrawArea = function(){
 }
 
 njhSeqView.prototype.initActionButtons = function(){
-	var self = this;	
+	var self = this;
 	//add download fasta button
 	d34.select(this.topDivName).append("div")
 		.attr("class", "downFastaDiv")
 		.style("margin", "5px")
 		.style("float", "left");
-	
+
 	var linkButton = d34.select(this.topDivName + " .downFastaDiv")
 		.append("button")
 			.attr("class", "fastaSaveButton btn btn-success");
@@ -243,7 +245,7 @@ njhSeqView.prototype.initActionButtons = function(){
 			.text(" Download Fasta");
 	linkButton.append("a")
 			.attr("class", "fastaDownLink");
-	
+
 	linkButton.on("click", function(){
 	    var mainTable = [];
 	    if (self.selected.size > 0){
@@ -254,7 +256,7 @@ njhSeqView.prototype.initActionButtons = function(){
 				mainTable.push([self.seqData["seqs"][sels[i]]["seq"]]);
 			}
 	    }else{
-		    for (i = 0; i <self.seqData["seqs"].length ; i++) { 
+		    for (i = 0; i <self.seqData["seqs"].length ; i++) {
 				mainTable.push([">" + self.seqData["seqs"][i]["name"]]);
 				mainTable.push([self.seqData["seqs"][i]["seq"]]);
 			}
@@ -264,7 +266,7 @@ njhSeqView.prototype.initActionButtons = function(){
 	  	linkButton.select(".fastaDownLink").attr("download", self.seqData["uid"] + ".fasta");
 	  	linkButton.select(".fastaDownLink").attr("href", fastaData).node().click();
 	});
-	
+
 	if(!this.protein){
 		//add fastq download button
 		d34.select(this.topDivName).append("div")
@@ -294,7 +296,7 @@ njhSeqView.prototype.initActionButtons = function(){
 					mainTable.push([self.seqData["seqs"][sels[i]]["qual"].map(function(q){return String.fromCharCode(33 + q);}).join("")]);
 				}
 		    }else{
-			    for (i = 0; i <self.seqData["seqs"].length ; i++) { 
+			    for (i = 0; i <self.seqData["seqs"].length ; i++) {
 					mainTable.push(["@" + self.seqData["seqs"][i]["name"]]);
 					mainTable.push([self.seqData["seqs"][i]["seq"]]);
 					mainTable.push(["+"]);
@@ -307,14 +309,14 @@ njhSeqView.prototype.initActionButtons = function(){
 		  	fastqLinkButton.select(".fastqDownLink").attr("href", fastqData).node().click();
 		});
 	}
-	//add de-select all button 
+	//add de-select all button
 	d34.select(this.topDivName).append("div")
 		.attr("class", "deselectDiv")
 		.style("margin", "5px")
 		.style("float", "left");
-	
 
-	
+
+
 	var deselectButton = d34.select(this.topDivName + " .deselectDiv")
 		.append("button")
 			.text("Clear Selection")
@@ -337,7 +339,7 @@ njhSeqView.prototype.clearSelected = function(){
 }
 
 njhSeqView.prototype.initDefaultMenu = function(){
-	
+
 	this.menuDiv = d34.select(this.topDivName).append("div")
 		.attr("class", "njhSeqViewMenu");
 	var locSplit = window.location.toString().split(/[\/]+/);
@@ -475,7 +477,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	  	}).catch(logRequestError);
 	}));
 	menuItems["Aln"] = alnOptions;
-	
+
 	var countOptions = [];
 	countOptions.push(new njhMenuItem("countBases", "Count Bases",function(){
 		var mainData;
@@ -494,10 +496,10 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	  	}).catch(logRequestError);
 	}));
 	menuItems["Counts"] = countOptions;
-	
+
 	var editOptions = [];
 	if(!this.protein){
-		
+
 		editOptions.push(new njhMenuItem("complement", "Reverse Complement",function(){
 			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 			if (self.selected.size > 0){
@@ -515,7 +517,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		  	}).catch(logRequestError);
 		}));
 	}
-	
+
 	editOptions.push(new njhMenuItem("deleteSeqs", "Delete Sequences",function(){
 		var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
 		if (self.selected.size > 0){
@@ -541,7 +543,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	  		gifLoading.remove();
 	  	}).catch(logRequestError);
 	}));
-	
+
 	menuItems["Edit"] = editOptions;
 
 	if(!this.protein){
@@ -568,12 +570,12 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			    }
 			    gifLoading.remove();
 			    $("#" + self.topDivName.substring(1) + "_protein").scrollView();
-		  		
-		  	}).catch(logRequestError);			    
+
+		  	}).catch(logRequestError);
 		}));
 		menuItems["Translate"] = translateOptions;
 	}
-	
+
 	if(!this.protein){
 		var qualityOptions = [];
 		var qualMenuTitle = "Hide Qual Graph";
@@ -640,9 +642,9 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		menuItems["Diff-Graph"] = windowOptions;
 	}
 
-	
+
 	createSeqMenu(this.topDivName + " .njhSeqViewMenu", menuItems);
-	
+
 	if(!this.protein){
 		var startSiteInput = d34.select(self.topDivName +  " .njhSeqViewMenu #TranslateDrops")
 		.append("li")
@@ -726,7 +728,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#treeHeightForm').submit(function(e){
 	        e.preventDefault();
 	    });
-		
+
 		var numDiffInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 			.append("li")
 				.append("div")
@@ -754,7 +756,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#numDiffForm').submit(function(e){
 	        e.preventDefault();
 	    });
-		
+
 	// gap open
 	var gapOpenInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 	.append("li")
@@ -811,7 +813,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	$('#gapExtForm').submit(function(e){
         e.preventDefault();
   });
-	
+
 	// match
 	var matchInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 	.append("li")
@@ -868,9 +870,9 @@ njhSeqView.prototype.initDefaultMenu = function(){
 	$('#mismatchForm').submit(function(e){
         e.preventDefault();
   });
-	
-	}	
-	
+
+	}
+
 };
 
 njhSeqView.prototype.updateData = function(inputSeqData){
@@ -887,7 +889,7 @@ njhSeqView.prototype.updateData = function(inputSeqData){
 	}else{
 		this.seqData = inputSeqData;
 	}
-	
+
 	this.uid = inputSeqData["uid"];
 	this.needToPaint = true;
 	this.setUp();
@@ -933,9 +935,9 @@ njhSeqView.prototype.setDrawAreaSize = function(){
 njhSeqView.prototype.updateDrawAreaSize = function(){
 	var changingHeight = (window.innerHeight - 60) * 0.80;
 	var changingWidth =  (window.innerWidth  - 10) * 0.98;
-	
+
 	this.setDrawAreaSize();
-	
+
 	if(changingHeight > parseInt(this.seqSvgMaster.style("height"))){
 		this.needToPaint = true;
 	}
@@ -960,7 +962,7 @@ njhSeqView.prototype.paint = function(){
 njhSeqView.prototype.setSelector = function(){
 	if(this.currentBase >= this.baseStart &&
 			this.currentBase < this.baseStart + this.nBases &&
-			this.currentSeq >= this.seqStart && 
+			this.currentSeq >= this.seqStart &&
 			this.currentSeq < this.seqStart + this.nSeqs){
 		$(this.sel).css('top', (this.currentSeq - this.seqStart) * this.ch - 1);
 		$(this.sel).css('left', (this.currentBase - this.baseStart) * this.cw + this.nameOffSet - 1);
@@ -975,30 +977,30 @@ njhSeqView.prototype.updateHighlightedSeqs = function(){
 	var selectors = d34.select(this.topDivName + " .SeqViewDrawAreaDiv")
 		.selectAll(".seqHighlight")
 		.data(setToArray(this.selected));
-	
+
 	selectors.exit()
 		.remove();
-	
-	
-	
+
+
+
 	var lowerBound = this.seqStart;
 	var upperBound = this.seqStart + this.nSeqs;
 	selectors.enter()
 		.append("div")
 		.attr("class", "seqHighlight")
-		.style("width", function(d){ 
+		.style("width", function(d){
 			return self.nameOffSet.toString() + "px";})
 		.style("height",function(d){ return self.ch.toString() + "px";})
 		.merge(selectors)
-			.style("visibility",function(d){ 
+			.style("visibility",function(d){
 				if(d >= lowerBound && d < upperBound){
 					return "visible";
 				}else{
 					return "hidden";
 				}})
-			.style("top", function(d){ 
+			.style("top", function(d){
 				if(d >= lowerBound && d < upperBound){
-					return ((d - self.seqStart) *self.ch).toString() + "px"; 
+					return ((d - self.seqStart) *self.ch).toString() + "px";
 				}else{
 					return 0;
 				}})
@@ -1042,8 +1044,8 @@ njhSeqView.prototype.setUpSliders = function(){
 		  self.needToPaint = true;
 		  self.baseStart = changeEvent.value.newValue;
 		  self.paint();
-	});  
-	
+	});
+
 	//setup seq slider
 	$(this.rSliderDiv).css("height", this.nSeqs * this.ch);
 	$(this.rSlider).css("height", this.nSeqs * this.ch);
@@ -1062,9 +1064,9 @@ njhSeqView.prototype.setUpSliders = function(){
 	  self.seqStart = changeEvent.value.newValue;
 	  self.paint();
 	});
-	
+
 };
-   
+
 njhSeqView.prototype.updateOnResize = function(){
 	var self = this;
   this.updateDrawArea();
@@ -1083,7 +1085,7 @@ njhSeqView.prototype.updateOnResize = function(){
 njhSeqView.prototype.clicked = function(e){
 	var self = this;
   var pt = getRelCursorPosition(e, this.seqSvgMaster.node());
-  if(pt[1] <= this.nSeqs * this.ch && 
+  if(pt[1] <= this.nSeqs * this.ch &&
   		pt[0] <= this.nBases * this.cw + this.nameOffSet){
   	this.currentSeq = Math.ceil(pt[1]/this.ch) + this.seqStart - 1;
     this.currentBase = Math.ceil(pt[0]/this.cw) - this.nameOffSet/this.cw + this.baseStart -1;
@@ -1101,7 +1103,7 @@ njhSeqView.prototype.clicked = function(e){
       }
   	}else{
   		if(this.qualChart){
-      	//draw line on current base position 
+      	//draw line on current base position
       	//this.qualChart. chart.setSelectLine(this.currentBase);
       	self.qualChart.selectedPos(self.currentBase);//
       	self.qualChart.selectline()
@@ -1114,7 +1116,7 @@ njhSeqView.prototype.clicked = function(e){
   	}
   }
 };
-    
+
 njhSeqView.prototype.setUpListeners = function(){
 	var self = this;
    	// add scrolling listener
@@ -1126,7 +1128,7 @@ njhSeqView.prototype.setUpListeners = function(){
 			//console.log(deltas);
 			var changeInBaseStart = false;
 			if(deltas["deltaX"] > 0){
-				//positive x delta, decrease base start 
+				//positive x delta, decrease base start
 				if(self.baseStart > 0){
 					changeInBaseStart = true;
 					self.baseStart = Math.max(0, self.baseStart - deltas["deltaX"]);
@@ -1181,9 +1183,9 @@ njhSeqView.prototype.setUpListeners = function(){
 			var deltas = getDeltasFromEvent(d34.event);
 			mouseScroll(deltas);
 		});
-	
+
 	this.seqSvgMaster.node().addEventListener("mousedown", this.clicked.bind(this), false);
-	//add hover box listening 
+	//add hover box listening
 	var moveLeft = 20;
 	var moveDown = 10;
 	$(this.seqSvgMaster.node()).hover(function(e) {
@@ -1191,7 +1193,7 @@ njhSeqView.prototype.setUpListeners = function(){
 	}, function() {
 	  $(self.popUp).hide();
 	});
-	
+
 	$(this.seqSvgMaster.node()).mouseleave(function(e) {
 		$(self.popUp).hide();
 	});
@@ -1200,7 +1202,7 @@ njhSeqView.prototype.setUpListeners = function(){
 	    if(currentPoint[1] <= self.nSeqs * self.ch &&
 	    		currentPoint[0] <= self.nBases * self.cw + self.nameOffSet){
 	    	var viewWidth = self.nBases * self.cw + self.nameOffSet;
-	    	
+
 	    	if(currentPoint[0] > viewWidth/2){
 	    		moveLeft = - parseFloat(d34.select(self.popUp).style("width")) - 20
 	    	}else{
@@ -1220,26 +1222,26 @@ njhSeqView.prototype.setUpListeners = function(){
         }
 	});
 };
-   	
+
 //draw all necessary seqs
 njhSeqView.prototype.paintSeqs = function(){
 	if(this.needToPaint){
 		var self = this;
-		
+
 		//add any extra seq groups that need to be added
 		var sGroups = self.seqSvgMasterG
 			.selectAll(".seqGroup")
 			.data(self.seqData["seqs"].slice(self.seqStart, self.seqStart + this.nSeqs));
 		sGroups.exit()
 			.remove();
-		var enteringSeqGroups = 
+		var enteringSeqGroups =
 			sGroups
 			.enter()
 				.append("g")
 					.attr("class", "seqGroup")
 					.attr("transform", function(d,i){
 						return "translate(0," + i * self.ch + ")"});
-		
+
 		enteringSeqGroups.append("rect")
 			.attr("class", "nameRects")
 			.attr("width", this.nameOffSet)
@@ -1259,17 +1261,17 @@ njhSeqView.prototype.paintSeqs = function(){
 			.style("-khtml-user-select","none")
 			.style("user-select","none")
 			.style("pointer-events", "none");
-		
+
 
 		//get rid of any groups that no longer have data
 		var seqGroups = self.seqSvgMasterG
 			.selectAll(".seqGroup")
-		
+
 		//set the names
 		seqGroups.selectAll(".nameText")
 			.text(function(d){
 				return d34.select(this.parentNode).datum()["name"];});
-		
+
 		seqGroups.selectAll(".nameRects")
 			.on("mouseenter", function(d, i){
 				updateTable(self.popTab,[{"name": d34.select(this.parentNode).datum()["name"]}], ["name"]);
@@ -1307,19 +1309,19 @@ njhSeqView.prototype.paintSeqs = function(){
 	        			self.selected.delete(self.currentSeq);
 	        		}else{
 	        			self.selected.add(self.currentSeq);
-	        		}	
+	        		}
 				}
 				self.updateHighlightedSeqs();
 			});
 		//add bases rects that need to be added
 		var seqGroupsBaseRects = seqGroups.selectAll(".baseRects")
 			.data(function(d){ return d["seq"].slice(self.baseStart, self.baseStart + self.nBases);});
-		
+
 		//get rid of any base that no longer have data
 		seqGroupsBaseRects
 			.exit()
 			.remove();
-		
+
 		seqGroupsBaseRects
 			.enter()
 				.append("rect")
@@ -1328,7 +1330,7 @@ njhSeqView.prototype.paintSeqs = function(){
 				.attr("width", this.cw)
 				.attr("height", this.ch)
 				.on("mouseenter", function(d,i){
-					updateTable(self.popTab,[{"name": d34.select(this.parentNode).datum()["name"], 
+					updateTable(self.popTab,[{"name": d34.select(this.parentNode).datum()["name"],
 											 "base": d,
 											 "qual": d34.select(this.parentNode).datum()["qual"][self.baseStart + i],
 											 "pos" : (self.baseStart + i)}], ["name", "base", "qual", "pos"]);
@@ -1336,7 +1338,7 @@ njhSeqView.prototype.paintSeqs = function(){
 					.attr("fill", function(d){ return self.bColors[d]})
 					.attr("stroke",function(d){ return self.bColors[d]});
 
-				
+
 		//add base texts that need to be added;
 		var seqGroupsBaseTexts = seqGroups.selectAll(".baseTexts")
 			.data(function(d){ return d["seq"].slice(self.baseStart, self.baseStart + self.nBases);});
@@ -1368,84 +1370,80 @@ njhSeqView.prototype.paintSeqs = function(){
 njhSeqView.prototype.updateBaseSeqPos = function(){
 	var baseStartPos = this.seqSvgMasterG.selectAll("#baseStartPos")
 		.data([this.baseStart]);
-	
+
 	baseStartPos.enter()
 		.append("text")
 			.attr("id","baseStartPos" )
 			.attr("fill", "#000000");
-			
-	
+
+
 	baseStartPos.attr("x", this.nameOffSet)
 		.attr("y", this.nSeqs * this.ch + 2 + this.ch/2.0)
 		.text(function(d){return d;});
-	
+
 	var baseStopPos = this.seqSvgMasterG.selectAll("#baseStopPos")
 		.data([this.baseStart + this.nBases - 1]);
-	
+
 	baseStopPos.enter()
 		.append("text")
 			.attr("id","baseStopPos" )
 			.attr("fill", "#000000");
-			
-	
+
+
 	baseStopPos.attr("x", this.nameOffSet + this.nBases * this.cw - this.cw )
 		.attr("y", this.nSeqs * this.ch + 2 + this.ch/2.0)
 		.text(function(d){return d;});
-	
+
 	var seqStartPos = this.seqSvgMasterG.selectAll("#seqStartPos")
 		.data([this.seqStart]);
-	
+
 	seqStartPos.enter()
 		.append("text")
 			.attr("id","seqStartPos" )
 			.attr("fill", "#000000");
-	
+
 	seqStartPos
 		.attr("x", this.nameOffSet + this.nBases * this.cw + this.cw/5.0)
 		.attr("y", this.ch/1.5)
 		.text(function(d){return d;});
-	
+
 	var seqStopPos = this.seqSvgMasterG.selectAll("#seqStopPos")
 		.data([this.seqStart + this.nSeqs - 1]);
-	
+
 	seqStopPos.enter()
 		.append("text")
 			.attr("id","seqStopPos" )
 			.attr("fill", "#000000")
 			;
-	
+
 	seqStopPos.attr("x", this.nameOffSet + this.nBases * this.cw + this.cw/5.0 )
 		.attr("y", this.nSeqs * this.ch - this.ch/4.0)
 			.text(function(d){return d;});
 };
-   
+
 njhSeqView.prototype.paintSelectedSeq = function(){
   	var logInfo ="";
 	if(this.currentBase < 0){
-   		logInfo = "name: "  
+   		logInfo = "name: "
    			+ this.seqData["seqs"][this.currentSeq]["name"];
 	} else {
-   		logInfo = "name: "  
+   		logInfo = "name: "
 	        	+ this.seqData["seqs"][this.currentSeq]["name"]
-	        	+ " base: "  + this.seqData["seqs"][this.currentSeq]["seq"][this.currentBase] 
+	        	+ " base: "  + this.seqData["seqs"][this.currentSeq]["seq"][this.currentBase]
 	        	+ " qual: " +  this.seqData["seqs"][this.currentSeq]["qual"][this.currentBase]
 	        	+ " pos: " + this.currentBase;
 	}
-	
+
 	var selectedSeqInfo = this.seqSvgMasterG.selectAll("#selectedSeqInfo")
 		.data([logInfo]);
-	
+
 	selectedSeqInfo.enter()
 		.append("text")
 			.attr("id","selectedSeqInfo" )
-			.attr("fill", "#000000");	
-	
+			.attr("fill", "#000000");
+
 	selectedSeqInfo
 		.attr("x", this.nameOffSet + this.cw + 20 )
 		.attr("y", (this.nSeqs)*this.ch + 2  + this.ch/2)
 			.text(function(d){return d;});
 };
-   
-
-
-   
