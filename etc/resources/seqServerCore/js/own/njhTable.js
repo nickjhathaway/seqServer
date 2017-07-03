@@ -22,8 +22,8 @@
 
 //instanceof d3.selection
 
-function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart){
-	var self = this;
+function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart) {
+  	var self = this;
 	this.masterDivId = masterDivId;
 	this.tableMasterData = tableMasterData;
 	this.tableDownloadStubName = tableDownloadStubName;
@@ -98,7 +98,7 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 		this.addChart();
 	}
 
-	
+
 	//uncheck the hidden columns
 	if(this.tableMasterData["hideOnStartColNames"].length > 0){
 		this.tableMasterData["hideOnStartColNames"].forEach(function(d){

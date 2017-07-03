@@ -403,7 +403,7 @@ void SeqApp::translateToProteinPostHandler(
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	uint32_t start = bib::lexical_cast<uint32_t>(postData["start"].asString());
+	uint32_t start = estd::stou(postData["start"].asString());
 	bool complement = false;
 	bool reverse = false;
 	Json::Value seqData;
@@ -525,7 +525,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	const int32_t mismatch = postData["mismatch"].asInt();
 	const uint32_t numThreads = postData["numThreads"].asUInt();
 	//uint32_t numThreads = 2;
-	uint32_t numDiffs = bib::lexical_cast<uint32_t>(postData["numDiff"].asString());
+	uint32_t numDiffs = estd::stou(postData["numDiff"].asString());
 	Json::Value seqData;
 	std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
 	std::mutex alignerLock;
