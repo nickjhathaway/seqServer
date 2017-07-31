@@ -128,8 +128,11 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	setUp.processDebug();
 	setUp.processVerbose();
 	corePars.setCoreOptions(setUp);
+	setUp.description_ = "Start an HTML viewer on a sequence file";
+	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fasta input.fasta");
+	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fastq input.fastq --port 8882 --name ssv2");
 	setUp.finishSetUp(std::cout);
-
+	bib::files::checkExistenceThrow(setUp.pars_.ioOptions_.firstName_);
   //
   Json::Value appConfig;
   corePars.addCoreOpts(appConfig);
