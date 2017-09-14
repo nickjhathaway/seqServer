@@ -119,14 +119,15 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 			"etc/resources").string();
 	bool protein = false;
 	bibseq::seqSetUp setUp(inputCommands);
+	setUp.processDebug();
+	setUp.processVerbose();
 	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "--resourceDirName",
 			"Name of the resource Directory where the js and html is located",
 			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
-	setUp.processDefaultReader(true);
-	setUp.processDebug();
-	setUp.processVerbose();
+	setUp.processReadInNames(true);
+
 	corePars.setCoreOptions(setUp);
 	setUp.description_ = "Start an HTML viewer on a sequence file";
 	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fasta input.fasta");
