@@ -278,9 +278,10 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		aligner & alignerObj,
 		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 		std::mutex & alignerLock,
-		uint32_t numThreads) {
+		uint32_t numThreads,
+		bool justBest) {
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
-			uid,alignerObj, aligners, alignerLock, numThreads, numDiff);
+			uid,alignerObj, aligners, alignerLock, numThreads, numDiff, justBest);
 }
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		uint32_t numDiff) {
@@ -294,9 +295,10 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		const std::vector<uint32_t> & positions, uint32_t numDiff,
 		aligner & alignerObj,
 		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
-		std::mutex & alignerLock, uint32_t numThreads) {
+		std::mutex & alignerLock, uint32_t numThreads,
+		bool justBest) {
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
-			positions, uid, alignerObj, aligners, alignerLock, numThreads, numDiff);
+			positions, uid, alignerObj, aligners, alignerLock, numThreads, numDiff, justBest);
 }
 
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,

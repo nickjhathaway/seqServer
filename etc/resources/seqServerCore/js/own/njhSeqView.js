@@ -622,6 +622,8 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			postData["gapExtPen"] = parseInt($("#gapExtInput", self.topDivName).val());
 			postData["match"] = parseInt($("#matchInput", self.topDivName).val());
 			postData["mismatch"] = parseInt($("#mismatchInput", self.topDivName).val());
+			postData["justBest"] = $("#justBestInput", self.topDivName)[0].checked;
+
 			var gifLoading = prsentDivGifLoading();
 			postJSON('/' + rName + '/minTreeDataDetailed', postData).then(function (seqData){
 				njhDiffTree(seqData, self.topDivName + " #minTreeChart", "minTreeChart",
@@ -869,7 +871,32 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		.attr("value", "-2");
 	$('#mismatchForm').submit(function(e){
         e.preventDefault();
-  });
+  	});
+  	// just best
+	var justBestInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
+		.append("li")
+			.append("div")
+				.attr("style", "padding: 3px 20px;")
+			.append("form")
+				.attr("class", "form-inline")
+				.attr("id", "justBestForm");
+	justBestInput
+		.append("label")
+			.attr("id", "justBestLabel")
+			.attr("for","justBestInput")
+			.attr("class", "control-label")
+			.text("Only Show Best Connections")
+			.style("margin-right", "5px");;
+	var divjustBestInputGroup = justBestInput
+		.append("div")
+			.attr("class", "input-group");
+	divjustBestInputGroup.append("input")
+		.attr("type", "checkbox")
+		//.attr("class", "form-control")
+		.attr("id", "justBestInput");
+	$('#justBestForm').submit(function(e){
+        e.preventDefault();
+  	});
 
 	}
 

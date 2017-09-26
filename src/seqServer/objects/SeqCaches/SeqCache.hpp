@@ -153,7 +153,8 @@ public:
 			aligner & alignerObj,
 			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 			std::mutex & alignerLock,
-			uint32_t numThreads);
+			uint32_t numThreads,
+			bool justBest);
 
 	Json::Value getJson(const std::string & uid);
 
@@ -181,7 +182,8 @@ public:
 			aligner & alignerObj,
 			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 			std::mutex & alignerLock,
-			uint32_t numThreads);
+			uint32_t numThreads,
+			bool justBest);
 	Json::Value minTreeDataDetailed(const std::string & uid,
 				const std::vector<uint32_t> & positions,
 				uint32_t numDiff);

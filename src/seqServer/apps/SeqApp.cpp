@@ -524,6 +524,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	const int32_t match = postData["match"].asInt();
 	const int32_t mismatch = postData["mismatch"].asInt();
 	const uint32_t numThreads = postData["numThreads"].asUInt();
+	const bool justBest = postData["justBest"].asBool();
 	//uint32_t numThreads = 2;
 	uint32_t numDiffs = estd::stou(postData["numDiff"].asString());
 	Json::Value seqData;
@@ -542,7 +543,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 			if (selected.empty()) {
 				/**@todo add alignment caching */
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, numDiffs,
-						alignerObj, aligners, alignerLock, numThreads);
+						alignerObj, aligners, alignerLock, numThreads, justBest);
 
 				table infoTab(VecStr {"Comparison", "var1-name", "var2-name", "type", "var1-pos",
 						"var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual",
@@ -568,7 +569,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
 			} else {
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
-						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads);
+						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads, justBest);
 				table infoTab(VecStr{"Comparison", "var1-name", "var2-name","type", "var1-pos","var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual", "totalDiffs"});
 				for(const auto & node : seqData["nodes"]){
 					if("indel" == node["type"].asString()){
