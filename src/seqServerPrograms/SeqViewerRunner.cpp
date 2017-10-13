@@ -97,7 +97,7 @@ void error_handler(const int statusCode, const std::exception& exception,
 		const std::shared_ptr<restbed::Session>& session) {
 	std::cerr << "statusCode: " << statusCode << std::endl;
 	std::cerr << exception.what() << std::endl;
-	if(session->is_open()){
+	if(session != nullptr && session->is_open()){
 		session->close(statusCode, exception.what(), { { "Server", "Restbed" } });
 	}
 }
