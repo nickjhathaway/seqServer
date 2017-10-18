@@ -14,7 +14,7 @@
 
 namespace bibseq {
 
-class SeqServerRunner : public bib::progutils::oneRing {
+class SeqServerRunner : public bib::progutils::OneRing {
  public:
 	SeqServerRunner();
 

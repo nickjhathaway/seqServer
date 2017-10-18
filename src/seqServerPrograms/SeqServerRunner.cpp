@@ -18,7 +18,7 @@ namespace bibseq {
 
 
 SeqServerRunner::SeqServerRunner()
-    : bib::progutils::oneRing(
+    : bib::progutils::OneRing(
     		{
 					addRing<SeqViewerRunner>()
     		},
@@ -29,4 +29,4 @@ SeqServerRunner::SeqServerRunner()
 
 }  // namespace bibseq
 
-
+//bib::progutils::oneRing

@@ -103,7 +103,7 @@ void error_handler(const int statusCode, const std::exception& exception,
 }
 
 SeqViewerRunner::SeqViewerRunner()
-    : bib::progutils::programRunner(
+    : bib::progutils::ProgramRunner(
     		std::map<std::string, funcInfo>{
 					 addFunc("seqViewer", SeqViewerRunner::RunSeqViewer, false)
            },//
