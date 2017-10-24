@@ -21,6 +21,8 @@ public:
 			const std::string & body);
 	static std::multimap<std::string, std::string> initiateAppJsonHeader(
 			const std::string & body);
+	static std::multimap<std::string, std::string> initiatePlainTxtHeader(
+			const std::string & body);
 
 	static std::multimap<std::string, std::string> initiateTxtJavascriptHeader(
 			const uint32_t & length);
@@ -30,6 +32,9 @@ public:
 			const uint32_t & length);
 	static std::multimap<std::string, std::string> initiateAppJsonHeader(
 			const uint32_t & length);
+	static std::multimap<std::string, std::string> initiatePlainTxtHeader(
+			const uint32_t & length);
+
 };
 
 

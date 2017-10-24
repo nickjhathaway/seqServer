@@ -144,6 +144,7 @@ public:
 	Json::Value muscle(const std::string & uid);
 	Json::Value removeGaps(const std::string & uid);
 	Json::Value rComplement(const std::string & uid);
+	Json::Value countBases(const std::string & uid);
 
 	Json::Value translate(const std::string & uid, bool complement, bool reverse,
 			uint64_t start);
@@ -152,7 +153,8 @@ public:
 			aligner & alignerObj,
 			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 			std::mutex & alignerLock,
-			uint32_t numThreads);
+			uint32_t numThreads,
+			bool justBest);
 
 	Json::Value getJson(const std::string & uid);
 
@@ -160,6 +162,8 @@ public:
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected,
 			const std::string & sortOption);
+	Json::Value countBases(const std::string & uid,
+			const std::vector<uint32_t> & positions);
 	Json::Value muscle(const std::string & uid,
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);
@@ -178,13 +182,17 @@ public:
 			aligner & alignerObj,
 			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 			std::mutex & alignerLock,
-			uint32_t numThreads);
+			uint32_t numThreads,
+			bool justBest);
 	Json::Value minTreeDataDetailed(const std::string & uid,
 				const std::vector<uint32_t> & positions,
 				uint32_t numDiff);
 	Json::Value getJson(const std::string & uid,
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);
+
+	void deleteSeqs(const std::string & uid,
+				const std::vector<uint32_t> & positions);
 
 };
 

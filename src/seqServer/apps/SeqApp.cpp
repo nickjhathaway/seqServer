@@ -140,12 +140,20 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 	ret.emplace_back(complementSeqs());
 	ret.emplace_back(minTreeDataDetailed());
 	ret.emplace_back(removeGaps());
+	ret.emplace_back(countBases());
+
+	ret.emplace_back(deleteSeqs());
+
+
 
 	ret.emplace_back(openSession());
 	ret.emplace_back(closeSession());
 
 	return ret;
 }
+
+
+
 
 SeqApp::~SeqApp() {
 
@@ -395,7 +403,7 @@ void SeqApp::translateToProteinPostHandler(
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
-	uint32_t start = bib::lexical_cast<uint32_t>(postData["start"].asString());
+	uint32_t start = estd::stou(postData["start"].asString());
 	bool complement = false;
 	bool reverse = false;
 	Json::Value seqData;
@@ -427,6 +435,82 @@ void SeqApp::translateToProteinPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
+
+
+
+
+void SeqApp::countBasesPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	Json::Value ret;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (positions.empty()) {
+				ret =  seqsBySession_[sessionUID]->countBases(uid);
+			} else {
+				ret =  seqsBySession_[sessionUID]->countBases(uid, positions);
+			}
+			ret["uid"] = uid;
+			ret["sessionUID"] = bib::json::toJson(sessionUID);
+			ret["positions"] = bib::json::toJson(positions);
+			ret["selected"] = bib::json::toJson(selected);
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+	auto retBody = bib::json::writeAsOneLine(ret);
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
+void SeqApp::deleteSeqsPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	Json::Value ret;
+	if (bib::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (positions.empty()) {
+				//positions to delete is empty, nothing to delete
+				ret["uid"] = uid;
+				ret["sessionUID"] = bib::json::toJson(sessionUID);
+				ret["positions"] = bib::json::toJson(positions);
+				ret["selected"] = bib::json::toJson(selected);
+			} else {
+				seqsBySession_[sessionUID]->deleteSeqs(uid, positions);
+				ret = seqsBySession_[sessionUID]->getJson(uid);
+			}
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+	auto retBody = bib::json::writeAsOneLine(ret);
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
+
+
+
 void SeqApp::minTreeDataDetailedPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
@@ -440,22 +524,27 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	const int32_t match = postData["match"].asInt();
 	const int32_t mismatch = postData["mismatch"].asInt();
 	const uint32_t numThreads = postData["numThreads"].asUInt();
+	const bool justBest = postData["justBest"].asBool();
 	//uint32_t numThreads = 2;
-	uint32_t numDiffs = bib::lexical_cast<uint32_t>(postData["numDiff"].asString());
-
+	uint32_t numDiffs = estd::stou(postData["numDiff"].asString());
 	Json::Value seqData;
+	std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
+	std::mutex alignerLock;
+	uint64_t maxSize = 0;
 	if (bib::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
-				/**@todo add alignment caching */
-				uint64_t maxSize = 0;
 				seqsBySession_[sessionUID]->getMaxLen(uid, maxSize);
-				aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
-						substituteMatrix(match, mismatch));
-				std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
-				std::mutex alignerLock;
+			}else{
+				seqsBySession_[sessionUID]->getMaxLen(uid, positions, maxSize);
+			}
+			aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
+									substituteMatrix(match, mismatch));
+			if (selected.empty()) {
+				/**@todo add alignment caching */
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, numDiffs,
-						alignerObj, aligners, alignerLock, numThreads);
+						alignerObj, aligners, alignerLock, numThreads, justBest);
+
 				table infoTab(VecStr {"Comparison", "var1-name", "var2-name", "type", "var1-pos",
 						"var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual",
 						"totalDiffs" });
@@ -479,14 +568,8 @@ void SeqApp::minTreeDataDetailedPostHandler(
 				}
 				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
 			} else {
-				uint64_t maxSize = 0;
-				seqsBySession_[sessionUID]->getMaxLen(uid, positions, maxSize);
-				aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
-						substituteMatrix(match, mismatch));
-				std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
-				std::mutex alignerLock;
 				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
-						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads);
+						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads, justBest);
 				table infoTab(VecStr{"Comparison", "var1-name", "var2-name","type", "var1-pos","var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual", "totalDiffs"});
 				for(const auto & node : seqData["nodes"]){
 					if("indel" == node["type"].asString()){
@@ -529,8 +612,7 @@ void SeqApp::sortHandler(std::shared_ptr<restbed::Session> session) {
 	//std::string sortBy
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
@@ -544,8 +626,7 @@ void SeqApp::muscleAlnHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
@@ -559,8 +640,7 @@ void SeqApp::removeGapsHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
@@ -574,8 +654,7 @@ void SeqApp::complementSeqsHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
@@ -590,8 +669,7 @@ void SeqApp::translateToProteinHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
@@ -606,8 +684,7 @@ void SeqApp::minTreeDataDetailedHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
@@ -615,6 +692,44 @@ void SeqApp::minTreeDataDetailedHandler(
 						minTreeDataDetailedPostHandler(ses, body);
 					}));
 }
+
+void SeqApp::countBasesHandler(
+		std::shared_ptr<restbed::Session> session) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto request = session->get_request();
+	auto heads = request->get_headers();
+	size_t content_length = request->get_header("Content-Length", 0);
+	session->fetch(content_length,
+			std::function<
+					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+							countBasesPostHandler(ses, body);
+					}));
+}
+
+void SeqApp::deleteSeqsHandler(
+		std::shared_ptr<restbed::Session> session) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto request = session->get_request();
+	auto heads = request->get_headers();
+	size_t content_length = request->get_header("Content-Length", 0);
+	session->fetch(content_length,
+			std::function<
+					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+							deleteSeqsPostHandler(ses, body);
+					}));
+}
+
+
+
+
+/*
+ * 	void (std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
+			void (std::shared_ptr<restbed::Session> session);
+			std::shared_ptr<restbed::Resource> ()
+ */
 
 std::shared_ptr<restbed::Resource> SeqApp::sort() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
@@ -630,6 +745,39 @@ std::shared_ptr<restbed::Resource> SeqApp::sort() {
 	return resource;
 
 }
+
+std::shared_ptr<restbed::Resource> SeqApp::countBases() {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	auto resource = std::make_shared<restbed::Resource>();
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "countBases" } }));
+	resource->set_method_handler("POST",
+			std::function<void(std::shared_ptr<restbed::Session>)>(
+					[this](std::shared_ptr<restbed::Session> ses) {
+		countBasesHandler(ses);
+					}));
+
+	return resource;
+
+}
+
+std::shared_ptr<restbed::Resource> SeqApp::deleteSeqs() {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	auto resource = std::make_shared<restbed::Resource>();
+	resource->set_path(UrlPathFactory::createUrl( { { rootName_ }, { "deleteSeqs" } }));
+	resource->set_method_handler("POST",
+			std::function<void(std::shared_ptr<restbed::Session>)>(
+					[this](std::shared_ptr<restbed::Session> ses) {
+		deleteSeqsHandler(ses);
+					}));
+
+	return resource;
+
+}
+
+
+
+
+
 
 std::shared_ptr<restbed::Resource> SeqApp::muscleAln() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
@@ -730,8 +878,7 @@ void SeqApp::closeSessionHandler(
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	auto heads = request->get_headers();
-	size_t content_length = 0;
-	request->get_header("Content-Length", content_length);
+	size_t content_length = request->get_header("Content-Length", 0);
 	session->fetch(content_length,
 			std::function<
 					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(

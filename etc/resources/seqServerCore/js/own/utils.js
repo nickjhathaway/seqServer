@@ -20,7 +20,7 @@
 //
 //
 
-String.prototype.replaceAll = function(str1, str2, ignore) 
+String.prototype.replaceAll = function(str1, str2, ignore)
 {
 	return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 }
@@ -82,7 +82,7 @@ function postJSON(url, postData) {
   		method: "POST",
   		params: postData,
   		headers: {"Content-Type" : "application/json"}}).then(JSON.parse).catch(function(err) {
-    console.log("getJSON failed for", url, err);
+    console.log("postJSON failed for", url, err);
     throw err;
   });
 }
@@ -225,7 +225,7 @@ var range = function(start, end, step) {
 
 	return range;
 
-}; 
+};
 
 
 
@@ -257,9 +257,9 @@ function addMouseScrollListener(obj, up, down) {
 
 function getDeltasFromEvent(eve){
 	var eo = d34.event;
-	var xy = eo.wheelDelta || -eo.detail; 
+	var xy = eo.wheelDelta || -eo.detail;
 	var x = eo.wheelDeltaX || (eo.axis==1?xy:0);
-	var y = eo.wheelDeltaY || (eo.axis==2?xy:0); 
+	var y = eo.wheelDeltaY || (eo.axis==2?xy:0);
 	return {deltaX:x,deltaY:y};
 }
 
@@ -270,9 +270,9 @@ var getRelCursorPosition = function(event, obj) {
 	var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft - Math.floor(objOffset.left);
 	var y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop - Math.floor(objOffset.top) + 1;
 	return [x, y];
-}; 
+};
 
-    
+
 
 function addDiv(parentId, childName) {
 	var div = d3.select(parentId)
@@ -282,7 +282,10 @@ function addDiv(parentId, childName) {
 };
 
 function addH1(selector, text){
-	d3.select(selector).append("h1").text(text);
+	return d3.select(selector).append("h1").text(text);
+}
+function addH3(selector, text){
+	return d3.select(selector).append("h3").text(text);
 }
 
 var sort_by = function(field, reverse, primer){
@@ -291,7 +294,7 @@ var sort_by = function(field, reverse, primer){
 
    return function (a,b) {
 	  var A = key(a), B = key(b);
-	  return ( (A < B) ? -1 : ((A > B) ? 1 : 0) ) * [-1,1][+!!reverse];                  
+	  return ( (A < B) ? -1 : ((A > B) ? 1 : 0) ) * [-1,1][+!!reverse];
    };
 };
 
@@ -339,7 +342,7 @@ function addGifLoading(divId){
 		.attr("class", "GifLoadingSymbolGif")
 		.attr("width", 200)
 		.attr("height", 200)
-		
+
 		.style("position", "absolute")
 		.style("opacity", 1)
 		.style("top", "50%")
@@ -382,7 +385,7 @@ function prsentDivGifLoading(){
 		.style("top", "0")
 		.style("left", 0)
 		//.style("z-index", "1000")
-		.attr("id", "PrsentingDivGifLoading");	
+		.attr("id", "PrsentingDivGifLoading");
 	//$("#PrsentingDivGifLoading").css("background-color", "rgba(204,204,204,204)");
 	addGifLoading(divSel);
 	return divSel;
@@ -410,9 +413,9 @@ function getRootName(){
 
 function setUpCloseSession(sessionID){
 	var rName = getRootName();
-	/**@todo need to figure out the subtles between the browsers and event calls, currently just this is just hack 
+	/**@todo need to figure out the subtles between the browsers and event calls, currently just this is just hack
 	 * to make the close session called for at least most of the time  */
-	
+
 	$(window).on('beforeunload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',
@@ -420,14 +423,14 @@ function setUpCloseSession(sessionID){
 	  		params: {"sessionUID" : sessionID },
 	  		headers: {"Content-Type" : "application/json"}
 	  	}).then(function (datums) {
-	  		console.log(JSON.parse(datums));
+	  		//console.log(JSON.parse(datums));
 	  	}).catch(function(err){
 	  		logRequestError(err);
 	  	});
 	});
 	if (navigator.userAgent.search("Firefox") >= 0){
 		//for some odd reason on firefox the beforeunload function call doesn't always complete but if you also do unload that will
-		//though sometimes both do end up happening and then chaos ensues 
+		//though sometimes both do end up happening and then chaos ensues
 		$(window).on('unload', function(){
 	  	makeRequest({
 	  		url: '/' + rName + '/closeSession',
@@ -435,7 +438,7 @@ function setUpCloseSession(sessionID){
 	  		params: {"sessionUID" : sessionID },
 	  		headers: {"Content-Type" : "application/json"}
 	  	}).then(function (datums) {
-	  		console.log(JSON.parse(datums));
+	  		//console.log(JSON.parse(datums));
 	  	}).catch(function(err){
 	  		logRequestError(err);
 	  	});
@@ -453,3 +456,16 @@ function escapeSpecialChars(inputStr){
 }
 
 
+
+function sort_unique(arr) {
+	//from http://stackoverflow.com/questions/4833651/javascript-array-sort-and-unique#4833835
+  if (arr.length === 0) return arr;
+  arr = arr.sort();
+  var ret = [arr[0]];
+  for (var i = 1; i < arr.length; ++i) { // start loop at 1 as element 0 can never be a duplicate
+      if (arr[i-1] !== arr[i]) {
+          ret.push(arr[i]);
+      }
+  }
+  return ret;
+}

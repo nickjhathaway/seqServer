@@ -36,7 +36,7 @@ public:
 
 };
 
-class SeqViewerRunner : public bib::progutils::programRunner {
+class SeqViewerRunner : public bib::progutils::ProgramRunner {
  public:
 	SeqViewerRunner();
 

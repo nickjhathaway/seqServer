@@ -118,7 +118,8 @@ void SeqCache::CacheRecord::muscle(){
 		}
 	}
 	bib::for_each_pos(*reads_,positions, [](readObject & read) {getSeqBase(read).removeGaps();});
-	sys::muscleSeqs(*reads_, positions);
+	Muscler musclerOperator;
+	musclerOperator.muscleSeqs(*reads_, positions);
 }
 
 void SeqCache::CacheRecord::removeGaps(){
@@ -143,7 +144,8 @@ void SeqCache::CacheRecord::muscle(const std::vector<uint32_t> & positions) {
 	reload();
 	bib::for_each_pos(*reads_, positions,
 			[](readObject & read) {getSeqBase(read).removeGaps();});
-	sys::muscleSeqs(*reads_, positions);
+	Muscler musclerOperator;
+	musclerOperator.muscleSeqs(*reads_, positions);
 }
 
 void SeqCache::CacheRecord::removeGaps(
@@ -260,14 +262,26 @@ Json::Value SeqCache::rComplement(const std::string & uid) {
 	return getJson(uid);
 }
 
+Json::Value SeqCache::countBases(const std::string & uid){
+	cache_.at(uid).reload();
+	charCounter counter;
+	for(const auto & seq : *(cache_.at(uid).reads_)){
+		counter.increaseCountByString(seq.seqBase_.seq_);
+	}
+	counter.resetAlphabet(false);
+	counter.setFractions();
+	return counter.toJson();
+}
+
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		uint32_t numDiff,
 		aligner & alignerObj,
 		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 		std::mutex & alignerLock,
-		uint32_t numThreads) {
+		uint32_t numThreads,
+		bool justBest) {
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
-			uid,alignerObj, aligners, alignerLock, numThreads, numDiff);
+			uid,alignerObj, aligners, alignerLock, numThreads, numDiff, justBest);
 }
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		uint32_t numDiff) {
@@ -281,9 +295,10 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		const std::vector<uint32_t> & positions, uint32_t numDiff,
 		aligner & alignerObj,
 		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
-		std::mutex & alignerLock, uint32_t numThreads) {
+		std::mutex & alignerLock, uint32_t numThreads,
+		bool justBest) {
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
-			positions, uid, alignerObj, aligners, alignerLock, numThreads, numDiff);
+			positions, uid, alignerObj, aligners, alignerLock, numThreads, numDiff, justBest);
 }
 
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
@@ -300,6 +315,24 @@ Json::Value SeqCache::sort(const std::string & uid,
 	return getJson(uid, positions, selected);
 }
 
+Json::Value SeqCache::countBases(const std::string & uid,
+		const std::vector<uint32_t> & positions) {
+	cache_.at(uid).reload();
+	charCounter counter;
+	auto seqs = cache_.at(uid).reads_;
+	for (auto pos : positions) {
+		if (pos >= seqs->size()) {
+			throw std::out_of_range { std::string(__PRETTY_FUNCTION__)
+					+ ": Error , out of range, pos: " + estd::to_string(pos) + ", size: "
+					+ estd::to_string(seqs->size()) };
+		}
+		counter.increaseCountByString((*seqs)[pos].seqBase_.seq_);
+	}
+	counter.resetAlphabet(false);
+	counter.setFractions();
+	return counter.toJson();
+}
+
 Json::Value SeqCache::muscle(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected) {
@@ -312,6 +345,11 @@ Json::Value SeqCache::removeGaps(const std::string & uid,
 		const std::vector<uint32_t> & selected) {
 	cache_.at(uid).removeGaps(positions);
 	return getJson(uid, positions, selected);
+}
+
+void SeqCache::deleteSeqs(const std::string & uid,
+				const std::vector<uint32_t> & positions){
+	cache_.at(uid).erase(positions);
 }
 
 Json::Value SeqCache::rComplement(const std::string & uid,

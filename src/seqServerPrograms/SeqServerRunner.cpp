@@ -18,15 +18,15 @@ namespace bibseq {
 
 
 SeqServerRunner::SeqServerRunner()
-    : bib::progutils::oneRing(
+    : bib::progutils::OneRing(
     		{
 					addRing<SeqViewerRunner>()
     		},
 				{
 
 				},//
-				"SeqServerRunner", "1", "5", "0") {}
+				"SeqServerRunner", "1", "5", "1") {}
 
 }  // namespace bibseq
 
-
+//bib::progutils::oneRing

@@ -199,10 +199,11 @@ d34.njh.LineChart = function() {
   function drawLines(){
   	var g = svg.select(".chart-group");
   	//re-adjust dims of the background rec
+  	var xMax = getMaxX(data);
   	if(data.length > 0){
   		g.select(".rect-wrap")
 				.attr("height", publicAttributes.yScale(getMinY(data)))
-				.attr("width", publicAttributes.xScale(getMaxX(data)))
+				.attr("width", publicAttributes.xScale(xMax))
   	}
 		var lineGroups = g.selectAll(".qual-line")
 				.data(data);
@@ -225,7 +226,6 @@ d34.njh.LineChart = function() {
 	    //add paths and labels for entering groupings;
 		g.on("mousemove", function(){		
 			var xPos = Math.floor(publicAttributes.xScale.invert(d34.mouse(this)[0]));
-			publicAttributes.tooltip.style("top", (d34.event.layerY-10)+"px").style("left",(d34.event.layerX+10)+"px");
 			var display = data.map(function(d){ 
 				 if(xPos < d[publicAttributes.yValue].length){
 					return {"name":d[publicAttributes.nameValue] ,
@@ -235,6 +235,12 @@ d34.njh.LineChart = function() {
 				 }
 			});
 			updateTableWithColors(publicAttributes.tooltipTab, display, ["name", "qual", "pos"]);
+			var xOffSet = 10;
+			if(xPos > xMax/2){
+				xOffSet = -10 - parseFloat(publicAttributes.tooltip.style("width"));
+			}
+			publicAttributes.tooltip.style("top", (d34.event.layerY-10)+"px").style("left",(d34.event.layerX+xOffSet)+"px");
+
 			svg.select(".chart-group")
 				.select(".njh-hoverline")
 				.attr("x1", publicAttributes.xScale(xPos))

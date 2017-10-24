@@ -26,6 +26,12 @@ std::multimap<std::string, std::string> HeaderFactory::initiateAppJsonHeader(
 		const std::string & body) {
 	return HeaderFactory::initiateAppJsonHeader(body.size());
 }
+std::multimap<std::string, std::string> HeaderFactory::initiatePlainTxtHeader(
+		const std::string & body){
+	return HeaderFactory::initiatePlainTxtHeader(body.size());
+}
+
+
 std::multimap<std::string, std::string> HeaderFactory::initiateTxtJavascriptHeader(
 		const uint32_t & length) {
 	return { {
@@ -48,6 +54,13 @@ std::multimap<std::string, std::string> HeaderFactory::initiateAppJsonHeader(
 		const uint32_t & length) {
 	return { {
 			"Content-Type", "application/json"}, {"Content-Length",
+			estd::to_string(length)}};
+}
+
+std::multimap<std::string, std::string> HeaderFactory::initiatePlainTxtHeader(
+		const uint32_t & length){
+	return { {
+			"Content-Type", "text/plain"}, {"Content-Length",
 			estd::to_string(length)}};
 }
 

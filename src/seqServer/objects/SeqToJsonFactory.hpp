@@ -103,7 +103,8 @@ public:
 	static Json::Value muscle(
 			std::vector<T> & reads, const std::string & uid) {
 		bib::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
-		sys::muscleSeqs(reads);
+		Muscler musclerOperator;
+		musclerOperator.muscleSeqs(reads);
 		return seqsToJson(reads, uid);
 	}
 
@@ -115,7 +116,8 @@ public:
 			const std::string & uid) {
 		bib::for_each_pos(reads, positions,
 				[](T & read) {getSeqBase(read).removeGaps();});
-		sys::muscleSeqs(reads, positions);
+		Muscler musclerOperator;
+		musclerOperator.muscleSeqs(reads, positions);
 		return seqsToJson(reads, positions, selected, uid);
 	}
 
@@ -225,7 +227,8 @@ public:
 			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 			std::mutex & alignerLock,
 			uint32_t numThreads,
-			uint32_t numDiff) {
+			uint32_t numDiff,
+			bool justBest) {
 		std::vector<T> selReads;
 		for (const auto & seq : reads) {
 			if(getSeqBase(seq).on_){
@@ -238,8 +241,9 @@ public:
 			settingLimits = true;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
 		}
+		bool doTies = true;
 		return genDetailMinTreeData(selReads, alignerObj, aligners, alignerLock,
-				numThreads, cutOff, settingLimits);
+				numThreads, cutOff, settingLimits, justBest, doTies);
 	}
 
 	template<typename T>
@@ -249,7 +253,8 @@ public:
 			std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 			std::mutex & alignerLock,
 			uint32_t numThreads,
-			uint32_t numDiff) {
+			uint32_t numDiff,
+			bool justBest) {
 		std::vector<T> selReads;
 		for (const auto & pos : positions) {
 			selReads.emplace_back(reads[pos]);
@@ -260,8 +265,9 @@ public:
 			settingLimits = true;
 			cutOff.distances_.overLappingEvents_ = numDiff + 1;
 		}
+		bool doTies = true;
 		return genDetailMinTreeData(selReads, alignerObj, aligners, alignerLock,
-				numThreads, cutOff, settingLimits);
+				numThreads, cutOff, settingLimits, justBest, doTies);
 	}
 
 };

@@ -90,20 +90,20 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqViewer::getAllResources(){
 
 
 VecStr SeqViewer::requiredOptions() const{
-	return catenateVectors(super::requiredOptions(), VecStr{"resources", "ioOptions"});
+	return concatVecs(super::requiredOptions(), VecStr{"resources", "ioOptions"});
 }
 
 void error_handler(const int statusCode, const std::exception& exception,
 		const std::shared_ptr<restbed::Session>& session) {
 	std::cerr << "statusCode: " << statusCode << std::endl;
 	std::cerr << exception.what() << std::endl;
-	if(session->is_open()){
+	if(session != nullptr && session->is_open()){
 		session->close(statusCode, exception.what(), { { "Server", "Restbed" } });
 	}
 }
 
 SeqViewerRunner::SeqViewerRunner()
-    : bib::progutils::programRunner(
+    : bib::progutils::ProgramRunner(
     		std::map<std::string, funcInfo>{
 					 addFunc("seqViewer", SeqViewerRunner::RunSeqViewer, false)
            },//
@@ -119,17 +119,21 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 			"etc/resources").string();
 	bool protein = false;
 	bibseq::seqSetUp setUp(inputCommands);
+	setUp.processDebug();
+	setUp.processVerbose();
 	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "--resourceDirName",
 			"Name of the resource Directory where the js and html is located",
 			!bfs::exists(resourceDirName));
 	bib::appendAsNeeded(resourceDirName, "/");
-	setUp.processDefaultReader(true);
-	setUp.processDebug();
-	setUp.processVerbose();
-	corePars.setCoreOptions(setUp);
-	setUp.finishSetUp(std::cout);
+	setUp.processReadInNames(true);
 
+	corePars.setCoreOptions(setUp);
+	setUp.description_ = "Start an HTML viewer on a sequence file";
+	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fasta input.fasta");
+	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fastq input.fastq --port 8882 --name ssv2");
+	setUp.finishSetUp(std::cout);
+	bib::files::checkExistenceThrow(setUp.pars_.ioOptions_.firstName_);
   //
   Json::Value appConfig;
   corePars.addCoreOpts(appConfig);
@@ -150,7 +154,7 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	settings->set_port(corePars.port_);
 	//settings->set_root(name);
 	settings->set_default_header("Connection", "close");
-
+	settings->set_worker_limit( 4 );
 	restbed::Service service;
 	service.set_error_handler(error_handler);
 	for(const auto & resource : resources){
