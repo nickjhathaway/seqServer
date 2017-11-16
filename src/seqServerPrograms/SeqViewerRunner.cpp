@@ -133,7 +133,12 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fasta input.fasta");
 	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fastq input.fastq --port 8882 --name ssv2");
 	setUp.finishSetUp(std::cout);
-	bib::files::checkExistenceThrow(setUp.pars_.ioOptions_.firstName_);
+	bib::files::checkExistenceThrow(setUp.pars_.ioOptions_.firstName_, __PRETTY_FUNCTION__);
+	if(bfs::is_directory(setUp.pars_.ioOptions_.firstName_)){
+		std::stringstream ss;
+		ss << __PRETTY_FUNCTION__ << ", error " << setUp.pars_.ioOptions_.firstName_ << " is a directory not a file " << "\n";
+		throw std::runtime_error{ss.str()};
+	}
   //
   Json::Value appConfig;
   corePars.addCoreOpts(appConfig);
