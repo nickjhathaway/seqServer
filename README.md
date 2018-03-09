@@ -1,13 +1,13 @@
 seqServer
 ================
-Version 1.5.1
+Version 1.5.2
 
 several content managers for serving up the results procuded by sequenceTools 
 
 # Installing
 
 
-requires clang-3.8 or gcc-5 and cmake (required by dependencies)
+requires clang-4.0 or gcc-7 and cmake (required by dependencies)
 
 ```bash
 git clone https://github.com/nickjhathaway/seqServer.git
