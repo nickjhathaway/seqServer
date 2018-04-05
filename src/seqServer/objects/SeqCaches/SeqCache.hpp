@@ -1,8 +1,7 @@
 #pragma once
 //
-// seqServer - A library for visualizing sequence results data
-// Copyright (C) 2012, 2015 Nicholas Hathaway <nicholas.hathaway@umassmed.edu>,
-// Jeffrey Bailey <Jeffrey.Bailey@umassmed.edu>
+// seqServer - A library for analyzing sequence data
+// Copyright (C) 2012-2018 Nicholas Hathaway <nicholas.hathaway@umassmed.edu>,
 //
 // This file is part of seqServer.
 //
