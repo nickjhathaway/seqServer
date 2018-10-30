@@ -174,8 +174,10 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	auto resources = viewerModel.getAllResources();
 
 	auto settings = std::make_shared<restbed::Settings>();
+
 	settings->set_port(corePars.port_);
 	//settings->set_root(name);
+
 	settings->set_default_header("Connection", "close");
 	settings->set_worker_limit( 4 );
 	restbed::Service service;
@@ -183,6 +185,8 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	for(const auto & resource : resources){
 		service.publish(resource);
 	}
+	std::cout << settings->get_bind_address() << std::endl;
+
 	try {
 		service.start(settings);
 	} catch (std::exception & e) {
