@@ -33,6 +33,8 @@ namespace bibseq {
 void SeqAppCorePars::setCoreOptions(seqSetUp & setUp){
 	setUp.setOption(port_, "--port", "Port Number to Serve On");
 	setUp.setOption(name_, "--name", "Name of root of the server");
+	setUp.setOption(bindAddress_, "--bindAddress", "Address to bind to, defaults to 127.0.0.1 (localhost)");
+
 	setUp.setOption(workingDir_, "--workingDir", "The working directory to store temporary files");
 	setUp.setOption(seqServerCore_, "-seqServerCore",
 			"Name of the seqServerCore Directory where the js and html for the core seqServer code is located",
@@ -47,6 +49,7 @@ void SeqAppCorePars::setCoreOptions(seqSetUp & setUp){
 
 void SeqAppCorePars::addCoreOpts(Json::Value & config){
 	config["name"] =  bib::json::toJson(name_);
+	config["bindAddress"] = bib::json::toJson(bindAddress_);
   config["port"] = bib::json::toJson(port_);
   config["workingDir"] = bib::json::toJson(workingDir_);
   config["seqServerCore"] = bib::json::toJson(seqServerCore_);
@@ -56,7 +59,7 @@ void SeqAppCorePars::addCoreOpts(Json::Value & config){
 
 
 std::string SeqAppCorePars::getAddress() const {
-	return bib::pasteAsStr("localhost:", port_, name_);
+	return bib::pasteAsStr(bindAddress_, ":", port_, name_);
 }
 
 
