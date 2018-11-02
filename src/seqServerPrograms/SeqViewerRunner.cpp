@@ -131,6 +131,7 @@ SeqViewerRunner::SeqViewerRunner()
 int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands){
 	std::string clusDir = "";
 	SeqAppCorePars corePars;
+	std::string bindAddress  ="127.0.0.1";
 	corePars.port_ = 8881;
 	corePars.name_ = "ssv";
 	std::string resourceDirName = bib::files::make_path(seqServer::getSeqServerInstallDir(),
@@ -139,6 +140,7 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	bibseq::seqSetUp setUp(inputCommands);
 	setUp.processDebug();
 	setUp.processVerbose();
+	setUp.setOption(bindAddress, "--bindAddress", "Bind Address");
 	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "--resourceDirName",
 			"Name of the resource Directory where the js and html is located",
@@ -177,16 +179,14 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 
 	settings->set_port(corePars.port_);
 	//settings->set_root(name);
-
+	settings->set_bind_address(bindAddress);
 	settings->set_default_header("Connection", "close");
-	settings->set_worker_limit( 4 );
+	settings->set_worker_limit(4);
 	restbed::Service service;
 	service.set_error_handler(error_handler);
-	for(const auto & resource : resources){
+	for (const auto & resource : resources) {
 		service.publish(resource);
 	}
-	std::cout << settings->get_bind_address() << std::endl;
-
 	try {
 		service.start(settings);
 	} catch (std::exception & e) {
