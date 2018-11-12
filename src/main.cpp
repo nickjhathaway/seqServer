@@ -28,7 +28,7 @@
 
 int main(int argc, char** argv){
 	try{
-	  bibseq::SeqServerRunner serRunner;
+	  njhseq::SeqServerRunner serRunner;
 	  return serRunner.run(argc, argv);
 	}catch (std::exception & e) {
 		std::cerr << e.what() << std::endl;

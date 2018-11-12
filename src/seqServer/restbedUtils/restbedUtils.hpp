@@ -30,11 +30,11 @@
 #include "seqServer/utils.h"
 #include <restbed>
 
-namespace bibseq {
+namespace njhseq {
 
 Json::Value bytesToJson(const restbed::Bytes & body);
 
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 

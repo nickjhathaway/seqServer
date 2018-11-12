@@ -27,7 +27,7 @@
 
 #include "UrlPathFactory.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 
 std::string UrlPathFactory::createUrl(const std::vector<PathSeg> & segments){
@@ -40,7 +40,7 @@ std::string UrlPathFactory::createUrl(const std::vector<PathSeg> & segments){
 			pathParams.emplace_back("{" + seg.name_ + ": " + seg.pat_ + "}");
 		}
 	}
-	ret = bib::files::make_path(pathParams).string();
+	ret = njh::files::make_path(pathParams).string();
 
 	return ret;
 }
@@ -51,4 +51,4 @@ const std::string UrlPathFactory::pat_word_ { "[A-Za-z]+" };
 const std::string UrlPathFactory::pat_nums_ { "[0-9]+" };
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */

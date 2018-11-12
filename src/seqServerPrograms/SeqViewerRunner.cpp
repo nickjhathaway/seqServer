@@ -27,14 +27,14 @@
 
 #include "seqServer/apps/pars.h"
 
-namespace bibseq {
+namespace njhseq {
 
 
 SeqViewer::SeqViewer(const Json::Value & config) : SeqApp(config){
 
 	protein_ = config_["protein"].asBool();
 	pages_.emplace("mainPageJs",
-					bib::files::make_path(config["resources"], "ssv/ssv.js"));
+					njh::files::make_path(config["resources"], "ssv/ssv.js"));
 
 	//read in data and set to the json
 	seqs_->addToCache(rootName_.substr(1), SeqIOOptions(config["ioOptions"].asString()));
@@ -56,16 +56,16 @@ void SeqViewer::seqDataHandler(std::shared_ptr<restbed::Session> session){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto sesUid = startSeqCacheSession();
 	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
-	seqData["sessionUID"] = bib::json::toJson(sesUid);
+	seqData["sessionUID"] = njh::json::toJson(sesUid);
 	if(protein_){
-		seqData["seqType"] = bib::json::toJson("protein");
-		seqData["baseColor"] = bib::json::parse(ColorFactory::AAColorsJson);
+		seqData["seqType"] = njh::json::toJson("protein");
+		seqData["baseColor"] = njh::json::parse(ColorFactory::AAColorsJson);
 	}else{
-		seqData["seqType"] = bib::json::toJson("dna");
-		seqData["baseColor"] = bib::json::parse(ColorFactory::DNAColorsJson);
+		seqData["seqType"] = njh::json::toJson("dna");
+		seqData["baseColor"] = njh::json::parse(ColorFactory::DNAColorsJson);
 	}
 
-	auto body = bib::json::writeAsOneLine(seqData);
+	auto body = njh::json::writeAsOneLine(seqData);
 	const std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(body);
 	session->close(restbed::OK, body, headers);
@@ -121,29 +121,29 @@ void error_handler(const int statusCode, const std::exception& exception,
 }
 
 SeqViewerRunner::SeqViewerRunner()
-    : bib::progutils::ProgramRunner(
+    : njh::progutils::ProgramRunner(
     		std::map<std::string, funcInfo>{
 					 addFunc("seqViewer", SeqViewerRunner::RunSeqViewer, false)
            },//
           "SeqViewerRunner") {}
 
 
-int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands){
+int SeqViewerRunner::RunSeqViewer(const njh::progutils::CmdArgs & inputCommands){
 	std::string clusDir = "";
 	SeqAppCorePars corePars;
 	corePars.port_ = 8881;
 	corePars.name_ = "ssv";
-	std::string resourceDirName = bib::files::make_path(seqServer::getSeqServerInstallDir(),
+	std::string resourceDirName = njh::files::make_path(seqServer::getSeqServerInstallDir(),
 			"etc/resources").string();
 	bool protein = false;
-	bibseq::seqSetUp setUp(inputCommands);
+	njhseq::seqSetUp setUp(inputCommands);
 	setUp.processDebug();
 	setUp.processVerbose();
 	setUp.setOption(protein, "--protein", "Viewing Protein");
 	setUp.setOption(resourceDirName, "--resourceDirName",
 			"Name of the resource Directory where the js and html is located",
 			!bfs::exists(resourceDirName));
-	bib::appendAsNeeded(resourceDirName, "/");
+	njh::appendAsNeeded(resourceDirName, "/");
 	setUp.processReadInNames(true);
 
 	corePars.setCoreOptions(setUp);
@@ -151,7 +151,7 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fasta input.fasta");
 	setUp.examples_.emplace_back("MASTERPROGRAM SUBPROGRAM --fastq input.fastq --port 8882 --name ssv2");
 	setUp.finishSetUp(std::cout);
-	bib::files::checkExistenceThrow(setUp.pars_.ioOptions_.firstName_, __PRETTY_FUNCTION__);
+	njh::files::checkExistenceThrow(setUp.pars_.ioOptions_.firstName_, __PRETTY_FUNCTION__);
 	if(bfs::is_directory(setUp.pars_.ioOptions_.firstName_)){
 		std::stringstream ss;
 		ss << __PRETTY_FUNCTION__ << ", error " << setUp.pars_.ioOptions_.firstName_ << " is a directory not a file " << "\n";
@@ -161,9 +161,9 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
   Json::Value appConfig;
   corePars.addCoreOpts(appConfig);
   auto optsJson = setUp.pars_.ioOptions_.toJson();
-  appConfig["ioOptions"] =  bib::json::toJson(optsJson.toStyledString());
-  appConfig["resources"] = bib::json::toJson(resourceDirName);
-  appConfig["protein"] = bib::json::toJson(protein);
+  appConfig["ioOptions"] =  njh::json::toJson(optsJson.toStyledString());
+  appConfig["resources"] = njh::json::toJson(resourceDirName);
+  appConfig["protein"] = njh::json::toJson(protein);
 
   if(setUp.pars_.verbose_){
     std::cout <<  corePars.getAddress()<< std::endl;
@@ -195,4 +195,4 @@ int SeqViewerRunner::RunSeqViewer(const bib::progutils::CmdArgs & inputCommands)
 
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */

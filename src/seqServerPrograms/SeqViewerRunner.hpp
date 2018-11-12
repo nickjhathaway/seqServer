@@ -28,11 +28,11 @@
 
 
 
-namespace bibseq {
+namespace njhseq {
 
 class SeqViewer: public SeqApp {
 
-	typedef bibseq::SeqApp super;
+	typedef njhseq::SeqApp super;
 
 	bool protein_;
 
@@ -54,11 +54,11 @@ public:
 
 };
 
-class SeqViewerRunner : public bib::progutils::ProgramRunner {
+class SeqViewerRunner : public njh::progutils::ProgramRunner {
  public:
 	SeqViewerRunner();
 
-	static int RunSeqViewer(const bib::progutils::CmdArgs & inputCommands);
+	static int RunSeqViewer(const njh::progutils::CmdArgs & inputCommands);
 
 };
 
@@ -67,5 +67,5 @@ class SeqViewerRunner : public bib::progutils::ProgramRunner {
 
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 

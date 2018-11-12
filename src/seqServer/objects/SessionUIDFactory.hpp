@@ -30,10 +30,10 @@
 
 
 
-namespace bibseq {
+namespace njhseq {
 class SessionUIDFactory {
 
-	bib::randomGenerator gen_;
+	njh::randomGenerator gen_;
 	std::vector<uint32_t> sessionUids_;
 	std::shared_timed_mutex mut_;
 
@@ -47,4 +47,4 @@ public:
 };
 
 
-}  // namespace bibseq
+}  // namespace njhseq

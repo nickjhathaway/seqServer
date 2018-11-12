@@ -28,7 +28,7 @@
 #include "seqServer/utils.h"
 
 
-namespace bibseq {
+namespace njhseq {
 
 class UrlPathFactory {
 public:
@@ -52,5 +52,5 @@ public:
 
 };
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 

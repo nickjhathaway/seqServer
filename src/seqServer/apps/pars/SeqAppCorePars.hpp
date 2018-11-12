@@ -27,7 +27,7 @@
 
 #include "seqServer/utils.h"
 
-namespace bibseq {
+namespace njhseq {
 
 /**@brief simple struct to store core parameters for seq apps
  *
@@ -63,6 +63,6 @@ struct SeqAppCorePars {
 
 };
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 

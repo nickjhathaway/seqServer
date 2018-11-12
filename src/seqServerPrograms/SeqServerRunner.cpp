@@ -30,13 +30,13 @@
 
 #include "SeqServerRunner.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 
 
 
 SeqServerRunner::SeqServerRunner()
-    : bib::progutils::OneRing(
+    : njh::progutils::OneRing(
     		{
 					addRing<SeqViewerRunner>()
     		},
@@ -45,6 +45,6 @@ SeqServerRunner::SeqServerRunner()
 				},//
 				"SeqServerRunner", "1", "5", "3") {}
 
-}  // namespace bibseq
+}  // namespace njhseq
 
-//bib::progutils::oneRing
+//njh::progutils::oneRing

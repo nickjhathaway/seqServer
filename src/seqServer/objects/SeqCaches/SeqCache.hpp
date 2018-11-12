@@ -27,7 +27,7 @@
 
 #include "seqServer/utils.h"
 
-namespace bibseq {
+namespace njhseq {
 
 
 class SeqCache {
@@ -199,7 +199,7 @@ public:
 
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 
 
 

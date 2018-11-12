@@ -30,14 +30,14 @@
 #include "seqServerPrograms/SeqViewerRunner.hpp"
 
 
-namespace bibseq {
+namespace njhseq {
 
-class SeqServerRunner : public bib::progutils::OneRing {
+class SeqServerRunner : public njh::progutils::OneRing {
  public:
 	SeqServerRunner();
 
 };
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 

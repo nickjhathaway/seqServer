@@ -25,10 +25,10 @@
  *      Author: nickhathaway
  */
 
-#include <bibseq.h>
-#include <bibcpp.h>
+#include <njhseq.h>
+#include <njhcpp.h>
 
-namespace bibseq {
+namespace njhseq {
 namespace bfs = boost::filesystem;
 std::vector<bfs::path> getOwnFiles(const std::string & dir, const std::string & ext);
 std::vector<bfs::path> getLibFiles(const std::string & dir, const std::string & ext);
@@ -42,7 +42,7 @@ std::string getSeqServerInstallCoreDir();
 
 }  // namespace seqServer
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 
 
 
