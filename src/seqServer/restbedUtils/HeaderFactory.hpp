@@ -26,7 +26,7 @@
 //
 #include "seqServer/utils.h"
 
-namespace bibseq {
+namespace njhseq {
 
 class HeaderFactory{
 
@@ -57,7 +57,7 @@ public:
 
 
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 
 

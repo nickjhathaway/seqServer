@@ -27,7 +27,7 @@
 #include "seqServer/utils.h"
 
 
-namespace bibseq {
+namespace njhseq {
 
 
 
@@ -38,7 +38,7 @@ public:
 		LogMessage(const std::string & funcName, std::ostream & out, bool debug,
 				uint32_t indentLevel, std::shared_ptr<LogMessageFactory> lmf);
 
-		std::unique_ptr<bib::scopedMessage> mess_;
+		std::unique_ptr<njh::scopedMessage> mess_;
 		std::shared_ptr<LogMessageFactory> lmf_;
 
 		~LogMessage();
@@ -67,5 +67,5 @@ public:
 
 };
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 

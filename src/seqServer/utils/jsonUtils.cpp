@@ -26,7 +26,7 @@
 
 #include "jsonUtils.hpp"
 
-namespace bibseq {
+namespace njhseq {
 Json::Value dotToJson(const std::string& dotFilename) {
 	std::ifstream dot(dotFilename);
 	std::unordered_map<std::string, uint32_t> nameIndex;
@@ -59,7 +59,7 @@ Json::Value dotToJson(const std::string& dotFilename) {
 					}
 					for (const auto &at : attrs) {
 						if (at.first == "color") {
-							links[linkCount]["color"] = bib::replaceString(
+							links[linkCount]["color"] = njh::replaceString(
 									trimEndWhiteSpaceReturn(at.second), "\"", "");
 						}
 					}
@@ -82,10 +82,10 @@ Json::Value dotToJson(const std::string& dotFilename) {
 					}
 					for (const auto &at : attrs) {
 						if (at.first == "fillcolor") {
-							nodes[nodeCount]["color"] = bib::replaceString(
+							nodes[nodeCount]["color"] = njh::replaceString(
 									trimEndWhiteSpaceReturn(at.second), "\"", "");
 						} else if (at.first == "width") {
-							nodes[nodeCount]["size"] = bib::lexical_cast<double, std::string>(
+							nodes[nodeCount]["size"] = njh::lexical_cast<double, std::string>(
 									trimEndWhiteSpaceReturn(at.second));
 						}
 					}
@@ -95,22 +95,22 @@ Json::Value dotToJson(const std::string& dotFilename) {
 		}
 	} else {
 		std::stringstream ss;
-		ss << bib::bashCT::bold
-				<< bib::bashCT::red
+		ss << njh::bashCT::bold
+				<< njh::bashCT::red
 				<< "Error in opening " << dotFilename <<
-				bib::bashCT::reset << std::endl;
+				njh::bashCT::reset << std::endl;
 		throw std::runtime_error{ss.str()};
 	}
 	return graph;
 }
 
-Json::Value tableToJsonByRow(const bibseq::table & tab,
+Json::Value tableToJsonByRow(const njhseq::table & tab,
 		const std::string mainColName, const VecStr & initialVisibleColumns,
 		const VecStr & excludeFromNum) {
 
 	auto columnNamesMod = tab.columnNames_;
 	for (auto & col : columnNamesMod) {
-		col = bib::replaceString(col, ".", "_");
+		col = njh::replaceString(col, ".", "_");
 	}
 
 	Json::Value ret;
@@ -122,9 +122,9 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 		auto & outTab = ret["tab"];
 		std::unordered_map<uint32_t, bool> numCheck;
 		for (const auto & colPos : iter::range<uint32_t>(columnNamesMod.size())) {
-			numCheck[colPos] = bibseq::isVecOfDoubleStr(tab.getColumn(colPos));
+			numCheck[colPos] = njhseq::isVecOfDoubleStr(tab.getColumn(colPos));
 			if (numCheck[colPos]) {
-				if (!bib::in(columnNamesMod[colPos], excludeFromNum)) {
+				if (!njh::in(columnNamesMod[colPos], excludeFromNum)) {
 					numericCols.emplace_back(columnNamesMod[colPos]);
 				}
 			}
@@ -133,17 +133,17 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 		for (const auto & rowPos : iter::range<uint32_t>(tab.content_.size())) {
 			for (const auto & colPos : iter::range<uint32_t>(columnNamesMod.size())) {
 				if (numCheck[colPos]) {
-					outTab[rowPos][columnNamesMod[colPos]] = bib::lexical_cast<double>(
+					outTab[rowPos][columnNamesMod[colPos]] = njh::lexical_cast<double>(
 							tab.content_[rowPos][colPos]);
 				} else {
 					outTab[rowPos][columnNamesMod[colPos]] = tab.content_[rowPos][colPos];
 				}
 			}
 		}
-		ret["numericColNames"] = bib::json::toJson(numericCols);
+		ret["numericColNames"] = njh::json::toJson(numericCols);
 	}
 
-	ret["columnNames"] = bib::json::toJson(columnNamesMod);
+	ret["columnNames"] = njh::json::toJson(columnNamesMod);
 
 
 	/**@todo hide checks for presence of actual names for mainColName and hideOnSTartColNames*/
@@ -152,24 +152,24 @@ Json::Value tableToJsonByRow(const bibseq::table & tab,
 	VecStr hideOnStartColNames;
 	if(!initialVisibleColumns.empty()){
 		for(const auto & col : columnNamesMod){
-			if(!bib::in(col, initialVisibleColumns)){
+			if(!njh::in(col, initialVisibleColumns)){
 				hideOnStartColNames.emplace_back(col);
 			}
 		}
 	}
-	ret["initialVisibleColumns"] = bib::json::toJson(initialVisibleColumns);
-	ret["hideOnStartColNames"] = bib::json::toJson(hideOnStartColNames);
+	ret["initialVisibleColumns"] = njh::json::toJson(initialVisibleColumns);
+	ret["hideOnStartColNames"] = njh::json::toJson(hideOnStartColNames);
 	return ret;
 }
 
-Json::Value tableToJsonColumnWise(const bibseq::table & tab){
+Json::Value tableToJsonColumnWise(const njhseq::table & tab){
 	Json::Value ret;
 	std::unordered_map<uint32_t, bool> numCheck;
 	for(const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())){
-		if(bibseq::isVecOfDoubleStr(tab.getColumn(colPos))){
-			ret[tab.columnNames_[colPos]] = bib::json::toJson(bib::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos)));
+		if(njhseq::isVecOfDoubleStr(tab.getColumn(colPos))){
+			ret[tab.columnNames_[colPos]] = njh::json::toJson(njh::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos)));
 		}else{
-			ret[tab.columnNames_[colPos]] = bib::json::toJson(tab.getColumn(colPos));
+			ret[tab.columnNames_[colPos]] = njh::json::toJson(tab.getColumn(colPos));
 		}
 	}
 	return ret;
@@ -180,7 +180,7 @@ Json::Value tableToJsonColumnWise(const bibseq::table & tab){
 std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData) {
 	std::vector<uint32_t> selected { };
 	if (postData.isMember("selected")) {
-		selected = bib::json::jsonArrayToVec(postData["selected"],
+		selected = njh::json::jsonArrayToVec(postData["selected"],
 				std::function<uint32_t(const Json::Value &)>(
 						[](const Json::Value & val)->uint32_t {return val.asUInt();}));
 	}
@@ -191,11 +191,11 @@ std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData) {
 std::vector<uint32_t> parseJsonForPosition(const Json::Value & postData){
 	std::vector<uint32_t> positions { };
 	if (postData.isMember("positions")) {
-		positions = bib::json::jsonArrayToVec(postData["positions"],
+		positions = njh::json::jsonArrayToVec(postData["positions"],
 				std::function<uint32_t(const Json::Value &)>(
 						[](const Json::Value & val)->uint32_t {return val.asUInt();}));
 	}
 	return positions;
 }
 
-} /* namespace bibseq */
+} /* namespace njhseq */

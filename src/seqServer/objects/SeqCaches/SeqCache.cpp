@@ -28,7 +28,7 @@
 #include "seqServer/objects/SeqToJsonFactory.hpp"
 
 
-namespace bibseq {
+namespace njhseq {
 
 SeqCache::CacheRecord::CacheRecord(const std::string & uid,
 		const SeqIOOptions & ioOpts) :
@@ -116,32 +116,32 @@ void SeqCache::CacheRecord::muscle(){
 			positions.emplace_back(pos);
 		}
 	}
-	bib::for_each_pos(*reads_,positions, [](readObject & read) {getSeqBase(read).removeGaps();});
+	njh::for_each_pos(*reads_,positions, [](readObject & read) {getSeqBase(read).removeGaps();});
 	Muscler musclerOperator;
 	musclerOperator.muscleSeqs(*reads_, positions);
 }
 
 void SeqCache::CacheRecord::removeGaps(){
 	reload();
-	bib::for_each(*reads_, [](readObject & read) {getSeqBase(read).removeGaps();});
+	njh::for_each(*reads_, [](readObject & read) {getSeqBase(read).removeGaps();});
 }
 
 void SeqCache::CacheRecord::rComplement(){
 	reload();
-	bib::for_each(*reads_,
+	njh::for_each(*reads_,
 			[]( readObject & read) {getSeqBase(read).reverseComplementRead(true,true);});
 }
 
 void SeqCache::CacheRecord::sort(const std::string & sortOption,
 		std::vector<uint32_t> positions) {
 	reload();
-	bib::sort(positions);
+	njh::sort(positions);
 	readVecSorter::sortReadVector(*reads_, positions, sortOption);
 }
 
 void SeqCache::CacheRecord::muscle(const std::vector<uint32_t> & positions) {
 	reload();
-	bib::for_each_pos(*reads_, positions,
+	njh::for_each_pos(*reads_, positions,
 			[](readObject & read) {getSeqBase(read).removeGaps();});
 	Muscler musclerOperator;
 	musclerOperator.muscleSeqs(*reads_, positions);
@@ -150,14 +150,14 @@ void SeqCache::CacheRecord::muscle(const std::vector<uint32_t> & positions) {
 void SeqCache::CacheRecord::removeGaps(
 		const std::vector<uint32_t> & positions) {
 	reload();
-	bib::for_each_pos(*reads_, positions,
+	njh::for_each_pos(*reads_, positions,
 			[](readObject & read) {getSeqBase(read).removeGaps();});
 }
 
 void SeqCache::CacheRecord::rComplement(
 		const std::vector<uint32_t> & positions) {
 	reload();
-	bib::for_each_pos(*reads_, positions,
+	njh::for_each_pos(*reads_, positions,
 			[]( readObject & read) {getSeqBase(read).reverseComplementRead(true,true);});
 }
 
@@ -374,7 +374,7 @@ Json::Value SeqCache::translate(const std::string & uid,
 		proteins->back().seqBase_.cnt_ = j["cnt"].asDouble();
 		proteins->back().seqBase_.frac_ = j["frac"].asDouble();
 	}
-	auto proteinFilename = bib::files::make_path(workingDir_, uid + "_protein");
+	auto proteinFilename = njh::files::make_path(workingDir_, uid + "_protein");
 	auto proteinOpts = SeqIOOptions::genFastaInOut(
 			proteinFilename.string() + ".fasta", proteinFilename.string() + ".fasta",
 			cache_.at(uid).ioOpts_.opts_.processed_);
@@ -393,7 +393,7 @@ Json::Value SeqCache::translate(const std::string & uid, bool complement,
 		proteins->back().seqBase_.cnt_ = j["cnt"].asDouble();
 		proteins->back().seqBase_.frac_ = j["frac"].asDouble();
 	}
-	auto proteinFilename = bib::files::make_path(workingDir_, uid + "_protein");
+	auto proteinFilename = njh::files::make_path(workingDir_, uid + "_protein");
 	auto proteinOpts = SeqIOOptions::genFastaInOut(
 			proteinFilename.string() + ".fasta", proteinFilename.string() + ".fasta",
 			cache_.at(uid).ioOpts_.opts_.processed_);
@@ -433,7 +433,7 @@ void SeqCache::updateCacheNoCheck(const std::string & uid,
 	cache_.erase(uid);
 	addToCacheNoCheck(uid, ioOpts);
 	/*
-	if (!bib::in(uid, currentCache_)) {
+	if (!njh::in(uid, currentCache_)) {
 		if (cachePos_ < currentCache_.size()) {
 			cache_.at(currentCache_[cachePos_]).reads_ = nullptr;
 			currentCache_[cachePos_] = uid;
@@ -499,4 +499,4 @@ bool SeqCache::containsRecord(const std::string & uid) {
 
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */

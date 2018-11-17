@@ -25,7 +25,7 @@
 //
 #include "SeqToJsonFactory.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */

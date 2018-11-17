@@ -26,7 +26,7 @@
 //
 #include "seqServer/utils.h"
 
-namespace bibseq {
+namespace njhseq {
 
 
 class ColorFactory{
@@ -37,7 +37,7 @@ public:
 	static Json::Value getColors(uint32_t num);
 };
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 
 

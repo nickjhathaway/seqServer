@@ -25,7 +25,7 @@
 //
 #include "LogMessageFactory.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 
 LogMessageFactory::LogMessage::LogMessage(const std::string & funcName,
@@ -34,7 +34,7 @@ LogMessageFactory::LogMessage::LogMessage(const std::string & funcName,
 		uint32_t indentLevel,
 		std::shared_ptr<LogMessageFactory> lmf) :
 		mess_(
-				std::make_unique<bib::scopedMessage>(funcName + "_start",
+				std::make_unique<njh::scopedMessage>(funcName + "_start",
 						funcName + "_stop", out, debug, indentLevel)), lmf_(lmf) {
 
 }
@@ -75,7 +75,7 @@ std::unique_ptr<LogMessageFactory::LogMessage> LogMessageFactory::genLogMessage(
 }
 
 std::string LogMessageFactory::messStrFactory(const std::string & funcName) {
-	return bib::err::F() << "[" << getCurrentDate() << "] " << funcName;
+	return njh::err::F() << "[" << getCurrentDate() << "] " << funcName;
 }
 
 std::string LogMessageFactory::messStrFactory(const std::string & funcName,
@@ -89,4 +89,4 @@ std::string LogMessageFactory::messStrFactory(const std::string & funcName,
 	return argStrs;
 }
 
-} /* namespace bibseq */
+} /* namespace njhseq */

@@ -30,7 +30,7 @@
 #include "seqServer/objects.h"
 
 
-namespace bibseq {
+namespace njhseq {
 
 
 
@@ -88,10 +88,10 @@ class SeqApp {
 
 
 protected:
-	std::map<std::string, bib::files::FileCache> pages_;
-	std::map<std::string, bib::files::FileCache> fonts_;
-	std::unique_ptr<bib::files::FilesCache> jsFiles_;
-	std::unique_ptr<bib::files::FilesCache> cssFiles_;
+	std::map<std::string, njh::files::FileCache> pages_;
+	std::map<std::string, njh::files::FileCache> fonts_;
+	std::unique_ptr<njh::files::FilesCache> jsFiles_;
+	std::unique_ptr<njh::files::FilesCache> cssFiles_;
 	std::string rootName_;
 	bool debug_ = false;
 
@@ -145,12 +145,12 @@ public:
 	void addScripts(const bfs::path & dir);
 
 	static std::string genHtmlDoc(std::string rName,
-			bib::files::FileCache & cache);
+			njh::files::FileCache & cache);
 };
 
 
 
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 

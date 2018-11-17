@@ -27,7 +27,7 @@
 
 #include "seqServer/utils.h"
 
-namespace bibseq {
+namespace njhseq {
 
 /**@brief simple struct to store core parameters for seq apps
  *
@@ -36,10 +36,12 @@ struct SeqAppCorePars {
 
 	std::string name_; /**< root name of the server*/
 	uint32_t port_ = std::numeric_limits<uint32_t>::max(); /**< local port to server on*/
+	std::string bindAddress_ = "127.0.0.1"; /**< adress to bind to , defaults to 127.0.0.1 (localhost) */
 	bfs::path seqServerCore_ = seqServer::getSeqServerInstallCoreDir(); /**< directory of the seqServer core javascript and css*/
 	bfs::path workingDir_ = "/tmp/"; /**< the working to store temporary files*/
 	bool verbose_; /**< verbosity of server*/
 	bool debug_; /**< whether to run in debug mode*/
+
 
 	/**@brief set options with core options flags
 	 *
@@ -59,10 +61,10 @@ struct SeqAppCorePars {
 	 *
 	 * @return a string with local address of the root server
 	 */
-	std::string getAddress()const;
+	std::string getAddress() const;
 
 };
 
-}  // namespace bibseq
+}  // namespace njhseq
 
 

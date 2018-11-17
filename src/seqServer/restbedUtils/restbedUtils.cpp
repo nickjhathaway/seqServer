@@ -27,14 +27,14 @@
 #include "restbedUtils.hpp"
 
 
-namespace bibseq {
+namespace njhseq {
 
 
 Json::Value bytesToJson(const restbed::Bytes & body){
-	return bib::json::parse(std::string(body.begin(), body.end()));
+	return njh::json::parse(std::string(body.begin(), body.end()));
 }
 
 
 
-} // namespace bibseq
+} // namespace njhseq
 

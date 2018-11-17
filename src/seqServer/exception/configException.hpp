@@ -30,9 +30,9 @@
 #include <exception>
 #include <string>
 #include <vector>
-#include <bibseq/utils.h>
+#include <njhseq/utils.h>
 
-namespace bibseq {
+namespace njhseq {
 
 class configException: public std::exception {
 protected:
@@ -55,6 +55,6 @@ public:
 	}
 };
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 
 

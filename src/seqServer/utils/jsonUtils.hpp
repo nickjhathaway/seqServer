@@ -25,21 +25,21 @@
  *      Author: nickhathaway
  */
 
-#include <bibseq.h>
-#include <bibcpp.h>
+#include <njhseq.h>
+#include <njhcpp.h>
 #include <cppitertools/range.hpp>
 
-namespace bibseq {
+namespace njhseq {
 
 
 Json::Value dotToJson(const std::string& dotFilename);
 
-Json::Value tableToJsonByRow(const bibseq::table & tab,
+Json::Value tableToJsonByRow(const njhseq::table & tab,
 		const std::string mainColName,
 		const VecStr & initialVisibleColumns = VecStr { },
 		const VecStr & excludeFromNum = VecStr { });
 
-Json::Value tableToJsonColumnWise(const bibseq::table & tab);
+Json::Value tableToJsonColumnWise(const njhseq::table & tab);
 
 
 std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData);
@@ -47,6 +47,6 @@ std::vector<uint32_t> parseJsonForSelected(const Json::Value & postData);
 std::vector<uint32_t> parseJsonForPosition(const Json::Value & postData);
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 
 

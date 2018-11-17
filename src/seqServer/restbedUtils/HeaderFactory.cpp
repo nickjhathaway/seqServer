@@ -26,7 +26,7 @@
 
 #include "HeaderFactory.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 std::multimap<std::string, std::string> HeaderFactory::initiateTxtJavascriptHeader(
 		const std::string & body) {
@@ -82,4 +82,4 @@ std::multimap<std::string, std::string> HeaderFactory::initiatePlainTxtHeader(
 			estd::to_string(length)}};
 }
 
-}  // namespace bibseq
+}  // namespace njhseq

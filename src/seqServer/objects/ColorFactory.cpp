@@ -26,7 +26,7 @@
 //
 #include "ColorFactory.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 //old
 //const std::string ColorFactory::DNAColorsJson { "{\"-\":\"#e6e6e6\","
@@ -126,15 +126,15 @@ const std::string ColorFactory::AAColorsJson { "{\"*\":\"#e6e6e6\","
 
 Json::Value ColorFactory::getColors(uint32_t num) {
 	Json::Value ret;
-	auto outColors = bib::njhColors(num);
+	auto outColors = njh::njhColors(num);
 	VecStr outColorsStrs;
 	outColorsStrs.reserve(outColors.size());
 	for (const auto & c : outColors) {
 		outColorsStrs.emplace_back("#" + c.hexStr_);
 	}
-	ret["colors"] = bib::json::toJson(outColorsStrs);
+	ret["colors"] = njh::json::toJson(outColorsStrs);
 	return ret;
 }
 
 
-}  // namespace bibseq
+}  // namespace njhseq

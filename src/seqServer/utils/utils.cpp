@@ -26,15 +26,15 @@
 
 #include "utils.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 std::vector<bfs::path> getOwnFiles(const std::string & dir, const std::string & ext){
-	auto files = bib::files::listAllFiles(dir + "/own", true, bibseq::VecStr{ext});
-	return bib::getVecOfMapKeys(files);
+	auto files = njh::files::listAllFiles(dir + "/own", true, njhseq::VecStr{ext});
+	return njh::getVecOfMapKeys(files);
 }
 std::vector<bfs::path> getLibFiles(const std::string & dir, const std::string & ext){
-	auto files = bib::files::listAllFiles(dir + "/libs", true, bibseq::VecStr{ext});
-	return bib::getVecOfMapKeys(files);
+	auto files = njh::files::listAllFiles(dir + "/libs", true, njhseq::VecStr{ext});
+	return njh::getVecOfMapKeys(files);
 }
 
 
@@ -46,10 +46,10 @@ std::string getSeqServerInstallDir() {
 }
 
 std::string getSeqServerInstallCoreDir() {
-	return bib::files::make_path(seqServer_INSTALLDIR,
+	return njh::files::make_path(seqServer_INSTALLDIR,
 			"etc/resources/seqServerCore").string();
 }
 
 }  // namespace seqServer
 
-} /* namespace bibseq */
+} /* namespace njhseq */

@@ -28,7 +28,7 @@
 #include "seqServer/objects/ColorFactory.hpp"
 
 
-namespace bibseq {
+namespace njhseq {
 
 class SeqToJsonFactory {
 public:
@@ -40,24 +40,24 @@ public:
 		auto& seqs = ret["seqs"];
 		uint64_t maxLen = 0;
 		ret["uid"] = uid;
-		ret["selected"] = bib::json::toJson(std::vector<uint32_t> { });
+		ret["selected"] = njh::json::toJson(std::vector<uint32_t> { });
 		uint32_t count = 0;
 		for (const auto & pos : iter::range<uint32_t>(reads.size())) {
 			if(getSeqBase(reads[pos]).on_){
-				bibseq::readVec::getMaxLength(getSeqBase(reads[pos]), maxLen);
-				seqs[count] = bib::json::toJson(getSeqBase(reads[pos]));
+				njhseq::readVec::getMaxLength(getSeqBase(reads[pos]), maxLen);
+				seqs[count] = njh::json::toJson(getSeqBase(reads[pos]));
 				seqs[count]["position"] = pos;
 				seqs[count]["selected"] = count;
 				++count;
 			}
 		}
 		//find number of reads
-		ret["numReads"] = bib::json::toJson(count);
+		ret["numReads"] = njh::json::toJson(count);
 		// get the maximum length
-		ret["maxLen"] = bib::json::toJson(maxLen);
+		ret["maxLen"] = njh::json::toJson(maxLen);
 		//default seq type is dna @todo could check seq alphabet to determine this
-		ret["seqType"] = bib::json::toJson("dna");
-		ret["baseColor"] = bib::json::parse(ColorFactory::DNAColorsJson);
+		ret["seqType"] = njh::json::toJson("dna");
+		ret["baseColor"] = njh::json::parse(ColorFactory::DNAColorsJson);
 		return ret;
 	}
 
@@ -69,7 +69,7 @@ public:
 		Json::Value ret;
 		auto& seqs = ret["seqs"];
 		//find number of reads
-		ret["numReads"] = bib::json::toJson(positions.size());
+		ret["numReads"] = njh::json::toJson(positions.size());
 		// get the maximum length and make sure pos is not greater than read vec size
 		uint64_t maxLen = 0;
 		for (auto pos : positions) {
@@ -87,13 +87,13 @@ public:
 			ss << "size of positions: " << positions.size() << ", size of selected: " << selected.size() << "\n";
 			throw std::runtime_error{ss.str()};
 		}
-		ret["maxLen"] = bib::json::toJson(maxLen);
+		ret["maxLen"] = njh::json::toJson(maxLen);
 		ret["uid"] = uid;
-		ret["selected"] = bib::json::toJson(selected);
-		ret["positions"] = bib::json::toJson(positions);
+		ret["selected"] = njh::json::toJson(selected);
+		ret["positions"] = njh::json::toJson(positions);
 		uint32_t count = 0;
 		for (const auto & posIndex : iter::range(positions.size())) {
-			seqs[count] = bib::json::toJson(getSeqBase(reads[positions[posIndex]]));
+			seqs[count] = njh::json::toJson(getSeqBase(reads[positions[posIndex]]));
 			seqs[count]["position"] = positions[posIndex];
 			seqs[count]["selected"] = selected[posIndex];
 			++count;
@@ -112,7 +112,7 @@ public:
 	static Json::Value sort(std::vector<T> & reads,
 			const std::string & sortOption, std::vector<uint32_t> positions,
 			std::vector<uint32_t> selected, const std::string & uid) {
-		bib::sort(selected);
+		njh::sort(selected);
 		readVecSorter::sortReadVector(reads, positions, sortOption);
 		return seqsToJson(reads, positions, selected, uid);
 	}
@@ -120,7 +120,7 @@ public:
 	template<typename T>
 	static Json::Value muscle(
 			std::vector<T> & reads, const std::string & uid) {
-		bib::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
+		njh::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
 		Muscler musclerOperator;
 		musclerOperator.muscleSeqs(reads);
 		return seqsToJson(reads, uid);
@@ -132,7 +132,7 @@ public:
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected,
 			const std::string & uid) {
-		bib::for_each_pos(reads, positions,
+		njh::for_each_pos(reads, positions,
 				[](T & read) {getSeqBase(read).removeGaps();});
 		Muscler musclerOperator;
 		musclerOperator.muscleSeqs(reads, positions);
@@ -142,7 +142,7 @@ public:
 	template<typename T>
 	static Json::Value removeGaps(
 			std::vector<T> & reads, const std::string & uid) {
-		bib::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
+		njh::for_each(reads, [](T & read) {getSeqBase(read).removeGaps();});
 		return seqsToJson(reads, uid);
 	}
 
@@ -152,7 +152,7 @@ public:
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected,
 			const std::string & uid) {
-		bib::for_each_pos(reads, positions,
+		njh::for_each_pos(reads, positions,
 				[](T & read) {getSeqBase(read).removeGaps();});
 		return seqsToJson(reads, positions, selected, uid);
 	}
@@ -168,7 +168,7 @@ public:
 	static Json::Value rComplement(std::vector<T> & reads,
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected, const std::string & uid) {
-		bib::for_each_pos(reads, positions,
+		njh::for_each_pos(reads, positions,
 				[]( T & read) {getSeqBase(read).reverseComplementRead(true,true);});
 		return seqsToJson(reads, positions, selected, uid);
 	}
@@ -178,7 +178,7 @@ public:
 			std::vector<T> & reads, const std::string & uid,
 			bool complement, bool reverse, uint64_t start) {
 		std::vector<uint32_t> positions(reads.size());
-		bib::iota<uint32_t>(positions, 0);
+		njh::iota<uint32_t>(positions, 0);
 		return translate(reads, positions, uid, complement, reverse, start);
 	}
 
@@ -196,7 +196,7 @@ public:
 									start)));
 		}
 		auto jsonRet = seqsToJson(ret, uid);
-		jsonRet["seqType"] = bib::json::toJson("protein");
+		jsonRet["seqType"] = njh::json::toJson("protein");
 		return jsonRet;
 	}
 
@@ -291,5 +291,5 @@ public:
 };
 
 
-} /* namespace bibseq */
+} /* namespace njhseq */
 

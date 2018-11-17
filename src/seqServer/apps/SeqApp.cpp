@@ -27,7 +27,7 @@
 
 #include "SeqApp.hpp"
 
-namespace bibseq {
+namespace njhseq {
 
 void SeqApp::checkConfigThrow() const {
 	VecStr missing;
@@ -44,8 +44,8 @@ void SeqApp::checkConfigThrow() const {
 		std::stringstream ss;
 		ss << __PRETTY_FUNCTION__
 				<< ": Error, missing the following required options: "
-				<< bib::conToStr(missing, ", ") << "\n";
-		ss << "given options are: " << bib::conToStr(config_.getMemberNames(), ", ")
+				<< njh::conToStr(missing, ", ") << "\n";
+		ss << "given options are: " << njh::conToStr(config_.getMemberNames(), ", ")
 				<< "\n";
 		throw std::runtime_error { ss.str() };
 	}
@@ -96,27 +96,27 @@ SeqApp::SeqApp(const Json::Value & config) :
 	checkConfigThrow();
 	//load js
 	auto jsFiles = getLibFiles(
-			bib::files::make_path(config_["seqServerCore"].asString(), "js").string(),
+			njh::files::make_path(config_["seqServerCore"].asString(), "js").string(),
 			".js");
 	addOtherVec(jsFiles,
 			getOwnFiles(
-					bib::files::make_path(config_["seqServerCore"].asString(), "js").string(),
+					njh::files::make_path(config_["seqServerCore"].asString(), "js").string(),
 					".js"));
-	jsFiles_ = std::make_unique<bib::files::FilesCache>(jsFiles);
+	jsFiles_ = std::make_unique<njh::files::FilesCache>(jsFiles);
 	//load css
 	auto cssFiles =
 			getLibFiles(
-					bib::files::make_path(config_["seqServerCore"].asString(), "css").string(),
+					njh::files::make_path(config_["seqServerCore"].asString(), "css").string(),
 					".css");
 	addOtherVec(cssFiles,
 			getOwnFiles(
-					bib::files::make_path(config_["seqServerCore"].asString(), "css").string(),
+					njh::files::make_path(config_["seqServerCore"].asString(), "css").string(),
 					".css"));
-	cssFiles_ = std::make_unique<bib::files::FilesCache>(cssFiles);
+	cssFiles_ = std::make_unique<njh::files::FilesCache>(cssFiles);
 
 
-	auto fontsDir = bib::files::make_path(config_["seqServerCore"].asString(), "fonts");
-	auto fontsDirFiles = bib::files::filesInFolder(fontsDir);
+	auto fontsDir = njh::files::make_path(config_["seqServerCore"].asString(), "fonts");
+	auto fontsDirFiles = njh::files::filesInFolder(fontsDir);
 	for(const auto & f : fontsDirFiles){
 		fonts_.emplace(f.filename().string(), f);
 	}
@@ -253,11 +253,11 @@ std::shared_ptr<restbed::Resource> SeqApp::getColors() const {
 //
 
 void SeqApp::addScripts(const bfs::path & dir) {
-	auto files = bib::files::listAllFiles(dir.string(), false,
+	auto files = njh::files::listAllFiles(dir.string(), false,
 			{ std::regex(".*.js$") });
 	for (const auto & file : files) {
 		if (bfs::is_regular_file(file.first)) {
-			if (bib::in(file.first.filename().string(), pages_)) {
+			if (njh::in(file.first.filename().string(), pages_)) {
 				pages_.erase(file.first.filename().string());
 			}
 			pages_.emplace(file.first.filename().string(), bfs::absolute(file.first));
@@ -266,12 +266,12 @@ void SeqApp::addScripts(const bfs::path & dir) {
 }
 
 void SeqApp::addPages(const bfs::path & dir) {
-	auto files = bib::files::listAllFiles(dir.string(), false,
+	auto files = njh::files::listAllFiles(dir.string(), false,
 			VecStr { ".html" });
 	for (const auto & file : files) {
 		if (bfs::is_regular_file(file.first)
-				&& bib::endsWith(file.first.string(), ".html")) {
-			if (bib::in(file.first.filename().string(), pages_)) {
+				&& njh::endsWith(file.first.string(), ".html")) {
+			if (njh::in(file.first.filename().string(), pages_)) {
 				pages_.erase(file.first.filename().string());
 			}
 			pages_.emplace(file.first.filename().string(), bfs::absolute(file.first));
@@ -284,22 +284,22 @@ void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	const std::string sortBy = request->get_path_parameter("sortBy");
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->sort(uid, sortBy);
 			} else {
 				seqData = seqsBySession_[sessionUID]->sort(uid,positions, selected, sortBy);
-				seqData["selected"] = bib::json::toJson(selected);
+				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
-			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -308,7 +308,7 @@ void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = bib::json::writeAsOneLine(seqData);
+	auto retBody = njh::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -318,22 +318,22 @@ void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 void SeqApp::muscleAlnPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->muscle(uid);
 			} else {
 				seqData = seqsBySession_[sessionUID]->muscle(uid, positions, selected);
-				seqData["selected"] = bib::json::toJson(selected);
+				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
-			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -341,7 +341,7 @@ void SeqApp::muscleAlnPostHandler(
 		std::cerr << "sessionUID: " << sessionUID
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
-	auto retBody = bib::json::writeAsOneLine(seqData);
+	auto retBody = njh::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -351,22 +351,22 @@ void SeqApp::muscleAlnPostHandler(
 void SeqApp::removeGapsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->removeGaps(uid);
 			} else {
 				seqData = seqsBySession_[sessionUID]->removeGaps(uid,positions, selected);
-				seqData["selected"] = bib::json::toJson(selected);
+				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
-			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -374,7 +374,7 @@ void SeqApp::removeGapsPostHandler(
 		std::cerr << "sessionUID: " << sessionUID
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
-	auto retBody = bib::json::writeAsOneLine(seqData);
+	auto retBody = njh::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -384,22 +384,22 @@ void SeqApp::removeGapsPostHandler(
 void SeqApp::complementSeqsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->rComplement(uid);
 			} else {
 				seqData = seqsBySession_[sessionUID]->rComplement(uid,positions, selected);
-				seqData["selected"] = bib::json::toJson(selected);
+				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
-			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -408,7 +408,7 @@ void SeqApp::complementSeqsPostHandler(
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = bib::json::writeAsOneLine(seqData);
+	auto retBody = njh::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -418,7 +418,7 @@ void SeqApp::complementSeqsPostHandler(
 void SeqApp::translateToProteinPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -427,7 +427,7 @@ void SeqApp::translateToProteinPostHandler(
 	bool complement = false;
 	bool reverse = false;
 	Json::Value seqData;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
 				seqData = seqsBySession_[sessionUID]->translate(uid, complement,
@@ -435,11 +435,11 @@ void SeqApp::translateToProteinPostHandler(
 			} else {
 				seqData = seqsBySession_[sessionUID]->translate(uid, positions,
 						complement, reverse, start);
-				//seqData["selected"] = bib::json::toJson(selected);
+				//seqData["selected"] = njh::json::toJson(selected);
 			}
-			seqData["baseColor"] = bib::json::parse(ColorFactory::AAColorsJson);
+			seqData["baseColor"] = njh::json::parse(ColorFactory::AAColorsJson);
 			seqData["uid"] = uid + "_protein";
-			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -448,7 +448,7 @@ void SeqApp::translateToProteinPostHandler(
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = bib::json::writeAsOneLine(seqData);
+	auto retBody = njh::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -462,13 +462,13 @@ void SeqApp::translateToProteinPostHandler(
 void SeqApp::countBasesPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value ret;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (positions.empty()) {
 				ret =  seqsBySession_[sessionUID]->countBases(uid);
@@ -476,9 +476,9 @@ void SeqApp::countBasesPostHandler(
 				ret =  seqsBySession_[sessionUID]->countBases(uid, positions);
 			}
 			ret["uid"] = uid;
-			ret["sessionUID"] = bib::json::toJson(sessionUID);
-			ret["positions"] = bib::json::toJson(positions);
-			ret["selected"] = bib::json::toJson(selected);
+			ret["sessionUID"] = njh::json::toJson(sessionUID);
+			ret["positions"] = njh::json::toJson(positions);
+			ret["selected"] = njh::json::toJson(selected);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -486,7 +486,7 @@ void SeqApp::countBasesPostHandler(
 		std::cerr << "sessionUID: " << sessionUID
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
-	auto retBody = bib::json::writeAsOneLine(ret);
+	auto retBody = njh::json::writeAsOneLine(ret);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -496,20 +496,20 @@ void SeqApp::countBasesPostHandler(
 void SeqApp::deleteSeqsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value ret;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (positions.empty()) {
 				//positions to delete is empty, nothing to delete
 				ret["uid"] = uid;
-				ret["sessionUID"] = bib::json::toJson(sessionUID);
-				ret["positions"] = bib::json::toJson(positions);
-				ret["selected"] = bib::json::toJson(selected);
+				ret["sessionUID"] = njh::json::toJson(sessionUID);
+				ret["positions"] = njh::json::toJson(positions);
+				ret["selected"] = njh::json::toJson(selected);
 			} else {
 				seqsBySession_[sessionUID]->deleteSeqs(uid, positions);
 				ret = seqsBySession_[sessionUID]->getJson(uid);
@@ -521,7 +521,7 @@ void SeqApp::deleteSeqsPostHandler(
 		std::cerr << "sessionUID: " << sessionUID
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
-	auto retBody = bib::json::writeAsOneLine(ret);
+	auto retBody = njh::json::writeAsOneLine(ret);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -534,7 +534,7 @@ void SeqApp::deleteSeqsPostHandler(
 void SeqApp::minTreeDataDetailedPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -551,7 +551,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
 	std::mutex alignerLock;
 	uint64_t maxSize = 0;
-	if (bib::in(sessionUID, seqsBySession_)) {
+	if (njh::in(sessionUID, seqsBySession_)) {
 		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
 			if (selected.empty()) {
 				seqsBySession_[sessionUID]->getMaxLen(uid, maxSize);
@@ -608,10 +608,10 @@ void SeqApp::minTreeDataDetailedPostHandler(
 					}
 				}
 				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
-				seqData["selected"] = bib::json::toJson(selected);
+				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
-			seqData["sessionUID"] = bib::json::toJson(sessionUID);
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
 		}
@@ -620,7 +620,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 				<< " is not currently in seqsBySession_" << std::endl;
 	}
 
-	auto retBody = bib::json::writeAsOneLine(seqData);
+	auto retBody = njh::json::writeAsOneLine(seqData);
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -866,7 +866,7 @@ std::shared_ptr<restbed::Resource> SeqApp::minTreeDataDetailed() {
 void SeqApp::closeSessionPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = bib::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
 	uint32_t sessionUID = postData["sessionUID"].asUInt();
 	try {
 		sesUIDFac_.removeSessionUID(sessionUID);
@@ -874,19 +874,19 @@ void SeqApp::closeSessionPostHandler(
 			std::cout << "Removed: " << sessionUID << std::endl;
 			std::cout << "IDs left: " << std::endl;
 			printVector(sesUIDFac_.getUIDs());
-			if (bib::in(sessionUID, seqsBySession_)) {
-				if(bib::beginsWith(seqsBySession_[sessionUID]->workingDir_.string(), "/tmp/")){
-					bib::files::rmDirForce(seqsBySession_[sessionUID]->workingDir_.string());
+			if (njh::in(sessionUID, seqsBySession_)) {
+				if(njh::beginsWith(seqsBySession_[sessionUID]->workingDir_.string(), "/tmp/")){
+					njh::files::rmDirForce(seqsBySession_[sessionUID]->workingDir_.string());
 				}
 				seqsBySession_.erase(sessionUID);
 			}
 		}
 	} catch (std::exception & e) {
-		std::cerr << bib::bashCT::red << e.what() << bib::bashCT::reset
+		std::cerr << njh::bashCT::red << e.what() << njh::bashCT::reset
 				<< std::endl;
 	}
 
-	auto retBody = bib::json::toJson(sesUIDFac_.getUIDs()).toStyledString();
+	auto retBody = njh::json::toJson(sesUIDFac_.getUIDs()).toStyledString();
 	std::multimap<std::string, std::string> headers =
 			HeaderFactory::initiateAppJsonHeader(retBody);
 	headers.emplace("Connection", "close");
@@ -911,8 +911,8 @@ uint32_t SeqApp::startSeqCacheSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = sesUIDFac_.genSessionUID();
 	seqsBySession_[ret] = std::make_unique<SeqCache>(*seqs_);
-	auto sesDir = bib::files::make_path(seqs_->workingDir_, "seqServerSes_ses-" + estd::to_string(ret));
-	bib::files::makeDirP(bib::files::MkdirPar(sesDir.string()));
+	auto sesDir = njh::files::make_path(seqs_->workingDir_, "seqServerSes_ses-" + estd::to_string(ret));
+	njh::files::makeDirP(njh::files::MkdirPar(sesDir.string()));
 	seqsBySession_[ret]->setWorkingDir(sesDir);
 	return ret;
 }
@@ -955,8 +955,8 @@ std::shared_ptr<restbed::Resource> SeqApp::openSession() {
 }
 
 std::string SeqApp::genHtmlDoc(std::string rName,
-		bib::files::FileCache & cache) {
-	bib::lstrip(rName, '/');
+		njh::files::FileCache & cache) {
+	njh::lstrip(rName, '/');
 	std::string header = "<!DOCTYPE HTML>\n"
 			"<html>\n"
 			"	<meta charset=\"utf-8\">\n"
@@ -986,4 +986,4 @@ std::string SeqApp::genHtmlDoc(std::string rName,
 	return header + body + footer;
 }
 
-}  // namespace bibseq
+}  // namespace njhseq
