@@ -82,7 +82,11 @@ void SeqCache::CacheRecord::addUpdateFunc(std::function<void(CacheRecord &)> upd
 
 void SeqCache::CacheRecord::reload(bool force){
 	if(nullptr == reads_ || ioOpts_.outDated() || force){
-		reads_ = std::make_shared<std::vector<readObject>>(ioOpts_.get<readObject>(blockStart_, blockSize_));
+		if(ioOpts_.opts_.isInGz()){
+			reads_ = std::make_shared<std::vector<readObject>>(ioOpts_.get<readObject>());
+		}else{
+			reads_ = std::make_shared<std::vector<readObject>>(ioOpts_.get<readObject>(blockStart_, blockSize_));
+		}
 		if(nullptr != updateFunc_){
 			updateFunc_(*this);
 		}
