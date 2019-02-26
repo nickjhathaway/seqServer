@@ -1,6 +1,6 @@
 seqServer
 ================
-Version 1.6.2
+Version 1.6.3-dev
 
 several content managers for serving up the results procuded by sequenceTools 
 
