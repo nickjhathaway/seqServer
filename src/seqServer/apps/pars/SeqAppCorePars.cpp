@@ -36,7 +36,8 @@ void SeqAppCorePars::setCoreOptions(seqSetUp & setUp){
 	setUp.setOption(bindAddress_, "--bindAddress", "Address to bind to, defaults to 127.0.0.1 (localhost)");
 
 	setUp.setOption(workingDir_, "--workingDir", "The working directory to store temporary files");
-	setUp.setOption(seqServerCore_, "-seqServerCore",
+	//std::cout << "seqServerCore_: " << seqServerCore_ << std::endl;
+	setUp.setOption(seqServerCore_, "--seqServerCore",
 			"Name of the seqServerCore Directory where the js and html for the core seqServer code is located",
 			!bfs::exists(seqServerCore_));
 	verbose_ = setUp.pars_.verbose_;
