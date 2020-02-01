@@ -1,6 +1,6 @@
 seqServer
 ================
-Version 1.6.3
+Version 3.0.0
 
 Code to help serve sequence analysis results
 
