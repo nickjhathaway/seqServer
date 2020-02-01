@@ -43,8 +43,8 @@ SeqServerRunner::SeqServerRunner()
 				{
 
 				},//
-				"SeqServerRunner", "1", "6", "3") {}
+				"SeqServerRunner", "3", "0", "0") {}
 
 }  // namespace njhseq
 
-//njh::progutils::oneRing
+
