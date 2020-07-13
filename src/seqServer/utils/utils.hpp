@@ -25,6 +25,9 @@
  *      Author: nickhathaway
  */
 
+//#include <njhseq.h>
+//#include <njhcpp/files.h>
+
 #include <njhseq.h>
 #include <njhcpp.h>
 
