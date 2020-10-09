@@ -51,7 +51,7 @@ Json::Value dotToJson(const std::string& dotFilename) {
 					links[linkCount]["value"] = 1;
 					auto attrSplit = tokenizeString(nameSplit.back(), ",");
 					std::unordered_map<std::string, std::string> attrs;
-					for (const auto at : attrSplit) {
+					for (const auto & at : attrSplit) {
 						auto attr = tokenizeString(at, "=");
 						attrs[trimEndWhiteSpaceReturn(attr.front())] =
 								trimEndWhiteSpaceReturn(attr.back());
@@ -74,7 +74,7 @@ Json::Value dotToJson(const std::string& dotFilename) {
 					nameSplit.back().erase(nameSplit.back().end() - 1);
 					auto attrSplit = tokenizeString(nameSplit.back(), ",");
 					std::unordered_map<std::string, std::string> attrs;
-					for (const auto at : attrSplit) {
+					for (const auto & at : attrSplit) {
 						auto attr = tokenizeString(at, "=");
 						attrs[trimEndWhiteSpaceReturn(attr.front())] =
 								trimEndWhiteSpaceReturn(attr.back());
@@ -121,7 +121,7 @@ Json::Value tableToJsonByRow(const njhseq::table & tab,
 	}else{
 		auto & outTab = ret["tab"];
 		std::unordered_map<uint32_t, bool> numCheck;
-		for (const auto & colPos : iter::range<uint32_t>(columnNamesMod.size())) {
+		for (const auto colPos : iter::range<uint32_t>(columnNamesMod.size())) {
 			numCheck[colPos] = njhseq::isVecOfDoubleStr(tab.getColumn(colPos));
 			if (numCheck[colPos]) {
 				if (!njh::in(columnNamesMod[colPos], excludeFromNum)) {
@@ -130,8 +130,8 @@ Json::Value tableToJsonByRow(const njhseq::table & tab,
 			}
 		}
 
-		for (const auto & rowPos : iter::range<uint32_t>(tab.content_.size())) {
-			for (const auto & colPos : iter::range<uint32_t>(columnNamesMod.size())) {
+		for (const auto rowPos : iter::range<uint32_t>(tab.content_.size())) {
+			for (const auto colPos : iter::range<uint32_t>(columnNamesMod.size())) {
 				if (numCheck[colPos]) {
 					outTab[rowPos][columnNamesMod[colPos]] = njh::lexical_cast<double>(
 							tab.content_[rowPos][colPos]);
@@ -165,7 +165,7 @@ Json::Value tableToJsonByRow(const njhseq::table & tab,
 Json::Value tableToJsonColumnWise(const njhseq::table & tab){
 	Json::Value ret;
 	std::unordered_map<uint32_t, bool> numCheck;
-	for(const auto & colPos : iter::range<uint32_t>(tab.columnNames_.size())){
+	for(const auto colPos : iter::range<uint32_t>(tab.columnNames_.size())){
 		if(njhseq::isVecOfDoubleStr(tab.getColumn(colPos))){
 			ret[tab.columnNames_[colPos]] = njh::json::toJson(njh::lexical_cast_con<std::vector<std::string>,std::vector<double>>(tab.getColumn(colPos)));
 		}else{
