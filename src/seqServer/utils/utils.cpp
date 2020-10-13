@@ -25,6 +25,7 @@
  */
 
 #include "utils.hpp"
+#include <njhcpp/files/fileSystemUtils.hpp>
 
 namespace njhseq {
 

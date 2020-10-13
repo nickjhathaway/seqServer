@@ -28,8 +28,11 @@
 //#include <njhseq.h>
 //#include <njhcpp/files.h>
 
-#include <njhseq.h>
-#include <njhcpp.h>
+#include <njhseq/common/typedefs.hpp>
+
+#include <njhcpp/files/fileUtilities.hpp>
+#include <njhseq/common.h>
+
 
 namespace njhseq {
 namespace bfs = boost::filesystem;

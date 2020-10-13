@@ -26,6 +26,9 @@
 //
 #include "seqServer/utils.h"
 #include "seqServer/objects/ColorFactory.hpp"
+#include <njhseq/alignment.h>
+#include <njhseq/readVectorManipulation/readVectorHelpers.h>
+#include <njhseq/system/Muscler.hpp>
 
 
 namespace njhseq {

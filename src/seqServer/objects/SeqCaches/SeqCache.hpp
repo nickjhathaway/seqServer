@@ -26,6 +26,9 @@
  */
 
 #include "seqServer/utils.h"
+#include <njhseq/IO/SeqIO/SeqIOOptsWithTime.hpp>
+#include <njhseq/alignment.h>
+
 
 namespace njhseq {
 

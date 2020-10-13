@@ -27,6 +27,8 @@
 
 #include "seqServer/utils.h"
 
+#include <njhseq/programUtils/seqSetUp.hpp>
+
 namespace njhseq {
 
 /**@brief simple struct to store core parameters for seq apps

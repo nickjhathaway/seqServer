@@ -26,7 +26,7 @@
 
 #include "SeqCache.hpp"
 #include "seqServer/objects/SeqToJsonFactory.hpp"
-
+#include <njhseq/IO/SeqIO/SeqOutput.hpp>
 
 namespace njhseq {
 
