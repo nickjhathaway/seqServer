@@ -43,7 +43,7 @@ SeqServerRunner::SeqServerRunner()
 				{
 
 				},//
-				"SeqServerRunner", "3", "0", "1") {}
+				"SeqServerRunner", "3", "0", "2-dev") {}
 
 }  // namespace njhseq
 
