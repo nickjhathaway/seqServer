@@ -26,6 +26,9 @@
 //
 #include "seqServer/utils.h"
 #include "seqServer/objects/ColorFactory.hpp"
+#include <njhseq/alignment.h>
+#include <njhseq/readVectorManipulation/readVectorHelpers.h>
+#include <njhseq/system/Muscler.hpp>
 
 
 namespace njhseq {
@@ -42,7 +45,7 @@ public:
 		ret["uid"] = uid;
 		ret["selected"] = njh::json::toJson(std::vector<uint32_t> { });
 		uint32_t count = 0;
-		for (const auto & pos : iter::range<uint32_t>(reads.size())) {
+		for (const auto pos : iter::range<uint32_t>(reads.size())) {
 			if(getSeqBase(reads[pos]).on_){
 				njhseq::readVec::getMaxLength(getSeqBase(reads[pos]), maxLen);
 				seqs[count] = njh::json::toJson(getSeqBase(reads[pos]));
@@ -92,7 +95,7 @@ public:
 		ret["selected"] = njh::json::toJson(selected);
 		ret["positions"] = njh::json::toJson(positions);
 		uint32_t count = 0;
-		for (const auto & posIndex : iter::range(positions.size())) {
+		for (const auto posIndex : iter::range(positions.size())) {
 			seqs[count] = njh::json::toJson(getSeqBase(reads[positions[posIndex]]));
 			seqs[count]["position"] = positions[posIndex];
 			seqs[count]["selected"] = selected[posIndex];

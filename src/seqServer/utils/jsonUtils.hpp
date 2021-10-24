@@ -25,8 +25,11 @@
  *      Author: nickhathaway
  */
 
-#include <njhseq.h>
-#include <njhcpp.h>
+//#include <njhseq.h>
+//#include <njhcpp.h>
+#include <njhcpp/jsonUtils.h>
+#include <njhseq/objects/dataContainers/tables/table.hpp>
+#include <njhseq/common/typedefs.hpp>
 #include <cppitertools/range.hpp>
 
 namespace njhseq {
