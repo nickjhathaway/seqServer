@@ -29,7 +29,7 @@
 #include <njhseq/alignment.h>
 #include <njhseq/readVectorManipulation/readVectorHelpers.h>
 #include <njhseq/system/Muscler.hpp>
-
+#include <njhseq/objects/dataContainers/graphs/ReadCompGraph.hpp>
 
 namespace njhseq {
 

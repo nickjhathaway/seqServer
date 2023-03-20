@@ -30,3 +30,6 @@ bin/*
 build/*
 compfile.mk
 
+.idea/.gitignore
+.idea/misc.xml
+.idea/vcs.xml
