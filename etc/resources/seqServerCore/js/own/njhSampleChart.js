@@ -90,6 +90,8 @@ function njhSampleChart(masterDivId, masterData, downLoadStubName, xCol, yCol,co
 	//add legend
 	this.legend = this.chart.append("g")
 				  .attr("class","legend")
+	// this.legend = this.chart.append("foreignObject").append("xhtml:div").append("g")
+	// 	.attr("class","legend")
 	//actually draw everything 
 	this.draw();
 	//added a save svg button for the sample chart
