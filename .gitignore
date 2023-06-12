@@ -34,3 +34,4 @@ compfile.mk
 .idea/misc.xml
 .idea/vcs.xml
 etc/resources/.idea
+.idea
