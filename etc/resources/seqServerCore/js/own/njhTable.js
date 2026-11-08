@@ -269,7 +269,7 @@ njhTable.prototype.enactPoorMansHeatMap = function(){
 		}
 	});
 	var color = d34.scaleLinear()
-	   .domain([Math.min.apply(null, range), Math.max.apply(null, range)])
+	   .domain(d34.extent(range))
 	   .range(["#ffeda0",  "#f03b20"])
 	   .interpolate(d34.interpolateHcl);
 	this.datTabsD3Dom.selectAll("tbody td").each(function(d){
