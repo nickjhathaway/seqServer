@@ -43,8 +43,41 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	this.datTabsD3Dom = this.actualTabDiv.append("table")
 		.attr("id", this.masterDivId + "_datTabs" )
 		.attr("class", "table table-condensed table-hover nowrap table-nowrap");
+	//a search box under each column name, sorting stays on the names
+	var thead = this.datTabsD3Dom.append("thead");
+	var nameRow = thead.append("tr");
+	var searchRow = thead.append("tr").attr("class", "njhTableColumnSearch");
+	self.tableMasterData["columnNames"].forEach(function(col){
+		nameRow.append("th").text(col);
+		var isNumeric = arrayContains(self.tableMasterData["numericColNames"], col);
+		searchRow.append("th")
+			.style("padding", "2px")
+			.append("input")
+				.attr("type", "search")
+				.attr("data-col", col)
+				.attr("placeholder", isNumeric ? "e.g. >0.1" : "search")
+				.attr("title", isNumeric ? "text, or a comparison like >0.1, <=5, =0" : "search this column")
+				.style("width", "100%")
+				.style("min-width", "4em")
+				.style("font-weight", "normal");
+	});
+	//numeric comparisons by column name, applied for this table only
+	this.numericFilters = {};
+	$.fn.dataTable.ext.search.push(function(settings, data, dataIndex, rowData){
+		if(settings.nTable !== self.datTabsD3Dom.node()){
+			return true;
+		}
+		for(var col in self.numericFilters){
+			var val = parseFloat(rowData[col]);
+			if(isNaN(val) || !self.numericFilters[col](val)){
+				return false;
+			}
+		}
+		return true;
+	});
 	//add data table
 	this.datTable = $(this.datTabsD3Dom.node()).DataTable( {
+	    "orderCellsTop":  true,
 	    "data": self.tableMasterData["tab"],
 	    "columns": self.tableMasterData["columnNames"].map(function(col){return {data:col, title:col, name:col}}),
 	    "scrollY":        window.innerHeight * 3/4.0 + "px",
@@ -58,6 +91,42 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	});
 
 	this.colorTable();
+
+	var comparisons = {
+		">" : function(a, b){ return a > b; },
+		">=": function(a, b){ return a >= b; },
+		"<" : function(a, b){ return a < b; },
+		"<=": function(a, b){ return a <= b; },
+		"=" : function(a, b){ return a == b; }
+	};
+	$(this.datTable.table().header()).on("input keyup change search", ".njhTableColumnSearch input", function(){
+		var col = $(this).attr("data-col");
+		var val = this.value.trim();
+		var column = self.datTable.column(col + ":name");
+		var comparison = val.match(/^(>=|<=|>|<|=)\s*(-?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)$/);
+		var changed = false;
+		if(comparison && arrayContains(self.tableMasterData["numericColNames"], col)){
+			var cutOff = parseFloat(comparison[2]);
+			var key = comparison[1] + cutOff;
+			if(self.numericFilters[col] === undefined || self.numericFilters[col].key !== key){
+				var compare = comparisons[comparison[1]];
+				self.numericFilters[col] = function(rowVal){ return compare(rowVal, cutOff); };
+				self.numericFilters[col].key = key;
+				changed = true;
+			}
+			val = "";
+		}else if(self.numericFilters[col] !== undefined){
+			delete self.numericFilters[col];
+			changed = true;
+		}
+		if(column.search() !== val){
+			column.search(val);
+			changed = true;
+		}
+		if(changed){
+			self.datTable.draw();
+		}
+	});
 
 	this.datTable.on("order", function(){
 		self.colorTable();
