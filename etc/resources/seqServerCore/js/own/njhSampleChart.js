@@ -87,9 +87,74 @@ function njhSampleChart(masterDivId, masterData, downLoadStubName, xCol, yCol,co
 	this.chart.append("g")
     	.attr("class", "y axis")
 
-	//add legend
-	this.legend = this.chart.append("g")
+	//add legend, it scrolls inside a clipped view when it's taller than the chart
+	this.legendClipId = this.masterDivId.substr(1) + "_legendClip";
+	this.legendClipRect = this.masterSvg.append("defs")
+		.append("clipPath")
+			.attr("id", this.legendClipId)
+		.append("rect");
+	this.legendView = this.chart.append("g")
+		.attr("class", "legendView");
+	this.legendClip = this.legendView.append("g");
+	this.legend = this.legendClip.append("g")
 				  .attr("class","legend")
+	this.legendScrollBar = this.legendView.append("g")
+		.attr("class", "legendScrollBar")
+		.style("display", "none");
+	this.legendScrollTrack = this.legendScrollBar.append("rect")
+		.attr("width", 6)
+		.attr("rx", 3)
+		.style("fill", "#eee")
+		.style("stroke", "#999");
+	this.legendScrollThumb = this.legendScrollBar.append("rect")
+		.attr("width", 6)
+		.attr("rx", 3)
+		.style("fill", "#888")
+		.style("cursor", "ns-resize");
+	this.legendScrollBarX = this.legendView.append("g")
+		.attr("class", "legendScrollBarX")
+		.style("display", "none");
+	this.legendScrollTrackX = this.legendScrollBarX.append("rect")
+		.attr("height", 6)
+		.attr("ry", 3)
+		.style("fill", "#eee")
+		.style("stroke", "#999");
+	this.legendScrollThumbX = this.legendScrollBarX.append("rect")
+		.attr("height", 6)
+		.attr("ry", 3)
+		.style("fill", "#888")
+		.style("cursor", "ew-resize");
+	this.legendOffset = 0;
+	this.legendMaxOffset = 0;
+	this.legendOffsetX = 0;
+	this.legendMaxOffsetX = 0;
+	this.legendView.on("wheel", function(){
+		//deltaMode 1 is lines, shift turns the wheel sideways
+		var scale = 1 === d3.event.deltaMode ? 15 : 1;
+		var deltaX = d3.event.deltaX * scale;
+		var deltaY = d3.event.deltaY * scale;
+		if(d3.event.shiftKey && 0 === deltaX){
+			deltaX = deltaY;
+			deltaY = 0;
+		}
+		var canScroll = (0 !== deltaY && self.legendMaxOffset > 0) || (0 !== deltaX && self.legendMaxOffsetX > 0);
+		if(canScroll){
+			d3.event.preventDefault();
+			self.scrollLegendTo(self.legendOffset + deltaY, self.legendOffsetX + deltaX);
+		}
+	});
+	this.legendScrollThumb.call(d3.behavior.drag().on("drag", function(){
+		var thumbTravel = self.legendClipHeight - self.legendThumbHeight;
+		if(thumbTravel > 0){
+			self.scrollLegendTo(self.legendOffset + d3.event.dy * self.legendMaxOffset / thumbTravel, self.legendOffsetX);
+		}
+	}));
+	this.legendScrollThumbX.call(d3.behavior.drag().on("drag", function(){
+		var thumbTravel = self.legendClipWidth - self.legendThumbWidth;
+		if(thumbTravel > 0){
+			self.scrollLegendTo(self.legendOffset, self.legendOffsetX + d3.event.dx * self.legendMaxOffsetX / thumbTravel);
+		}
+	}));
 	// this.legend = this.chart.append("foreignObject").append("xhtml:div").append("g")
 	// 	.attr("class","legend")
 	//actually draw everything 
@@ -97,10 +162,13 @@ function njhSampleChart(masterDivId, masterData, downLoadStubName, xCol, yCol,co
 	//added a save svg button for the sample chart
 	var downLink = this.saveButton.append("a").attr("class", "njhSampleChartImgDownload");
 	this.saveButton.on("click", function(){
+		//the saved svg has the whole legend
+		var restoreLegend = self.showWholeLegend();
 	  	var html = self.masterSvg
 	        .attr("version", 1.1)
 	        .attr("xmlns", "http://www.w3.org/2000/svg")
 	        .node().parentNode.innerHTML;
+		restoreLegend();
 	  	//add the svg information to a and then click it to trigger the download
 	  	var imgsrc = 'data:image/svg+xml;base64,'+ btoa(html);
 	  	downLink.attr("download", self.downLoadStubName + ".svg");
@@ -261,7 +329,7 @@ njhSampleChart.prototype.draw = function(){
 	bars.exit()
       .remove();
 	//add legend
-	this.legend.attr("transform","translate(" + (this.width - 140) + ",10)");
+	this.legendView.attr("transform","translate(" + (this.width - 140) + ",10)");
 	this.legend.call(d3.legend);
 	this.legend.selectAll("text")
 		.style("font-family","\"Helvetica Neue\",Helvetica,Arial,sans-serif")
@@ -316,8 +384,102 @@ njhSampleChart.prototype.draw = function(){
 	//add legend style directly so download will download it as well
 	this.chart.select(".legend-box").style("fill", "#fff");
 	this.chart.select(".legend-items").style("fill", "#000");
+	this.updateLegendScroll();
+}
 
+//clip the legend to the chart's height and the svg's right edge, with scroll bars for whichever it's bigger than, otherwise show all of it
+njhSampleChart.prototype.updateLegendScroll = function(){
+	var box = this.legend.select(".legend-box");
+	if(box.empty()){
+		return;
+	}
+	var boxX = parseFloat(box.attr("x"));
+	var boxY = parseFloat(box.attr("y"));
+	var boxWidth = parseFloat(box.attr("width"));
+	var boxHeight = parseFloat(box.attr("height"));
+	//the legend view starts 140 in from the right of the chart and 10 down from its top
+	var availWidth = 140 + this.margin.right - 2 - boxX;
+	var availHeight = this.height - 10 - boxY;
+	this.legendMaxOffsetX = Math.max(0, boxWidth - availWidth);
+	if(this.legendMaxOffsetX > 0){
+		//room for the horizontal scroll bar
+		availHeight -= 10;
+	}
+	this.legendMaxOffset = Math.max(0, boxHeight - availHeight);
+	this.legendClipWidth = Math.min(boxWidth, availWidth);
+	this.legendClipHeight = Math.min(boxHeight, availHeight);
+	if(this.legendMaxOffset > 0 || this.legendMaxOffsetX > 0){
+		this.legendClipRect
+			.attr("x", boxX)
+			.attr("width", this.legendClipWidth)
+			.attr("y", boxY)
+			.attr("height", this.legendClipHeight);
+		this.legendClip.attr("clip-path", "url(#" + this.legendClipId + ")");
+	} else {
+		this.legendClip.attr("clip-path", null);
+	}
+	if(this.legendMaxOffset > 0){
+		this.legendThumbHeight = Math.max(20, this.legendClipHeight * this.legendClipHeight / boxHeight);
+		this.legendScrollBar
+			.style("display", null)
+			.attr("transform", "translate(" + (boxX - 9) + "," + boxY + ")");
+		this.legendScrollTrack.attr("height", this.legendClipHeight);
+		this.legendScrollThumb.attr("height", this.legendThumbHeight);
+	} else {
+		this.legendScrollBar.style("display", "none");
+	}
+	if(this.legendMaxOffsetX > 0){
+		this.legendThumbWidth = Math.max(20, this.legendClipWidth * this.legendClipWidth / boxWidth);
+		this.legendScrollBarX
+			.style("display", null)
+			.attr("transform", "translate(" + boxX + "," + (boxY + this.legendClipHeight + 3) + ")");
+		this.legendScrollTrackX.attr("width", this.legendClipWidth);
+		this.legendScrollThumbX.attr("width", this.legendThumbWidth);
+	} else {
+		this.legendScrollBarX.style("display", "none");
+	}
+	this.scrollLegendTo(this.legendOffset, this.legendOffsetX);
+}
 
+njhSampleChart.prototype.scrollLegendTo = function(offset, offsetX){
+	this.legendOffset = Math.max(0, Math.min(this.legendMaxOffset, offset));
+	this.legendOffsetX = Math.max(0, Math.min(this.legendMaxOffsetX, offsetX));
+	this.legend.attr("transform", "translate(" + (-this.legendOffsetX) + "," + (-this.legendOffset) + ")");
+	if(this.legendMaxOffset > 0){
+		this.legendScrollThumb.attr("y", this.legendOffset / this.legendMaxOffset * (this.legendClipHeight - this.legendThumbHeight));
+	}
+	if(this.legendMaxOffsetX > 0){
+		this.legendScrollThumbX.attr("x", this.legendOffsetX / this.legendMaxOffsetX * (this.legendClipWidth - this.legendThumbWidth));
+	}
+}
+
+//unclip the legend and make the svg big enough for it, returns a function that puts it back
+njhSampleChart.prototype.showWholeLegend = function(){
+	var self = this;
+	if(this.legendMaxOffset <= 0 && this.legendMaxOffsetX <= 0){
+		return function(){};
+	}
+	var offset = this.legendOffset;
+	var offsetX = this.legendOffsetX;
+	var svgWidth = this.masterSvg.attr("width");
+	var svgHeight = this.masterSvg.attr("height");
+	var box = this.legend.select(".legend-box");
+	var legendRight = this.margin.left + this.width - 140 + parseFloat(box.attr("x")) + parseFloat(box.attr("width")) + 5;
+	var legendBottom = this.margin.top + 10 + parseFloat(box.attr("y")) + parseFloat(box.attr("height")) + 5;
+	this.legend.attr("transform", null);
+	this.legendClip.attr("clip-path", null);
+	this.legendScrollBar.style("display", "none");
+	this.legendScrollBarX.style("display", "none");
+	this.masterSvg
+		.attr("width", Math.max(parseFloat(svgWidth), legendRight))
+		.attr("height", Math.max(parseFloat(svgHeight), legendBottom));
+	return function(){
+		self.masterSvg
+			.attr("width", svgWidth)
+			.attr("height", svgHeight);
+		self.updateLegendScroll();
+		self.scrollLegendTo(offset, offsetX);
+	};
 }
 
 njhSampleChart.prototype.updateWithResize = function(){
@@ -455,6 +617,7 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 	   setTimeout(function(){
 			//update legend
 			self.legend.call(d3.legend);
+			self.updateLegendScroll();
 			self.legend.selectAll("text")
 				.style("font-family","\"Helvetica Neue\",Helvetica,Arial,sans-serif")
 			    .style("font-size", "12px")
