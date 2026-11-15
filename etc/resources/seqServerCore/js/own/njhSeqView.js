@@ -548,9 +548,12 @@ njhSeqView.prototype.initDefaultMenu = function(){
 
 	if(!this.protein){
 		var translateOptions = [];
-		translateOptions.push(new njhMenuItem("translate", "Translate",function(){
-			//console.log($("#startSiteInput", self.topDivName).val());
-			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID, "start" : $("#startSiteInput", self.topDivName).val()};
+		//posts to a translate route and shows the proteins in a viewer under this one
+		var showTranslation = function(route, extraPostData){
+			var postData = {"uid" : self.uid, "sessionUID" : self.sessionUID};
+			for (var key in extraPostData){
+				postData[key] = extraPostData[key];
+			}
 			if (self.selected.size > 0){
 				postData["selected"] = setToArray(self.selected);
 				postData["positions"] = [];
@@ -559,7 +562,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				}
 			}
 			var gifLoading = prsentDivGifLoading();
-			postJSON('/' + rName + '/translate', postData).then(function (seqData){
+			postJSON('/' + rName + '/' + route, postData).then(function (seqData){
 			    if($("#" + self.topDivName.substring(1) + "_protein").length){
 			    	self.proteinViewer.updateData(seqData);
 			    }else{
@@ -570,8 +573,17 @@ njhSeqView.prototype.initDefaultMenu = function(){
 			    }
 			    gifLoading.remove();
 			    $("#" + self.topDivName.substring(1) + "_protein").scrollView();
-
 		  	}).catch(logRequestError);
+		};
+		translateOptions.push(new njhMenuItem("translate", "Translate",function(){
+			showTranslation("translate", {"start" : $("#startSiteInput", self.topDivName).val()});
+		}));
+		//the longest protein without a stop in all six frames, elucidator guessAProteinFromSeq --getLongest
+		translateOptions.push(new njhMenuItem("translateLongest", "Longest Protein (all 6 frames)",function(){
+			showTranslation("translateLongest", {
+				"mark" : $("#longestMarkInput", self.topDivName)[0].checked,
+				"removeTrailingStop" : $("#longestRemoveStopInput", self.topDivName)[0].checked,
+				"forceMStart" : $("#longestForceMInput", self.topDivName)[0].checked});
 		}));
 		menuItems["Translate"] = translateOptions;
 	}
@@ -660,7 +672,7 @@ njhSeqView.prototype.initDefaultMenu = function(){
 				.attr("id", "startSiteLabel")
 				.attr("for","startSiteInput")
 				.attr("class", "control-label")
-				.text("Start")
+				.text("Translate frame start")
 				.style("margin-right", "5px");
 		var divInputGroup = startSiteInput
 			.append("div")
@@ -676,6 +688,27 @@ njhSeqView.prototype.initDefaultMenu = function(){
 		$('#startSiteForm').submit(function(e){
 	        e.preventDefault();
 	    });
+		var translateDrops = d34.select(self.topDivName +  " .njhSeqViewMenu #TranslateDrops");
+		translateDrops.append("li").attr("class", "dropdown-header").text("Longest Protein options");
+		[["longestMarkInput", "Add frame and positions to names"],
+		 ["longestRemoveStopInput", "Remove trailing stop"],
+		 ["longestForceMInput", "Force M start"]].forEach(function(opt){
+			var optLabel = translateDrops.append("li")
+				.on("click", function(){
+					//keeps the menu open
+					d34.event.stopPropagation();
+				})
+				.append("div")
+					.attr("style", "padding: 3px 20px;")
+				.append("label")
+					.style("font-weight", "normal")
+					.style("margin", "0");
+			optLabel.append("input")
+				.attr("type", "checkbox")
+				.attr("id", opt[0])
+				.style("margin-right", "5px");
+			optLabel.append("span").text(opt[1]);
+		});
 		var treeWidthInput = d34.select(self.topDivName +  " .njhSeqViewMenu #Diff-GraphDrops")
 			.append("li")
 				.append("div")

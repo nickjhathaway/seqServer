@@ -28,6 +28,7 @@
 #include "seqServer/utils.h"
 #include <njhseq/IO/SeqIO/SeqIOOptsWithTime.hpp>
 #include <njhseq/alignment.h>
+#include <njhseq/readVectorManipulation/readVectorHelpers/longestTranslation.hpp>
 
 
 namespace njhseq {
@@ -124,6 +125,8 @@ private:
 			const SeqIOOptions & ioOpts);
 	void updateCacheNoCheck(const std::string & uid,
 			const SeqIOOptions & ioOpts);
+	//writes the translated seqs to uid + "_protein".fasta in workingDir_ and caches them as uid + "_protein"
+	void cacheProteins(const std::string & uid, const Json::Value & proteinsJson);
 public:
 
 	bool containsRecord(const std::string & uid);
@@ -175,6 +178,11 @@ public:
 	Json::Value translate(const std::string & uid,
 			const std::vector<uint32_t> & positions, bool complement, bool reverse,
 			uint64_t start);
+	Json::Value translateLongest(const std::string & uid,
+			const LongestTranslation::Pars & pars, bool mark);
+	Json::Value translateLongest(const std::string & uid,
+			const std::vector<uint32_t> & positions,
+			const LongestTranslation::Pars & pars, bool mark);
 	Json::Value rComplement(const std::string & uid,
 			const std::vector<uint32_t> & positions,
 			const std::vector<uint32_t> & selected);

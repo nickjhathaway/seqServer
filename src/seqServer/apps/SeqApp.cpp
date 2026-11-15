@@ -157,6 +157,7 @@ std::vector<std::shared_ptr<restbed::Resource>> SeqApp::getAllResources() {
 	ret.emplace_back(sort());
 	ret.emplace_back(muscleAln());
 	ret.emplace_back(translateToProtein());
+	ret.emplace_back(translateLongest());
 	ret.emplace_back(complementSeqs());
 	ret.emplace_back(minTreeDataDetailed());
 	ret.emplace_back(removeGaps());
@@ -455,6 +456,43 @@ void SeqApp::translateToProteinPostHandler(
 	session->close(restbed::OK, retBody, headers);
 }
 
+void SeqApp::translateLongestPostHandler(
+		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	std::vector<uint32_t> selected = parseJsonForSelected(postData);
+	std::vector<uint32_t> positions = parseJsonForPosition(postData);
+	const std::string uid = postData["uid"].asString();
+	const uint32_t sessionUID = postData["sessionUID"].asUInt();
+	LongestTranslation::Pars pars;
+	pars.removeTrailingStop_ = postData.get("removeTrailingStop", false).asBool();
+	pars.forceMStart_ = postData.get("forceMStart", false).asBool();
+	const bool mark = postData.get("mark", false).asBool();
+	Json::Value seqData;
+	if (njh::in(sessionUID, seqsBySession_)) {
+		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+			if (selected.empty()) {
+				seqData = seqsBySession_[sessionUID]->translateLongest(uid, pars, mark);
+			} else {
+				seqData = seqsBySession_[sessionUID]->translateLongest(uid, positions, pars, mark);
+			}
+			seqData["baseColor"] = njh::json::parse(ColorFactory::AAColorsJson);
+			seqData["uid"] = uid + "_protein";
+			seqData["sessionUID"] = njh::json::toJson(sessionUID);
+		} else {
+			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
+		}
+	} else {
+		std::cerr << "sessionUID: " << sessionUID
+				<< " is not currently in seqsBySession_" << std::endl;
+	}
+	auto retBody = njh::json::writeAsOneLine(seqData);
+	std::multimap<std::string, std::string> headers =
+			HeaderFactory::initiateAppJsonHeader(retBody);
+	headers.emplace("Connection", "close");
+	session->close(restbed::OK, retBody, headers);
+}
+
 
 
 
@@ -699,6 +737,19 @@ void SeqApp::translateToProteinHandler(
 
 }
 
+void SeqApp::translateLongestHandler(
+		std::shared_ptr<restbed::Session> session) {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	const auto request = session->get_request();
+	size_t content_length = request->get_header("Content-Length", 0);
+	session->fetch(content_length,
+			std::function<
+					void(std::shared_ptr<restbed::Session>, const restbed::Bytes & body)>(
+					[this](std::shared_ptr<restbed::Session> ses, const restbed::Bytes & body) {
+						translateLongestPostHandler(ses, body);
+					}));
+}
+
 void SeqApp::minTreeDataDetailedHandler(
 		std::shared_ptr<restbed::Session> session) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
@@ -846,6 +897,19 @@ std::shared_ptr<restbed::Resource> SeqApp::translateToProtein() {
 			std::function<void(std::shared_ptr<restbed::Session>)>(
 					[this](std::shared_ptr<restbed::Session> ses) {
 						translateToProteinHandler(ses);
+					}));
+	return resource;
+}
+
+std::shared_ptr<restbed::Resource> SeqApp::translateLongest() {
+	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
+	auto resource = std::make_shared<restbed::Resource>();
+	resource->set_path(
+			UrlPathFactory::createUrl( { { rootName_ }, { "translateLongest" } }));
+	resource->set_method_handler("POST",
+			std::function<void(std::shared_ptr<restbed::Session>)>(
+					[this](std::shared_ptr<restbed::Session> ses) {
+						translateLongestHandler(ses);
 					}));
 	return resource;
 }

@@ -60,6 +60,8 @@ class SeqApp {
 			const restbed::Bytes & body);
 	void translateToProteinPostHandler(std::shared_ptr<restbed::Session> session,
 			const restbed::Bytes & body);
+	void translateLongestPostHandler(std::shared_ptr<restbed::Session> session,
+			const restbed::Bytes & body);
 	void minTreeDataDetailedPostHandler(std::shared_ptr<restbed::Session> session,
 			const restbed::Bytes & body);
 	void countBasesPostHandler(std::shared_ptr<restbed::Session> session,
@@ -72,6 +74,7 @@ class SeqApp {
 	void removeGapsHandler(std::shared_ptr<restbed::Session> session);
 	void complementSeqsHandler(std::shared_ptr<restbed::Session> session);
 	void translateToProteinHandler(std::shared_ptr<restbed::Session> session);
+	void translateLongestHandler(std::shared_ptr<restbed::Session> session);
 	void minTreeDataDetailedHandler(std::shared_ptr<restbed::Session> session);
 	void countBasesHandler(std::shared_ptr<restbed::Session> session);
 	void deleteSeqsHandler(std::shared_ptr<restbed::Session> session);
@@ -116,6 +119,7 @@ public:
 	std::shared_ptr<restbed::Resource> removeGaps();
 	std::shared_ptr<restbed::Resource> complementSeqs();
 	std::shared_ptr<restbed::Resource> translateToProtein();
+	std::shared_ptr<restbed::Resource> translateLongest();
 	std::shared_ptr<restbed::Resource> minTreeDataDetailed();
 	std::shared_ptr<restbed::Resource> countBases();
 	std::shared_ptr<restbed::Resource> deleteSeqs();

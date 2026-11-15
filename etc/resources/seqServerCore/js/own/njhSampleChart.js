@@ -194,8 +194,7 @@ njhSampleChart.prototype.draw = function(){
 	
 	this.y.range([this.height, 0]);
 	
-	this.color.domain(sort_unique(this.masterData["tab"].map(function(d) { return d[self.colorBy]; })))
-	    .range(this.masterData["popColors"]);
+	this.setColorRange();
 	//initiate the counts to zero and no samples have been added
 	var sampleSum = {};
 	var sampleMax = {};
@@ -482,6 +481,13 @@ njhSampleChart.prototype.showWholeLegend = function(){
 	};
 }
 
+//the colored values in sorted order get colors as far apart as possible (seqServer utils.js), so the bars and legend don't depend on the server's colors
+njhSampleChart.prototype.setColorRange = function(){
+	var self = this;
+	var names = sort_unique(this.masterData["tab"].map(function(d) { return d[self.colorBy]; }));
+	this.color.domain(names).range(distinctColorHexStrs(names.length));
+};
+
 njhSampleChart.prototype.updateWithResize = function(){
 	/**@todo add ability to have a set window size and resize proportionally to window change rather than just being the size of the window */
 }
@@ -513,9 +519,8 @@ njhSampleChart.prototype.updateWithData = function(updatedDataTab){
 		modTime = 750;
 	}
 	setTimeout(function(){
-		self.color = d3.scale.ordinal()
-		    .domain(self.masterData["tab"].map(function(d) { return d[self.colorBy]; }))
-		    .range(self.masterData["popColors"]);
+		self.color = d3.scale.ordinal();
+		self.setColorRange();
 		var sampleSum = {};
 		var sampleMax = {};
 		var samplePopNames = {};

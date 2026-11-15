@@ -469,3 +469,228 @@ function sort_unique(arr) {
   }
   return ret;
 }
+
+//
+// k-means clustering of numeric points with squared Euclidean distance, and farthest point picking for starting centers,
+// the same as njhseq KMeans (njhseq/utils/kMeans.hpp), every tie goes to the lowest index so the results are always the same
+//
+
+/**
+ * Squared Euclidean distance
+ * @param first array of numbers
+ * @param second array of numbers
+ */
+function njhKMeansDist2(first, second){
+	var ret = 0;
+	for(var dim = 0; dim < first.length; ++dim){
+		var diff = first[dim] - second[dim];
+		ret += diff * diff;
+	}
+	return ret;
+}
+
+/**
+ * The mean of the points, in order
+ * @param points array of arrays of numbers
+ */
+function njhKMeansMean(points){
+	if(0 === points.length){
+		return [];
+	}
+	var ret = new Array(points[0].length).fill(0);
+	points.forEach(function(point){
+		for(var dim = 0; dim < ret.length; ++dim){
+			ret[dim] += point[dim];
+		}
+	});
+	return ret.map(function(val){ return val / points.length; });
+}
+
+/**
+ * k points spread out: the first is the point farthest from start, each next one is the point farthest from those already picked,
+ * with k as the number of points this orders all of them, each as far as it can be from the ones before it
+ * @param points array of arrays of numbers
+ * @param k how many to pick, at most points.length
+ * @param start where to measure the first pick from, e.g. the mean
+ * @return the positions of the picked points, in pick order
+ */
+function njhKMeansFarthestPoints(points, k, start){
+	if(k > points.length){
+		throw new Error("can't pick " + k + " from " + points.length + " points");
+	}
+	var ret = [];
+	var minDists = points.map(function(point){ return njhKMeansDist2(point, start); });
+	while(ret.length < k){
+		var next = 0;
+		for(var pos = 1; pos < minDists.length; ++pos){
+			if(minDists[pos] > minDists[next]){
+				next = pos;
+			}
+		}
+		ret.push(next);
+		for(var pos = 0; pos < points.length; ++pos){
+			var dist = njhKMeansDist2(points[pos], points[next]);
+			if(1 === ret.length || dist < minDists[pos]){
+				minDists[pos] = dist;
+			}
+		}
+		//picked points are out of the running
+		ret.forEach(function(picked){ minDists[picked] = -1; });
+	}
+	return ret;
+}
+
+/**
+ * Lloyd's k-means from starting centers: each round assigns points to their closest center, stops when no assignment changes,
+ * otherwise moves each center to the mean of its points (a center with no points stays put)
+ * @param points array of arrays of numbers
+ * @param startPoints the positions of the points to start the centers at
+ * @param pars optional {maxIterations: 50, snapToPoints: false}, snapToPoints moves each center to the closest point not already taken by an earlier center
+ * @return {centers, centerPoints (with snapToPoints the point each center is), assignments (the center of each point), iterations, converged}
+ */
+function njhKMeansRun(points, startPoints, pars){
+	var maxIterations = pars && undefined !== pars.maxIterations ? pars.maxIterations : 50;
+	var snapToPoints = !!(pars && pars.snapToPoints);
+	var ret = {centers: [], centerPoints: [], assignments: [], iterations: 0, converged: false};
+	if(0 === points.length || 0 === startPoints.length){
+		return ret;
+	}
+	ret.centers = startPoints.map(function(startPoint){ return points[startPoint].slice(); });
+	ret.centerPoints = startPoints.slice();
+	ret.assignments = new Array(points.length).fill(-1);
+	var dims = points[0].length;
+	for(var iteration = 0; iteration < maxIterations; ++iteration){
+		++ret.iterations;
+		var changed = false;
+		for(var pos = 0; pos < points.length; ++pos){
+			var best = 0;
+			var bestDist = njhKMeansDist2(points[pos], ret.centers[0]);
+			for(var centerPos = 1; centerPos < ret.centers.length; ++centerPos){
+				var dist = njhKMeansDist2(points[pos], ret.centers[centerPos]);
+				if(dist < bestDist){
+					bestDist = dist;
+					best = centerPos;
+				}
+			}
+			if(ret.assignments[pos] !== best){
+				ret.assignments[pos] = best;
+				changed = true;
+			}
+		}
+		if(!changed){
+			ret.converged = true;
+			break;
+		}
+		var sums = ret.centers.map(function(){ return new Array(dims).fill(0); });
+		var counts = ret.centers.map(function(){ return 0; });
+		for(var pos = 0; pos < points.length; ++pos){
+			for(var dim = 0; dim < dims; ++dim){
+				sums[ret.assignments[pos]][dim] += points[pos][dim];
+			}
+			++counts[ret.assignments[pos]];
+		}
+		var taken = new Array(points.length).fill(false);
+		for(var centerPos = 0; centerPos < ret.centers.length; ++centerPos){
+			if(counts[centerPos] > 0){
+				for(var dim = 0; dim < dims; ++dim){
+					ret.centers[centerPos][dim] = sums[centerPos][dim] / counts[centerPos];
+				}
+			}
+			if(snapToPoints){
+				var best = -1;
+				var bestDist = Number.MAX_VALUE;
+				for(var pos = 0; pos < points.length; ++pos){
+					if(taken[pos]){
+						continue;
+					}
+					var dist = njhKMeansDist2(points[pos], ret.centers[centerPos]);
+					if(dist < bestDist){
+						bestDist = dist;
+						best = pos;
+					}
+				}
+				taken[best] = true;
+				ret.centerPoints[centerPos] = best;
+				ret.centers[centerPos] = points[best].slice();
+			}
+		}
+	}
+	return ret;
+}
+
+//
+// Colors as far apart as possible in the style of iwanthue (https://medialab.github.io/iwanthue/), the same as njhseq genDistinctColorHexStrs()
+// (njhseq/utils/distinctColors.hpp), uses the k-means functions above
+//
+
+/**
+ * Colors as far apart as possible: candidates are a grid of CIE Lab colors (D65) in sRGB within the lightness and chroma ranges,
+ * the starting colors are each the candidate farthest from those already picked (njhKMeansFarthestPoints), refined with k-means over the candidates
+ * (njhKMeansRun, centers snapped to unused candidates), and ordered so each color is the farthest from the ones before it.
+ * Ties go to the lowest index so the colors are always the same, more colors than candidates repeat.
+ * @param count how many colors
+ * @param pars optional {lightnessMin: 35, lightnessMax: 80, chromaMin: 30, chromaMax: 80, gridStep: 5, maxIterations: 50}, the defaults are iwanthue's default preset
+ * @return hex strings, e.g. #a1b2c3
+ */
+function distinctColorHexStrs(count, pars){
+	var defaults = {lightnessMin: 35, lightnessMax: 80, chromaMin: 30, chromaMax: 80, gridStep: 5, maxIterations: 50};
+	pars = Object.assign({}, defaults, pars || {});
+	if(0 === count){
+		return [];
+	}
+	var fInv = function(t){
+		var cubed = t * t * t;
+		return cubed > 0.008856 ? cubed : (t - 16.0 / 116.0) / 7.787;
+	};
+	var gamma = function(c){
+		return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1.0 / 2.4) - 0.055;
+	};
+	//sRGB 0-1 from Lab with the D65 white point
+	var labToRgb = function(lab){
+		var fy = (lab[0] + 16.0) / 116.0;
+		var fx = fy + lab[1] / 500.0;
+		var fz = fy - lab[2] / 200.0;
+		var x = 0.95047 * fInv(fx);
+		var y = 1.0 * fInv(fy);
+		var z = 1.08883 * fInv(fz);
+		return [gamma(3.2404542 * x - 1.5371385 * y - 0.4985314 * z),
+			gamma(-0.9692660 * x + 1.8760108 * y + 0.0415560 * z),
+			gamma(0.0556434 * x - 0.2040259 * y + 1.0572252 * z)];
+	};
+	var inRgb = function(rgb){
+		return rgb[0] >= 0 && rgb[0] <= 1 && rgb[1] >= 0 && rgb[1] <= 1 && rgb[2] >= 0 && rgb[2] <= 1;
+	};
+	var toHex = function(lab){
+		var digits = "0123456789abcdef";
+		return "#" + labToRgb(lab).map(function(channel){
+			var val = Math.round(channel * 255);
+			return digits[Math.floor(val / 16)] + digits[val % 16];
+		}).join("");
+	};
+	var candidates = [];
+	for(var lPos = 0; pars.lightnessMin + lPos * pars.gridStep <= pars.lightnessMax; ++lPos){
+		for(var aPos = 0; -100 + aPos * pars.gridStep <= 100; ++aPos){
+			for(var bPos = 0; -100 + bPos * pars.gridStep <= 100; ++bPos){
+				var lab = [pars.lightnessMin + lPos * pars.gridStep, -100 + aPos * pars.gridStep, -100 + bPos * pars.gridStep];
+				var chroma = Math.sqrt(lab[1] * lab[1] + lab[2] * lab[2]);
+				if(chroma >= pars.chromaMin && chroma <= pars.chromaMax && inRgb(labToRgb(lab))){
+					candidates.push(lab);
+				}
+			}
+		}
+	}
+	if(0 === candidates.length){
+		throw new Error("no colors are in sRGB within lightness " + pars.lightnessMin + "-" + pars.lightnessMax + " and chroma " + pars.chromaMin + "-" + pars.chromaMax);
+	}
+	var candidatesMean = njhKMeansMean(candidates);
+	//spread out starting colors, refined by k-means with each center kept on a candidate
+	var starts = njhKMeansFarthestPoints(candidates, Math.min(count, candidates.length), candidatesMean);
+	var clusters = njhKMeansRun(candidates, starts, {maxIterations: pars.maxIterations, snapToPoints: true});
+	//ordered so each color is the farthest from the ones before it, starting with the one farthest from the mean
+	var order = njhKMeansFarthestPoints(clusters.centers, clusters.centers.length, candidatesMean);
+	var ret = [];
+	for(var pos = 0; pos < count; ++pos){
+		ret.push(toHex(clusters.centers[order[pos % order.length]]));
+	}
+	return ret;
+}

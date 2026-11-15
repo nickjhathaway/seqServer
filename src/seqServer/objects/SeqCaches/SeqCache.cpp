@@ -372,27 +372,35 @@ Json::Value SeqCache::translate(const std::string & uid,
 		const std::vector<uint32_t> & positions, bool complement, bool reverse,
 		uint64_t start){
 	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).get())), positions, uid, complement, reverse, start);
-	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
-	for(const auto & j : ret["seqs"]){
-		proteins->emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
-		proteins->back().seqBase_.cnt_ = j["cnt"].asDouble();
-		proteins->back().seqBase_.frac_ = j["frac"].asDouble();
-	}
-	auto proteinFilename = njh::files::make_path(workingDir_, uid + "_protein");
-	auto proteinOpts = SeqIOOptions::genFastaInOut(
-			proteinFilename.string() + ".fasta", proteinFilename.string() + ".fasta",
-			cache_.at(uid).ioOpts_.opts_.processed_);
-	proteinOpts.out_.overWriteFile_ = true;
-	SeqOutput::write(*proteins, proteinOpts);
-	updateAddCache(uid + "_protein", proteinOpts);
+	cacheProteins(uid, ret);
 	return ret;
 }
 
 Json::Value SeqCache::translate(const std::string & uid, bool complement,
 		bool reverse, uint64_t start){
 	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).get())), uid, complement, reverse, start);
+	cacheProteins(uid, ret);
+	return ret;
+}
+
+Json::Value SeqCache::translateLongest(const std::string & uid,
+		const LongestTranslation::Pars & pars, bool mark){
+	auto ret = SeqToJsonFactory::translateLongest(getRef((cache_.at(uid).get())), uid, pars, mark);
+	cacheProteins(uid, ret);
+	return ret;
+}
+
+Json::Value SeqCache::translateLongest(const std::string & uid,
+		const std::vector<uint32_t> & positions,
+		const LongestTranslation::Pars & pars, bool mark){
+	auto ret = SeqToJsonFactory::translateLongest(getRef((cache_.at(uid).get())), positions, uid, pars, mark);
+	cacheProteins(uid, ret);
+	return ret;
+}
+
+void SeqCache::cacheProteins(const std::string & uid, const Json::Value & proteinsJson){
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
-	for(const auto & j : ret["seqs"]){
+	for(const auto & j : proteinsJson["seqs"]){
 		proteins->emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
 		proteins->back().seqBase_.cnt_ = j["cnt"].asDouble();
 		proteins->back().seqBase_.frac_ = j["frac"].asDouble();
@@ -404,7 +412,6 @@ Json::Value SeqCache::translate(const std::string & uid, bool complement,
 	proteinOpts.out_.overWriteFile_ = true;
 	SeqOutput::write(*proteins, proteinOpts);
 	updateAddCache(uid + "_protein", proteinOpts);
-	return ret;
 }
 
 void SeqCache::setWorkingDir(const bfs::path & dir){

@@ -204,6 +204,35 @@ public:
 	}
 
 	template<typename T>
+	static Json::Value translateLongest(
+			std::vector<T> & reads, const std::string & uid,
+			const LongestTranslation::Pars & pars, bool mark) {
+		std::vector<uint32_t> positions(reads.size());
+		njh::iota<uint32_t>(positions, 0);
+		return translateLongest(reads, positions, uid, pars, mark);
+	}
+
+	//the longest protein without a stop across all six frames of each read, the same as elucidator guessAProteinFromSeq --getLongest
+	template<typename T>
+	static Json::Value translateLongest(
+			std::vector<T> & reads,
+			const std::vector<uint32_t> & positions,
+			const std::string & uid,
+			const LongestTranslation::Pars & pars, bool mark) {
+		std::vector<baseReadObject> ret;
+		for (const auto & readPos : positions) {
+			auto longest = LongestTranslation::translate(getSeqBase(reads[readPos]), pars);
+			if (mark) {
+				longest.markName(true);
+			}
+			ret.emplace_back(baseReadObject(longest.protein_));
+		}
+		auto jsonRet = seqsToJson(ret, uid);
+		jsonRet["seqType"] = njh::json::toJson("protein");
+		return jsonRet;
+	}
+
+	template<typename T>
 	static Json::Value minTreeDataDetailed(
 			const std::vector<T> & reads,
 			const std::string & uid,

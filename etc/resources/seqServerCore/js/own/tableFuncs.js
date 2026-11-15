@@ -202,69 +202,247 @@
 
 	}
 	
-			function createLinksTable(addToSelector,linkPrefix, links, colNum, mouseOverColor, mouseLeaveColor){
-				var dataset = [],
-				tmpDataset = [],
-				i, j;
-				var rowNum = Math.ceil(links.length/colNum);
-				for (i = 0; i < rowNum; ++i) {
-				    for (j = 0, tmpDataset = []; j < colNum && i * colNum + j < links.length; ++j) {
-				        tmpDataset.push({text: links[i * colNum + j],link: linkPrefix + links[i * colNum + j] });
-				    }
-				    dataset.push(tmpDataset);
-				}
-				var tab = d34.select(addToSelector)
-						.style("overflow", "scroll")
-				    .append("table")
-				    .style("border-collapse", "collapse")
-				    .style("border", "2px black solid")
-				    
-				    .selectAll("addToSelector tr")
-				    .data(dataset)
-				    .enter().append("tr")
-				    
-				    .selectAll("td")
-				    .data(function(d){return d;})
-				    .enter().append("td")
-				    .style("border", "1px black solid")
-				    .style("padding", "10px")
-				    .on("mouseover", function(){d34.select(this).style("background-color", mouseOverColor);}) 
-				    .on("mouseout", function(){d34.select(this).style("background-color", mouseLeaveColor);}) 
-				    .append("a")
-		  				.attr("href", function(d){return d.link;})
-		  				.html(function(d){return d.text;});
-		  		return tab;
+//a grid of links, colNum per row, shown 200 at a time with a filter when there are more (njhPagedList below)
+function createLinksTable(addToSelector, linkPrefix, links, colNum, mouseOverColor, mouseLeaveColor){
+	return new njhPagedList(addToSelector, {
+		names: links,
+		hrefs: links.map(function(link){ return linkPrefix + link; }),
+		columns: colNum,
+		mouseOverColor: mouseOverColor,
+		mouseLeaveColor: mouseLeaveColor
+	});
+}
+
+//createLinksTable() with each link's url part given in encodedLinks
+function createLinksTableDifferentLinks(addToSelector, linkPrefix, links, encodedLinks, colNum, mouseOverColor, mouseLeaveColor){
+	return new njhPagedList(addToSelector, {
+		names: links,
+		hrefs: encodedLinks.map(function(link){ return linkPrefix + link; }),
+		columns: colNum,
+		mouseOverColor: mouseOverColor,
+		mouseLeaveColor: mouseLeaveColor
+	});
+}
+
+//
+// njhPagedList: a list of names shown a page at a time with a filter, as links (createLinksTable) or checkboxes,
+// only the current page is drawn so lists of tens of thousands of names stay fast
+//
+
+/**
+ * @param parentSelector where to add the list
+ * @param opts
+ *   names: the names
+ *   mode: "links" or "checkbox"
+ *   hrefs: links mode, the link for each name
+ *   columns: links mode, links per row, default 8
+ *   searchTexts: optional text the filter matches for each name, e.g. the name and its meta, defaults to the names
+ *   pageSize: names per page, default 200, a menu changes it when there are more than 100 names
+ *   onChange: checkbox mode, called when what's checked changes
+ *   title: checkbox mode, shown before the checked count, e.g. Samples
+ *   mouseOverColor, mouseLeaveColor: links mode cell colors, default #999 and #FFF
+ */
+function njhPagedList(parentSelector, opts){
+	var self = this;
+	self.names = opts.names;
+	self.mode = opts.mode || "links";
+	self.hrefs = opts.hrefs || self.names;
+	self.columns = opts.columns || 8;
+	self.pageSize = opts.pageSize || 200;
+	self.onChange = opts.onChange || function(){};
+	self.mouseOverColor = opts.mouseOverColor || "#999";
+	self.mouseLeaveColor = opts.mouseLeaveColor || "#FFF";
+	self.searchLower = (opts.searchTexts || self.names).map(function(text){ return String(text).toLowerCase(); });
+	self.checked = new Uint8Array(self.names.length).fill(1);
+	self.matching = d3.range(self.names.length);
+	self.page = 0;
+	self.isCheckbox = "checkbox" === self.mode;
+
+	var root = d3.select(parentSelector).append("div").attr("class", "njhPagedList");
+	var controls = root.append("div").style("margin-bottom", "4px");
+	if(self.isCheckbox){
+		var head = controls.append("div").style("margin-bottom", "4px");
+		if(opts.title){
+			head.append("b").style("margin-right", "8px").text(opts.title);
+		}
+		self.countText = head.append("span");
+	}
+	var tools = controls.append("div");
+	//the filter and paging only show up when there's enough to need them
+	if(self.names.length > 30){
+		tools.append("input").attr("type", "search").attr("placeholder", "filter" + (opts.title ? " " + opts.title.toLowerCase() : ""))
+			.style("width", "220px").style("margin-right", "8px")
+			.on("input", function(){
+				self.setFilter(this.value);
+			});
+	}
+	if(self.isCheckbox){
+		var addButton = function(text, scope, value){
+			tools.append("button").attr("class", "btn btn-default btn-xs").style("margin-right", "4px").text(text)
+				.on("click", function(){ self.setAll(value, scope); });
+		};
+		addButton("Check all", "all", true);
+		addButton("Uncheck all", "all", false);
+		if(self.names.length > 30){
+			addButton("Check filtered", "filtered", true);
+			addButton("Uncheck filtered", "filtered", false);
+		}
+		if(self.names.length > self.pageSize){
+			addButton("Check page", "page", true);
+			addButton("Uncheck page", "page", false);
+		}
+	}
+	if(self.names.length > 100){
+		var sizes = [100, 200, 500, 1000].filter(function(size){ return size < self.names.length; }).concat([self.names.length]);
+		if(sizes.indexOf(self.pageSize) < 0){
+			sizes.push(self.pageSize);
+			sizes.sort(function(first, second){ return first - second; });
+		}
+		tools.append("span").style("margin", "0 4px 0 8px").text("per page");
+		tools.append("select")
+			.on("change", function(){
+				var firstShown = self.page * self.pageSize;
+				self.pageSize = parseInt(this.value);
+				self.setPage(Math.floor(firstShown / self.pageSize));
+			})
+			.selectAll("option").data(sizes).enter().append("option")
+				.attr("value", function(size){ return size; })
+				.property("selected", function(size){ return size === self.pageSize; })
+				.text(function(size){ return size === self.names.length ? "all" : size; });
+	}
+	self.pager = controls.append("div").style("margin-top", "4px");
+	self.body = root.append("div");
+	if(self.isCheckbox){
+		self.body.style("max-height", "320px").style("overflow", "auto")
+			.style("border", "1px solid #ccc").style("padding", "4px");
+	} else {
+		self.body.style("overflow", "auto");
+	}
+	self.render();
+}
+
+njhPagedList.prototype.pageCount = function(){
+	return Math.max(1, Math.ceil(this.matching.length / this.pageSize));
+};
+
+njhPagedList.prototype.setFilter = function(query){
+	var self = this;
+	var lower = query.trim().toLowerCase();
+	self.matching = [];
+	for(var pos = 0; pos < self.names.length; ++pos){
+		if("" === lower || self.searchLower[pos].indexOf(lower) >= 0){
+			self.matching.push(pos);
+		}
+	}
+	self.page = 0;
+	self.render();
+};
+
+njhPagedList.prototype.setPage = function(page){
+	this.page = Math.max(0, Math.min(this.pageCount() - 1, page));
+	this.render();
+};
+
+njhPagedList.prototype.pagePositions = function(){
+	return this.matching.slice(this.page * this.pageSize, (this.page + 1) * this.pageSize);
+};
+
+/**
+ * Check or uncheck names
+ * @param value true to check
+ * @param scope "all", "filtered" (the names matching the filter) or "page" (the names on this page)
+ */
+njhPagedList.prototype.setAll = function(value, scope){
+	var self = this;
+	var positions = "page" === scope ? self.pagePositions() : "filtered" === scope ? self.matching : d3.range(self.names.length);
+	positions.forEach(function(pos){ self.checked[pos] = value ? 1 : 0; });
+	self.render();
+	self.onChange();
+};
+
+/**
+ * The checked names, in the order given
+ */
+njhPagedList.prototype.selected = function(){
+	var self = this;
+	return self.names.filter(function(name, pos){ return self.checked[pos]; });
+};
+
+njhPagedList.prototype.renderPager = function(){
+	var self = this;
+	self.pager.selectAll("*").remove();
+	var total = self.matching.length;
+	var pageCount = self.pageCount();
+	if(self.names.length <= self.pageSize && total === self.names.length){
+		return;
+	}
+	var first = total === 0 ? 0 : self.page * self.pageSize + 1;
+	var last = Math.min(total, (self.page + 1) * self.pageSize);
+	if(pageCount > 1){
+		var addPageButton = function(text, page, active, disabled){
+			self.pager.append("button").attr("class", "btn btn-xs " + (active ? "btn-primary" : "btn-default")).style("margin-right", "2px")
+				.property("disabled", !!disabled).text(text)
+				.on("click", function(){ self.setPage(page); });
+		};
+		addPageButton("prev", self.page - 1, false, 0 === self.page);
+		//the first, last and nearby pages, with gaps between
+		var shown = [];
+		for(var page = 0; page < pageCount; ++page){
+			if(page < 1 || page >= pageCount - 1 || Math.abs(page - self.page) <= 2){
+				shown.push(page);
 			}
-			
-			function createLinksTableDifferentLinks(addToSelector,linkPrefix, links, encodedLinks, colNum, mouseOverColor, mouseLeaveColor){
-				var dataset = [],
-				tmpDataset = [],
-				i, j;
-				var rowNum = Math.ceil(links.length/colNum);
-				for (i = 0; i < rowNum; ++i) {
-				    for (j = 0, tmpDataset = []; j < colNum && i * colNum + j < links.length; ++j) {
-				        tmpDataset.push({text: links[i * colNum + j],link: linkPrefix + encodedLinks[i * colNum + j] });
-				    }
-				    dataset.push(tmpDataset);
-				}
-				var tab = d34.select(addToSelector)
-				    .append("table")
-				    .style("border-collapse", "collapse")
-				    .style("border", "2px black solid")
-				    
-				    .selectAll("addToSelector tr")
-				    .data(dataset)
-				    .enter().append("tr")
-				    
-				    .selectAll("td")
-				    .data(function(d){return d;})
-				    .enter().append("td")
-				    .style("border", "1px black solid")
-				    .style("padding", "10px")
-				    .on("mouseover", function(){d34.select(this).style("background-color", mouseOverColor);}) 
-				    .on("mouseout", function(){d34.select(this).style("background-color", mouseLeaveColor);}) 
-				    .append("a")
-		  				.attr("href", function(d){return d.link;})
-		  				.html(function(d){return d.text;});
-		  		return tab;
+		}
+		shown.forEach(function(page, pos){
+			if(pos > 0 && page - shown[pos - 1] > 1){
+				self.pager.append("span").style("margin", "0 4px").text("...");
 			}
+			addPageButton(String(page + 1), page, page === self.page, false);
+		});
+		addPageButton("next", self.page + 1, false, self.page === pageCount - 1);
+	}
+	self.pager.append("span").style("margin-left", "8px")
+		.text(first + "-" + last + " of " + total + (total < self.names.length ? " matching, " + self.names.length + " in all" : ""));
+};
+
+njhPagedList.prototype.render = function(){
+	var self = this;
+	self.renderPager();
+	self.body.selectAll("*").remove();
+	var positions = self.pagePositions();
+	if(self.isCheckbox){
+		var labels = self.body.selectAll("label").data(positions).enter().append("label")
+			.style("display", "inline-block").style("margin", "1px 4px").style("font-weight", "normal").style("white-space", "nowrap");
+		labels.append("input").attr("type", "checkbox").style("margin-right", "3px")
+			.property("checked", function(pos){ return !!self.checked[pos]; })
+			.on("change", function(pos){
+				self.checked[pos] = this.checked ? 1 : 0;
+				self.updateCount();
+				self.onChange();
+			});
+		labels.append("span").text(function(pos){ return self.names[pos]; });
+		self.updateCount();
+	} else {
+		var rows = [];
+		for(var start = 0; start < positions.length; start += self.columns){
+			rows.push(positions.slice(start, start + self.columns));
+		}
+		self.body.append("table")
+			.style("border-collapse", "collapse")
+			.style("border", "2px black solid")
+			.selectAll("tr").data(rows).enter().append("tr")
+			.selectAll("td").data(function(row){ return row; }).enter().append("td")
+				.style("border", "1px black solid")
+				.style("padding", "10px")
+				.on("mouseover", function(){ d3.select(this).style("background-color", self.mouseOverColor); })
+				.on("mouseout", function(){ d3.select(this).style("background-color", self.mouseLeaveColor); })
+				.append("a")
+					.attr("href", function(pos){ return self.hrefs[pos]; })
+					.text(function(pos){ return self.names[pos]; });
+	}
+};
+
+njhPagedList.prototype.updateCount = function(){
+	if(this.countText){
+		this.countText.text(this.selected().length + " of " + this.names.length + " checked");
+	}
+};
