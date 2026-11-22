@@ -151,6 +151,23 @@ function njhTable(masterDivId, tableMasterData, tableDownloadStubName, addChart)
 	d34.select(this.masterDivId + " .njhTabSaveButton")
 		.append("span")
 			.text(" Download Table");
+	//the rows matching the column searches, in the shown order
+	this.menuOrganizedDiv.append("button")
+		.style("margin", "5px")
+		.attr("class", "njhTabSaveFilteredButton btn btn-success")
+		.attr("title", "download the rows matching the column searches")
+		.html('<i class="fa fa-download fa-lg"></i> Download Filtered')
+		.on("click", function(){
+			var rows = self.datTable.rows({search: "applied", order: "applied"}).data().toArray();
+			var blobUrl = URL.createObjectURL(new Blob([self.tableToDownloadText(rows)], {type: "text/plain"}));
+			var link = document.createElement("a");
+			link.href = blobUrl;
+			link.download = self.tableDownloadStubName + "_filtered.tab.txt";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			setTimeout(function(){ URL.revokeObjectURL(blobUrl); }, 1000);
+		});
 	this.menuOrganizedDiv.select(".njhTabSaveButton").append("a").attr("class", "njhTabDownLink");
 	this.menuOrganizedDiv.select(".njhTabSaveButton").on("click", function() {
 		var dataSrc = self.tableToDownloadData();
@@ -203,6 +220,20 @@ njhTable.prototype.colorTable = function(){
 	}
 }
 
+
+//rows as tab delimited text with the checked columns
+njhTable.prototype.tableToDownloadText = function(rows){
+	var self = this;
+	var checked = [];
+	this.menuOrganizedDiv.selectAll("input:checked").each(function() {
+		checked.push($(this).val());
+	});
+	var columns = _.intersection(self.tableMasterData["columnNames"], checked);
+	var lines = [columns].concat(rows.map(function(row){
+		return columns.map(function(col){ return row[col]; });
+	}));
+	return d34.tsvFormatRows(lines) + "\n";
+}
 
 njhTable.prototype.tableToDownloadData = function(){
 	var self = this;

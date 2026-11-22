@@ -361,6 +361,24 @@ njhPagedList.prototype.setAll = function(value, scope){
 };
 
 /**
+ * Check only these names, unknown names are skipped
+ * @param names the names to check
+ * @return the number of names checked
+ */
+njhPagedList.prototype.setChecked = function(names){
+	var self = this;
+	var wanted = new Set(names.map(String));
+	var count = 0;
+	self.names.forEach(function(name, pos){
+		self.checked[pos] = wanted.has(String(name)) ? 1 : 0;
+		count += self.checked[pos];
+	});
+	self.render();
+	self.onChange();
+	return count;
+};
+
+/**
  * The checked names, in the order given
  */
 njhPagedList.prototype.selected = function(){
