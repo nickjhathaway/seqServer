@@ -27,5 +27,6 @@
 
 #include "seqServer/utils/ip.hpp"
 #include "seqServer/utils/jsonUtils.hpp"
+#include "seqServer/utils/TableQuery.hpp"
 #include "seqServer/utils/utils.hpp"
 
