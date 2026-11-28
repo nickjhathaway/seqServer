@@ -7,7 +7,7 @@ Code to help serve sequence analysis results
 # Installing
 
 
-requires clang-4.0 or gcc-7 and cmake (required by dependencies)
+requires a C++17 compiler (defaults to gcc/g++ on Linux, gcc 13 on Ubuntu 24.04, and clang on macOS) and cmake (required by dependencies)
 
 ```bash
 git clone https://github.com/nickjhathaway/seqServer.git
