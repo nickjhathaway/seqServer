@@ -285,7 +285,7 @@ void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	const auto request = session->get_request();
 	const std::string sortBy = request->get_path_parameter("sortBy");
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -319,7 +319,7 @@ void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 void SeqApp::muscleAlnPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -352,7 +352,7 @@ void SeqApp::muscleAlnPostHandler(
 void SeqApp::removeGapsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -385,7 +385,7 @@ void SeqApp::removeGapsPostHandler(
 void SeqApp::complementSeqsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -419,7 +419,7 @@ void SeqApp::complementSeqsPostHandler(
 void SeqApp::translateToProteinPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -459,7 +459,7 @@ void SeqApp::translateToProteinPostHandler(
 void SeqApp::translateLongestPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -500,7 +500,7 @@ void SeqApp::translateLongestPostHandler(
 void SeqApp::countBasesPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -534,7 +534,7 @@ void SeqApp::countBasesPostHandler(
 void SeqApp::deleteSeqsPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -572,7 +572,7 @@ void SeqApp::deleteSeqsPostHandler(
 void SeqApp::minTreeDataDetailedPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	std::vector<uint32_t> selected = parseJsonForSelected(postData);
 	std::vector<uint32_t> positions = parseJsonForPosition(postData);
 	const std::string uid = postData["uid"].asString();
@@ -930,7 +930,7 @@ std::shared_ptr<restbed::Resource> SeqApp::minTreeDataDetailed() {
 void SeqApp::closeSessionPostHandler(
 		std::shared_ptr<restbed::Session> session, const restbed::Bytes & body) {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
-	const auto postData = njh::json::parse(std::string(body.begin(), body.end()));
+	const auto postData = bytesToJson(body);
 	uint32_t sessionUID = postData["sessionUID"].asUInt();
 	try {
 		sesUIDFac_.removeSessionUID(sessionUID);

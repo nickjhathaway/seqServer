@@ -32,6 +32,16 @@
 
 namespace njhseq {
 
+/**@brief Copy a restbed request body into a std::string
+ *
+ * Works with restbed 4.x (Bytes is std::vector<uint8_t>) and restbed 5.x (Bytes is std::vector<std::byte>,
+ * which can't be converted to char implicitly, so std::string(body.begin(), body.end()) no longer compiles)
+ *
+ * @param body the request body
+ * @return the body as a string
+ */
+std::string bytesToString(const restbed::Bytes & body);
+
 Json::Value bytesToJson(const restbed::Bytes & body);
 
 

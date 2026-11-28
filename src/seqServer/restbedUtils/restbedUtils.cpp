@@ -30,8 +30,12 @@
 namespace njhseq {
 
 
+std::string bytesToString(const restbed::Bytes & body){
+	return std::string(reinterpret_cast<const char *>(body.data()), body.size());
+}
+
 Json::Value bytesToJson(const restbed::Bytes & body){
-	return njh::json::parse(std::string(body.begin(), body.end()));
+	return njh::json::parse(bytesToString(body));
 }
 
 
