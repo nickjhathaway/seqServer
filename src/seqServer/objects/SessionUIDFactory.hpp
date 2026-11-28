@@ -41,7 +41,7 @@ public:
 
 	void removeSessionUID(uint32_t sesUID);
 	uint32_t genSessionUID();
-	const std::vector<uint32_t> & getUIDs();
+	std::vector<uint32_t> getUIDs();
 	bool hasSessionUID(uint32_t sessionUID);
 
 };

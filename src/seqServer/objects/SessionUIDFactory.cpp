@@ -48,7 +48,7 @@ uint32_t SessionUIDFactory::genSessionUID(){
 	return sesUID;
 }
 
-const std::vector<uint32_t> & SessionUIDFactory::getUIDs(){
+std::vector<uint32_t> SessionUIDFactory::getUIDs(){
 	std::shared_lock<std::shared_timed_mutex> lock(mut_);
 	return sessionUids_;
 }

@@ -26,6 +26,7 @@
  */
 
 #include "seqServer/utils.h"
+#include <mutex>
 #include <njhseq/IO/SeqIO/SeqIOOptsWithTime.hpp>
 #include <njhseq/alignment.h>
 #include <njhseq/readVectorManipulation/readVectorHelpers/longestTranslation.hpp>
@@ -104,6 +105,12 @@ public:
 
 	~SeqCache();
 
+	/**@brief lock this cache across several calls or direct access to cache_ (member functions also lock it)
+	 *
+	 * @return a lock that releases when it goes out of scope
+	 */
+	[[nodiscard]] std::unique_lock<std::recursive_mutex> lockCache() const;
+
 	void setWorkingDir(const bfs::path & dir);
 	bfs::path workingDir_;
 	std::unordered_map<std::string, CacheRecord> cache_;
@@ -116,7 +123,8 @@ private:
 	uint32_t cachePos_ = 0;
 	//uint32_t cacheSizeLimit_ = 10;
 
-	std::shared_timed_mutex mut_;
+	/**@brief guards cache_ and its records; recursive since member functions call each other */
+	mutable std::recursive_mutex mut_;
 
 
 

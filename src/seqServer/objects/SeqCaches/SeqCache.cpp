@@ -208,18 +208,24 @@ SeqCache::SeqCache(const bfs::path & workingDir):workingDir_(workingDir) {
 
 }
 
-SeqCache::SeqCache(const SeqCache & other) :
-		workingDir_(other.workingDir_),
-		cache_(other.cache_),
-		currentCache_(other.currentCache_),
-		cachePos_(other.cachePos_) {
+SeqCache::SeqCache(const SeqCache & other) {
+	std::lock_guard<std::recursive_mutex> otherLock(other.mut_);
+	workingDir_ = other.workingDir_;
+	cache_.insert(other.cache_.begin(), other.cache_.end());
+	currentCache_ = other.currentCache_;
+	cachePos_ = other.cachePos_;
 }
 
-SeqCache::SeqCache(SeqCache && other) :
-		workingDir_(other.workingDir_),
-		cache_(std::move(other.cache_)),
-		currentCache_(std::move(other.currentCache_)),
-		cachePos_(other.cachePos_) {
+SeqCache::SeqCache(SeqCache && other) {
+	std::lock_guard<std::recursive_mutex> otherLock(other.mut_);
+	workingDir_ = other.workingDir_;
+	cache_ = std::move(other.cache_);
+	currentCache_ = std::move(other.currentCache_);
+	cachePos_ = other.cachePos_;
+}
+
+std::unique_lock<std::recursive_mutex> SeqCache::lockCache() const {
+	return std::unique_lock<std::recursive_mutex>(mut_);
 }
 
 SeqCache::~SeqCache(){
@@ -227,21 +233,25 @@ SeqCache::~SeqCache(){
 }
 
 Json::Value SeqCache::getJson(const std::string & uid){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return SeqToJsonFactory::seqsToJson(getRef((cache_.at(uid).get())), uid);
 }
 
 Json::Value SeqCache::sort(const std::string & uid, const std::string & sortOption){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).sort(sortOption);
 	return getJson(uid);
 }
 
 void SeqCache::getMaxLen(const std::string & uid, uint64_t& maxLen) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	for(const auto & seq : *cache_.at(uid).get()){
 		readVec::getMaxLength(seq, maxLen);
 	}
 }
 void SeqCache::getMaxLen(const std::string & uid,
 		const std::vector<uint32_t> & positions, uint64_t& maxLen) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	auto & seqs = *cache_.at(uid).get();
 	for(const auto & seqPos : positions){
 		const auto & seq = seqs[seqPos];
@@ -251,21 +261,25 @@ void SeqCache::getMaxLen(const std::string & uid,
 
 
 Json::Value SeqCache::muscle(const std::string & uid){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).muscle();
 	return getJson(uid);
 }
 
 Json::Value SeqCache::removeGaps(const std::string & uid){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).removeGaps();
 	return getJson(uid);
 }
 
 Json::Value SeqCache::rComplement(const std::string & uid) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).rComplement();
 	return getJson(uid);
 }
 
 Json::Value SeqCache::countBases(const std::string & uid){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).reload();
 	charCounter counter;
 	for(const auto & seq : *(cache_.at(uid).reads_)){
@@ -283,11 +297,13 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		std::mutex & alignerLock,
 		uint32_t numThreads,
 		bool justBest) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
 			uid,alignerObj, aligners, alignerLock, numThreads, numDiff, justBest);
 }
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		uint32_t numDiff) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
 			uid, numDiff);
 }
@@ -300,6 +316,7 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		std::unordered_map<std::string, std::unique_ptr<aligner>>& aligners,
 		std::mutex & alignerLock, uint32_t numThreads,
 		bool justBest) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
 			positions, uid, alignerObj, aligners, alignerLock, numThreads, numDiff, justBest);
 }
@@ -307,6 +324,7 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		uint32_t numDiff) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return SeqToJsonFactory::minTreeDataDetailed(getRef((cache_.at(uid).get())),
 			positions, uid, numDiff);
 }
@@ -314,12 +332,14 @@ Json::Value SeqCache::minTreeDataDetailed(const std::string & uid,
 Json::Value SeqCache::sort(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected, const std::string & sortOption) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).sort(sortOption, positions);
 	return getJson(uid, positions, selected);
 }
 
 Json::Value SeqCache::countBases(const std::string & uid,
 		const std::vector<uint32_t> & positions) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).reload();
 	charCounter counter;
 	auto seqs = cache_.at(uid).reads_;
@@ -339,6 +359,7 @@ Json::Value SeqCache::countBases(const std::string & uid,
 Json::Value SeqCache::muscle(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).muscle(positions);
 	return getJson(uid, positions, selected);
 }
@@ -346,18 +367,21 @@ Json::Value SeqCache::muscle(const std::string & uid,
 Json::Value SeqCache::removeGaps(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).removeGaps(positions);
 	return getJson(uid, positions, selected);
 }
 
 void SeqCache::deleteSeqs(const std::string & uid,
 				const std::vector<uint32_t> & positions){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).erase(positions);
 }
 
 Json::Value SeqCache::rComplement(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected) {
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	cache_.at(uid).rComplement(positions);
 	return getJson(uid, positions, selected);
 }
@@ -365,12 +389,14 @@ Json::Value SeqCache::rComplement(const std::string & uid,
 Json::Value SeqCache::getJson(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const std::vector<uint32_t> & selected){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return SeqToJsonFactory::seqsToJson(getRef((cache_.at(uid).get())), positions, selected, uid);
 }
 
 Json::Value SeqCache::translate(const std::string & uid,
 		const std::vector<uint32_t> & positions, bool complement, bool reverse,
 		uint64_t start){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).get())), positions, uid, complement, reverse, start);
 	cacheProteins(uid, ret);
 	return ret;
@@ -378,6 +404,7 @@ Json::Value SeqCache::translate(const std::string & uid,
 
 Json::Value SeqCache::translate(const std::string & uid, bool complement,
 		bool reverse, uint64_t start){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	auto ret = SeqToJsonFactory::translate(getRef((cache_.at(uid).get())), uid, complement, reverse, start);
 	cacheProteins(uid, ret);
 	return ret;
@@ -385,6 +412,7 @@ Json::Value SeqCache::translate(const std::string & uid, bool complement,
 
 Json::Value SeqCache::translateLongest(const std::string & uid,
 		const LongestTranslation::Pars & pars, bool mark){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	auto ret = SeqToJsonFactory::translateLongest(getRef((cache_.at(uid).get())), uid, pars, mark);
 	cacheProteins(uid, ret);
 	return ret;
@@ -393,12 +421,14 @@ Json::Value SeqCache::translateLongest(const std::string & uid,
 Json::Value SeqCache::translateLongest(const std::string & uid,
 		const std::vector<uint32_t> & positions,
 		const LongestTranslation::Pars & pars, bool mark){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	auto ret = SeqToJsonFactory::translateLongest(getRef((cache_.at(uid).get())), positions, uid, pars, mark);
 	cacheProteins(uid, ret);
 	return ret;
 }
 
 void SeqCache::cacheProteins(const std::string & uid, const Json::Value & proteinsJson){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	std::shared_ptr<std::vector<readObject>> proteins = std::make_shared<std::vector<readObject>>();
 	for(const auto & j : proteinsJson["seqs"]){
 		proteins->emplace_back(seqInfo(j["name"].asString(), j["seq"].asString()));
@@ -415,6 +445,7 @@ void SeqCache::cacheProteins(const std::string & uid, const Json::Value & protei
 }
 
 void SeqCache::setWorkingDir(const bfs::path & dir){
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	workingDir_ = dir;
 }
 
@@ -458,7 +489,7 @@ void SeqCache::updateCacheNoCheck(const std::string & uid,
 
 void SeqCache::addToCache(const std::string & uid,
 		const SeqIOOptions & ioOpts) {
-	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	//check to see if cache already exists
 	if (containsRecordNoLock(uid)) {
 		std::stringstream ss;
@@ -472,7 +503,7 @@ void SeqCache::addToCache(const std::string & uid,
 }
 
 SeqCache::CacheRecord & SeqCache::getRecord(const std::string & uid){
-	std::shared_lock<std::shared_timed_mutex> lock(mut_);
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	auto ret = cache_.find(uid);
 	ret->second.reload();
 	return ret->second;
@@ -480,7 +511,7 @@ SeqCache::CacheRecord & SeqCache::getRecord(const std::string & uid){
 
 void SeqCache::updateAddCache(const std::string & uid,
 		const SeqIOOptions & ioOpts) {
-	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	if (containsRecordNoLock(uid)) {
 		updateCacheNoCheck(uid, ioOpts);
 	} else {
@@ -490,7 +521,7 @@ void SeqCache::updateAddCache(const std::string & uid,
 
 void SeqCache::updateCache(const std::string & uid,
 		const SeqIOOptions & ioOpts) {
-	std::unique_lock <std::shared_timed_mutex> lock(mut_);
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	// check to see if cache exists
 	if (containsRecordNoLock(uid)) {
 		updateCacheNoCheck(uid, ioOpts);
@@ -504,7 +535,7 @@ void SeqCache::updateCache(const std::string & uid,
 }
 
 bool SeqCache::containsRecord(const std::string & uid) {
-	std::shared_lock<std::shared_timed_mutex> lock(mut_);
+	std::lock_guard<std::recursive_mutex> lock(mut_);
 	return containsRecordNoLock(uid);
 }
 

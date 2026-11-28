@@ -55,7 +55,7 @@ void SeqViewer::mainPageHandler(std::shared_ptr<restbed::Session> session){
 void SeqViewer::seqDataHandler(std::shared_ptr<restbed::Session> session){
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto sesUid = startSeqCacheSession();
-	auto seqData = seqsBySession_[sesUid]->getJson(rootName_.substr(1));
+	auto seqData = getSeqCacheSession(sesUid)->getJson(rootName_.substr(1));
 	seqData["sessionUID"] = njh::json::toJson(sesUid);
 	if(protein_){
 		seqData["seqType"] = njh::json::toJson("protein");

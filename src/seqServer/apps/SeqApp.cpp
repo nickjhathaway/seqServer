@@ -291,12 +291,15 @@ void SeqApp::sortPostHandler(std::shared_ptr<restbed::Session> session,
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->sort(uid, sortBy);
+				seqData = seqCache->sort(uid, sortBy);
 			} else {
-				seqData = seqsBySession_[sessionUID]->sort(uid,positions, selected, sortBy);
+				seqData = seqCache->sort(uid,positions, selected, sortBy);
 				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -325,12 +328,15 @@ void SeqApp::muscleAlnPostHandler(
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->muscle(uid);
+				seqData = seqCache->muscle(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->muscle(uid, positions, selected);
+				seqData = seqCache->muscle(uid, positions, selected);
 				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -358,12 +364,15 @@ void SeqApp::removeGapsPostHandler(
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->removeGaps(uid);
+				seqData = seqCache->removeGaps(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->removeGaps(uid,positions, selected);
+				seqData = seqCache->removeGaps(uid,positions, selected);
 				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -391,12 +400,15 @@ void SeqApp::complementSeqsPostHandler(
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value seqData;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->rComplement(uid);
+				seqData = seqCache->rComplement(uid);
 			} else {
-				seqData = seqsBySession_[sessionUID]->rComplement(uid,positions, selected);
+				seqData = seqCache->rComplement(uid,positions, selected);
 				seqData["selected"] = njh::json::toJson(selected);
 			}
 			seqData["uid"] = uid;
@@ -428,13 +440,16 @@ void SeqApp::translateToProteinPostHandler(
 	bool complement = false;
 	bool reverse = false;
 	Json::Value seqData;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->translate(uid, complement,
+				seqData = seqCache->translate(uid, complement,
 						reverse, start);
 			} else {
-				seqData = seqsBySession_[sessionUID]->translate(uid, positions,
+				seqData = seqCache->translate(uid, positions,
 						complement, reverse, start);
 				//seqData["selected"] = njh::json::toJson(selected);
 			}
@@ -469,12 +484,15 @@ void SeqApp::translateLongestPostHandler(
 	pars.forceMStart_ = postData.get("forceMStart", false).asBool();
 	const bool mark = postData.get("mark", false).asBool();
 	Json::Value seqData;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqData = seqsBySession_[sessionUID]->translateLongest(uid, pars, mark);
+				seqData = seqCache->translateLongest(uid, pars, mark);
 			} else {
-				seqData = seqsBySession_[sessionUID]->translateLongest(uid, positions, pars, mark);
+				seqData = seqCache->translateLongest(uid, positions, pars, mark);
 			}
 			seqData["baseColor"] = njh::json::parse(ColorFactory::AAColorsJson);
 			seqData["uid"] = uid + "_protein";
@@ -506,12 +524,15 @@ void SeqApp::countBasesPostHandler(
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value ret;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (positions.empty()) {
-				ret =  seqsBySession_[sessionUID]->countBases(uid);
+				ret =  seqCache->countBases(uid);
 			} else {
-				ret =  seqsBySession_[sessionUID]->countBases(uid, positions);
+				ret =  seqCache->countBases(uid, positions);
 			}
 			ret["uid"] = uid;
 			ret["sessionUID"] = njh::json::toJson(sessionUID);
@@ -540,8 +561,11 @@ void SeqApp::deleteSeqsPostHandler(
 	const std::string uid = postData["uid"].asString();
 	const uint32_t sessionUID = postData["sessionUID"].asUInt();
 	Json::Value ret;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (positions.empty()) {
 				//positions to delete is empty, nothing to delete
 				ret["uid"] = uid;
@@ -549,8 +573,8 @@ void SeqApp::deleteSeqsPostHandler(
 				ret["positions"] = njh::json::toJson(positions);
 				ret["selected"] = njh::json::toJson(selected);
 			} else {
-				seqsBySession_[sessionUID]->deleteSeqs(uid, positions);
-				ret = seqsBySession_[sessionUID]->getJson(uid);
+				seqCache->deleteSeqs(uid, positions);
+				ret = seqCache->getJson(uid);
 			}
 		} else {
 			std::cerr << "uid: " << uid << " is not currently in cache" << std::endl;
@@ -589,18 +613,21 @@ void SeqApp::minTreeDataDetailedPostHandler(
 	std::unordered_map<std::string, std::unique_ptr<aligner>> aligners;
 	std::mutex alignerLock;
 	uint64_t maxSize = 0;
-	if (njh::in(sessionUID, seqsBySession_)) {
-		if (seqsBySession_[sessionUID]->containsRecord(uid)) {
+	auto seqCache = getSeqCacheSession(sessionUID);
+	if (nullptr != seqCache) {
+		//lock the session's cache for this request
+		auto cacheLock = seqCache->lockCache();
+		if (seqCache->containsRecord(uid)) {
 			if (selected.empty()) {
-				seqsBySession_[sessionUID]->getMaxLen(uid, maxSize);
+				seqCache->getMaxLen(uid, maxSize);
 			}else{
-				seqsBySession_[sessionUID]->getMaxLen(uid, positions, maxSize);
+				seqCache->getMaxLen(uid, positions, maxSize);
 			}
 			aligner alignerObj(maxSize, gapScoringParameters(gapOpenPen, gapExtPen),
 									substituteMatrix(match, mismatch));
 			if (selected.empty()) {
 				/**@todo add alignment caching */
-				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid, numDiffs,
+				seqData = seqCache->minTreeDataDetailed(uid, numDiffs,
 						alignerObj, aligners, alignerLock, numThreads, justBest);
 
 				table infoTab(VecStr {"Comparison", "var1-name", "var2-name", "type", "var1-pos",
@@ -626,7 +653,7 @@ void SeqApp::minTreeDataDetailedPostHandler(
 				}
 				seqData["infoTab"] = tableToJsonByRow(infoTab, "Comparison");
 			} else {
-				seqData = seqsBySession_[sessionUID]->minTreeDataDetailed(uid,
+				seqData = seqCache->minTreeDataDetailed(uid,
 						positions, numDiffs, alignerObj, aligners, alignerLock, numThreads, justBest);
 				table infoTab(VecStr{"Comparison", "var1-name", "var2-name","type", "var1-pos","var1-seq", "var1-qual", "var2-pos", "var2-seq", "var2-qual", "totalDiffs"});
 				for(const auto & node : seqData["nodes"]){
@@ -938,11 +965,22 @@ void SeqApp::closeSessionPostHandler(
 			std::cout << "Removed: " << sessionUID << std::endl;
 			std::cout << "IDs left: " << std::endl;
 			printVector(sesUIDFac_.getUIDs());
-			if (njh::in(sessionUID, seqsBySession_)) {
-				if(njh::beginsWith(seqsBySession_[sessionUID]->workingDir_.string(), "/tmp/")){
-					njh::files::rmDirForce(seqsBySession_[sessionUID]->workingDir_.string());
-				}
-				seqsBySession_.erase(sessionUID);
+		}
+		//remove the session from the map
+		std::shared_ptr<SeqCache> seqCache;
+		{
+			std::unique_lock<std::shared_mutex> mapLock(seqsBySessionMut_);
+			auto found = seqsBySession_.find(sessionUID);
+			if (seqsBySession_.end() != found) {
+				seqCache = std::move(found->second);
+				seqsBySession_.erase(found);
+			}
+		}
+		if (nullptr != seqCache) {
+			//remove its working dir once in-flight requests on it finish
+			auto cacheLock = seqCache->lockCache();
+			if(njh::beginsWith(seqCache->workingDir_.string(), "/tmp/")){
+				njh::files::rmDirForce(seqCache->workingDir_.string());
 			}
 		}
 	} catch (std::exception & e) {
@@ -974,11 +1012,25 @@ void SeqApp::closeSessionHandler(
 uint32_t SeqApp::startSeqCacheSession() {
 	auto mess = messFac_->genLogMessage(__PRETTY_FUNCTION__);
 	auto ret = sesUIDFac_.genSessionUID();
-	seqsBySession_[ret] = std::make_unique<SeqCache>(*seqs_);
-	auto sesDir = njh::files::make_path(seqs_->workingDir_, "seqServerSes_ses-" + estd::to_string(ret));
+	//copy seqs_ for the new session, then add it to the map
+	auto seqCache = std::make_shared<SeqCache>(*seqs_);
+	auto sesDir = njh::files::make_path(seqCache->workingDir_, "seqServerSes_ses-" + estd::to_string(ret));
 	njh::files::makeDirP(njh::files::MkdirPar(sesDir.string()));
-	seqsBySession_[ret]->setWorkingDir(sesDir);
+	seqCache->setWorkingDir(sesDir);
+	{
+		std::unique_lock<std::shared_mutex> mapLock(seqsBySessionMut_);
+		seqsBySession_[ret] = std::move(seqCache);
+	}
 	return ret;
+}
+
+std::shared_ptr<SeqCache> SeqApp::getSeqCacheSession(uint32_t sessionUID) const {
+	std::shared_lock<std::shared_mutex> mapLock(seqsBySessionMut_);
+	auto found = seqsBySession_.find(sessionUID);
+	if (seqsBySession_.end() == found) {
+		return nullptr;
+	}
+	return found->second;
 }
 
 void SeqApp::openSessionHandler(

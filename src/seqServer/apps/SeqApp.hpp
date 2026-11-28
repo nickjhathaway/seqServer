@@ -28,6 +28,7 @@
 #include "seqServer/utils.h"
 #include "seqServer/restbedUtils.h"
 #include "seqServer/objects.h"
+#include <shared_mutex>
 
 
 namespace njhseq {
@@ -102,7 +103,18 @@ protected:
 
 	std::shared_ptr<LogMessageFactory> messFac_;
 
+	/**@brief copy seqs_ into a new per session cache and register it in seqsBySession_
+	 *
+	 * @return the new session's uid
+	 */
 	uint32_t startSeqCacheSession();
+
+	/**@brief look up a session's cache
+	 *
+	 * @param sessionUID the session uid
+	 * @return the session's cache, or nullptr if there is no such session
+	 */
+	std::shared_ptr<SeqCache> getSeqCacheSession(uint32_t sessionUID) const;
 
 public:
 
@@ -132,9 +144,11 @@ public:
 
 
 	const Json::Value config_;
-	std::shared_ptr<SeqCache> seqs_;
+	std::shared_ptr<SeqCache> seqs_; /**< the cache new sessions are copied from */
 
-	std::unordered_map<uint32_t, std::unique_ptr<SeqCache>> seqsBySession_;
+	/**@brief one cache per client session */
+	std::unordered_map<uint32_t, std::shared_ptr<SeqCache>> seqsBySession_;
+	mutable std::shared_mutex seqsBySessionMut_; /**< guards seqsBySession_ */
 
 	virtual ~SeqApp();
 
